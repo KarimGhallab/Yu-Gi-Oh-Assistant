@@ -19,13 +19,13 @@ numbering across specs, so blocking edges stay legible across features.
 | 09 | [Ollama client: streamed chat completions](./09-ollama-client-streamed-chat.md) | Resolved (2026-09-15) | 07 | [02](../specs/02-ollama-integration.md) |
 | 10 | [Compose the real Ollama client into the server](./10-compose-ollama-client.md) | Resolved (2026-09-15) | 08, 09 | [02](../specs/02-ollama-integration.md) |
 | 11 | [Decouple the client and the server](./11-decouple-client-and-server.md) | Resolved (2026-09-15) | - | [01](../specs/01-workspace-foundation.md), [10](../specs/10-local-run-ci-and-docs.md) |
-| 12 | [Card domain and YGOPRODeck conversion](./12-card-domain-and-ygoprodeck-conversion.md) | ready-for-agent | - | [03](../specs/03-card-catalog-ingestion.md) |
+| 12 | [Card domain and YGOPRODeck conversion](./12-card-domain-and-ygoprodeck-conversion.md) | Resolved (2026-09-15) | - | [03](../specs/03-card-catalog-ingestion.md) |
 | 13 | [Build and read the local card index](./13-build-and-read-the-card-index.md) | ready-for-agent | 12 | [03](../specs/03-card-catalog-ingestion.md) |
 | 14 | [Fetch the card dump and wire the populate command](./14-fetch-dump-and-populate-command.md) | ready-for-agent | 12, 13 | [03](../specs/03-card-catalog-ingestion.md) |
 | 15 | [Guard server boot against a stale index](./15-guard-boot-against-stale-index.md) | ready-for-agent | 13 | [03](../specs/03-card-catalog-ingestion.md) |
 
 ## Frontier
 
-Spec 02 is complete (tickets 07-10 resolved) and spec 03 is broken into tickets
-12-15. 12 starts the frontier; 13 opens after 12; 14 and 15 open after 13. Ticket
-11 supersedes the single-origin setup in ticket 06 and spec 01.
+Spec 02 is complete (tickets 07-10 resolved). Spec 03 is in progress: 12 is
+resolved, so 13 is the frontier; 14 and 15 open after 13. Ticket 11 supersedes
+the single-origin setup in ticket 06 and spec 01.

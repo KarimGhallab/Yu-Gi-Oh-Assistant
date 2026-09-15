@@ -8,13 +8,13 @@ back card records and the document text that will later be embedded.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] The card domain and its enums live in `packages/cards`; the converter and
+- [x] The card domain and its enums live in `packages/cards`; the converter and
       the document composer live in `packages/db`.
-- [ ] English and French fixtures convert to the expected records, including
+- [x] English and French fixtures convert to the expected records, including
       optional fields such as link values and missing ATK/DEF.
-- [ ] The composed document contains name, type line, attribute/race, level,
+- [x] The composed document contains name, type line, attribute/race, level,
       ATK/DEF, and effect.
-- [ ] Cards that are not suggestable (tokens, Skill Cards) are excluded.
-- [ ] No test reaches the network; build and lint pass.
+- [x] Cards that are not suggestable (tokens, Skill Cards) are excluded.
+- [x] No test reaches the network; build and lint pass.
