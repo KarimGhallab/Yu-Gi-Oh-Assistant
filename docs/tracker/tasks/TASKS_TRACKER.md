@@ -18,8 +18,10 @@ numbering across specs, so blocking edges stay legible across features.
 | 08 | [Ollama client: batched embeddings](./08-ollama-client-batched-embeddings.md) | Resolved (2026-09-15) | 07 | [02](../specs/02-ollama-integration.md) |
 | 09 | [Ollama client: streamed chat completions](./09-ollama-client-streamed-chat.md) | Resolved (2026-09-15) | 07 | [02](../specs/02-ollama-integration.md) |
 | 10 | [Compose the real Ollama client into the server](./10-compose-ollama-client.md) | Resolved (2026-09-15) | 08, 09 | [02](../specs/02-ollama-integration.md) |
+| 11 | [Decouple the client and the server](./11-decouple-client-and-server.md) | Resolved (2026-09-15) | - | [01](../specs/01-workspace-foundation.md), [10](../specs/10-local-run-ci-and-docs.md) |
 
 ## Frontier
 
 Spec 02 is complete (tickets 07-10 resolved). Spec 03 (Card catalog ingestion) is
-next and is not yet broken into tickets.
+next and is not yet broken into tickets. Ticket 11 supersedes the single-origin
+setup in ticket 06 and spec 01.

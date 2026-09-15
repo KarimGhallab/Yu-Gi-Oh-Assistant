@@ -1,7 +1,8 @@
-import { LogLevel } from '@ygo-assistant/logger';
 import { z } from 'zod';
 
-import { NodeEnvironment, type AppConfig } from './types.js';
+import { LogLevel } from '@ygo-assistant/logger';
+
+import { type AppConfig, NodeEnvironment } from './types.js';
 
 const environmentSchema = z.object({
   HOST: z.string().min(1).default('127.0.0.1'),
@@ -9,6 +10,7 @@ const environmentSchema = z.object({
   DATA_DIR: z.string().min(1).default('./data'),
   NODE_ENV: z.nativeEnum(NodeEnvironment).default(NodeEnvironment.Development),
   LOG_LEVEL: z.nativeEnum(LogLevel).default(LogLevel.Info),
+  CORS_ORIGIN: z.string().optional(),
   OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
   OLLAMA_EMBEDDING_BASE_URL: z.url().optional(),
   OLLAMA_CHAT_MODEL: z.string().min(1).default('qwen3:4b'),
@@ -53,6 +55,12 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     dataDir: parsed.DATA_DIR,
     nodeEnv: parsed.NODE_ENV,
     logLevel: parsed.LOG_LEVEL,
+    corsOrigin:
+      parsed.CORS_ORIGIN === undefined
+        ? undefined
+        : parsed.CORS_ORIGIN.split(',')
+            .map(origin => origin.trim())
+            .filter(origin => origin.length > 0),
     ollama: {
       baseUrl: parsed.OLLAMA_BASE_URL,
       embeddingBaseUrl:

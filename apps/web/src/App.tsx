@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 
+import { apiUrl } from './api.js';
+
 export default function App() {
   const [apiStatus, setApiStatus] = useState('checking');
 
   useEffect(() => {
-    fetch('/health')
+    fetch(apiUrl('/health'))
       .then(response => setApiStatus(response.ok ? 'ok' : 'error'))
       .catch(() => setApiStatus('unreachable'));
   }, []);

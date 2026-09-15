@@ -1,5 +1,6 @@
-import { LogLevel } from '@ygo-assistant/logger';
 import { describe, expect, it } from 'vitest';
+
+import { LogLevel } from '@ygo-assistant/logger';
 
 import { ConfigurationError, loadConfig } from './config.js';
 import { NodeEnvironment } from './types.js';
@@ -59,6 +60,21 @@ describe('loadConfig', () => {
     const config = loadConfig({ OLLAMA_BASE_URL: 'http://remote:11434' });
 
     expect(config.ollama.embeddingBaseUrl).toBe('http://remote:11434');
+  });
+
+  it('leaves the allowed client origins undefined when not configured', () => {
+    expect(loadConfig({}).corsOrigin).toBeUndefined();
+  });
+
+  it('parses a comma-separated list of allowed client origins', () => {
+    const config = loadConfig({
+      CORS_ORIGIN: 'http://localhost:5173, https://assistant.example'
+    });
+
+    expect(config.corsOrigin).toEqual([
+      'http://localhost:5173',
+      'https://assistant.example'
+    ]);
   });
 
   it('refuses to start and names the offending variable', () => {

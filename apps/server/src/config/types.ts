@@ -38,6 +38,7 @@ export interface AppConfig {
   dataDir: string;
   nodeEnv: NodeEnvironment;
   logLevel: LogLevel;
+  corsOrigin?: string[];
   ollama: OllamaConfig;
   retrieval: RetrievalConfig;
 }

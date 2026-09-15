@@ -11,10 +11,4 @@ export interface ServerDependencies {
   config: AppConfig;
   logger: ILogger;
   ollama: IOllamaClient;
-  /**
-   * Directory holding the built client. When provided, the server also serves
-   * the client so the API and the UI share one origin. Tests omit it, and the
-   * production entry always provides it.
-   */
-  clientDistDir?: string;
 }

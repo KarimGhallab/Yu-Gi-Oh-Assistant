@@ -1,8 +1,9 @@
+import { describe, expect, it } from 'vitest';
+
 import { LogLevel } from '@ygo-assistant/logger';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 import { NotFoundError } from '@ygo-assistant/utils';
-import { describe, expect, it } from 'vitest';
 
 import { loadConfig } from '../config/index.js';
 import { isLoopbackHost, logBinding } from './binding.js';
@@ -40,8 +41,8 @@ const ollamaStub: IOllamaClient = {
   chat: async function* () {}
 };
 
-const createDependencies = () => ({
-  config: loadConfig({}),
+const createDependencies = (env: Record<string, string | undefined> = {}) => ({
+  config: loadConfig(env),
   logger: new RecordingLogger(),
   ollama: ollamaStub
 });
@@ -54,6 +55,30 @@ describe('createServer', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ status: 'ok' });
+  });
+
+  it('sends no CORS headers when no client origin is configured', async () => {
+    const app = createServer(createDependencies());
+
+    const response = await app.request('/health', {
+      headers: { origin: 'http://localhost:5173' }
+    });
+
+    expect(response.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  it('allows a separately hosted client origin when configured', async () => {
+    const app = createServer(
+      createDependencies({ CORS_ORIGIN: 'http://localhost:5173' })
+    );
+
+    const response = await app.request('/health', {
+      headers: { origin: 'http://localhost:5173' }
+    });
+
+    expect(response.headers.get('access-control-allow-origin')).toBe(
+      'http://localhost:5173'
+    );
   });
 
   it('maps a domain error to its HTTP status and logs it', async () => {

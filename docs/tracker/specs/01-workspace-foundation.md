@@ -106,3 +106,6 @@ else is built and tested on.
   graph, and the dependency-cruiser rules; later features add code, not
   structure.
 - `apps/web` is scaffolded but empty here; feature 08 fills it.
+- Superseded in part by ticket 11: the client and server are decoupled. The
+  server is API-only and no longer serves the client build, and the client
+  resolves the API through `VITE_API_BASE_URL`.

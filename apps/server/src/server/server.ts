@@ -1,17 +1,22 @@
-import { serveStatic } from '@hono/node-server/serve-static';
-import { DomainError } from '@ygo-assistant/utils';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+
+import { DomainError } from '@ygo-assistant/utils';
 
 import type { ServerDependencies } from './types.js';
 
-const API_PREFIX = '/api/';
-
 /**
  * Builds the HTTP application with its dependencies injected. Binding it to a
- * port is the caller's responsibility.
+ * port is the caller's responsibility. The app is API-only: the client is a
+ * separate deployment that reaches it directly or through a reverse proxy.
  */
 export function createServer(dependencies: ServerDependencies): Hono {
   const app = new Hono();
+
+  const { corsOrigin } = dependencies.config;
+  if (corsOrigin !== undefined) {
+    app.use('*', cors({ origin: corsOrigin }));
+  }
 
   app.get('/health', c => c.json({ status: 'ok' }));
 
@@ -27,17 +32,6 @@ export function createServer(dependencies: ServerDependencies): Hono {
     dependencies.logger.error('Unhandled error', { message: error.message });
     return c.json({ error: 'Internal Server Error' }, { status: 500 });
   });
-
-  if (dependencies.clientDistDir) {
-    const client = serveStatic({ root: dependencies.clientDistDir });
-
-    app.use('*', async (c, next) => {
-      if (c.req.path === '/health' || c.req.path.startsWith(API_PREFIX)) {
-        return next();
-      }
-      return client(c, next);
-    });
-  }
 
   return app;
 }
