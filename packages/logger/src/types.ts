@@ -21,11 +21,26 @@ export interface LogDestination {
 }
 
 /**
+ * Rotating file output. Log records are mirrored to stdout as well, so a
+ * container still surfaces them.
+ */
+export interface FileLoggingOptions {
+  directory: string;
+  fileName: string;
+  /** Rotate once a file reaches this size. */
+  size?: string;
+  /** How many rotated files to keep. */
+  maxFiles?: number;
+}
+
+/**
  * Options for creating a logger.
  */
 export interface LoggerOptions {
   level: LogLevel;
   name?: string;
+  pretty?: boolean;
+  file?: FileLoggingOptions;
   destination?: LogDestination;
 }
 

@@ -1,6 +1,17 @@
 import pino from 'pino';
+import pinoPretty from 'pino-pretty';
+import { createStream } from 'rotating-file-stream';
 
-import { type ILogger, type LogContext, type LoggerOptions } from './types.js';
+import {
+  type FileLoggingOptions,
+  type ILogger,
+  type LogContext,
+  type LogDestination,
+  type LoggerOptions
+} from './types.js';
+
+const DEFAULT_MAX_SIZE = '10M';
+const DEFAULT_MAX_FILES = 5;
 
 class PinoLogger implements ILogger {
   constructor(private readonly _logger: pino.Logger) {}
@@ -29,7 +40,44 @@ class PinoLogger implements ILogger {
 export function createLogger(options: LoggerOptions): ILogger {
   const logger = pino(
     { level: options.level, name: options.name },
-    options.destination
+    resolveDestination(options)
   );
   return new PinoLogger(logger);
+}
+
+/**
+ * Picks the log sink. An injected destination wins, then a rotating file
+ * (mirrored to stdout), then a colorized terminal stream, then plain JSON on
+ * stdout when nothing is configured.
+ */
+function resolveDestination(
+  options: LoggerOptions
+): LogDestination | undefined {
+  if (options.destination !== undefined) {
+    return options.destination;
+  }
+  if (options.file !== undefined) {
+    return createFileStream(options.file);
+  }
+  if (options.pretty === true) {
+    return createPrettyStream();
+  }
+  return undefined;
+}
+
+function createPrettyStream(): LogDestination {
+  return pinoPretty({
+    colorize: process.stdout.isTTY === true,
+    translateTime: 'SYS:HH:MM:ss',
+    ignore: 'pid,hostname'
+  });
+}
+
+function createFileStream(file: FileLoggingOptions): LogDestination {
+  return createStream(`${file.fileName}.log`, {
+    path: file.directory,
+    size: file.size ?? DEFAULT_MAX_SIZE,
+    maxFiles: file.maxFiles ?? DEFAULT_MAX_FILES,
+    teeToStdout: true
+  });
 }

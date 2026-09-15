@@ -1,7 +1,6 @@
 import { serve } from '@hono/node-server';
 
-import { createLogger } from '@ygo-assistant/logger';
-
+import { createServerLogger } from './appLogger.js';
 import { loadConfig } from './config/index.js';
 import { ensureIndexMatchesConfig } from './indexGuard.js';
 import { createOllamaClient } from './ollamaClient.js';
@@ -9,7 +8,7 @@ import { createServer, logBinding } from './server/index.js';
 
 async function main(): Promise<void> {
   const config = loadConfig(process.env);
-  const logger = createLogger({ level: config.logLevel, name: 'server' });
+  const logger = createServerLogger(config);
 
   try {
     await ensureIndexMatchesConfig(config);

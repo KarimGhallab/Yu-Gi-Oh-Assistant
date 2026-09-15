@@ -11,16 +11,16 @@ volume for the log directory.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] The logger can emit colorized, human-readable logs for a terminal and
+- [x] The logger can emit colorized, human-readable logs for a terminal and
       structured JSON otherwise, without callers importing pino.
-- [ ] In production the server writes logs to rotating files under a configurable
+- [x] In production the server writes logs to rotating files under a configurable
       log directory, rotating at 10 MB and keeping 5 rotated files.
-- [ ] File logs are also written to stdout, so container logs remain available.
-- [ ] Development colorizes logs, production writes files, and test loggers that
+- [x] File logs are also written to stdout, so container logs remain available.
+- [x] Development colorizes logs, production writes files, and test loggers that
       inject a destination are unchanged.
-- [ ] An injected destination takes precedence over the colorized and file sinks.
-- [ ] The log directory is configurable, documented in `.env.example`, and
+- [x] An injected destination takes precedence over the colorized and file sinks.
+- [x] The log directory is configurable, documented in `.env.example`, and
       gitignored.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.
