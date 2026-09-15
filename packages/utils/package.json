@@ -1,17 +1,21 @@
 {
-  "name": "@template-monorepo/utils",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@ygo-assistant/utils",
+  "version": "0.1.0",
+  "description": "Shared utility helpers.",
   "private": true,
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc-watch --noClear --onSuccess \"npm start\"",
-    "watch": "tsc-watch --noClear",
+    "build": "tsc -b",
+    "dev": "tsc -b --watch --preserveWatchOutput",
+    "watch": "tsc -b --watch --preserveWatchOutput",
     "clean-all": "rm -rf dist && rm -rf node_modules",
     "clean": "rm -rf dist"
   },
@@ -21,12 +25,11 @@
   "packageManager": "pnpm@11.20.0",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "26.1.2",
-    "tsc-watch": "^7.2.1",
+    "@types/node": "26.5.1",
     "typescript": "^6.0.3"
   },
   "volta": {
-    "node": "24.11.0",
+    "node": "26.5.0",
     "pnpm": "11.20.0"
   }
 }

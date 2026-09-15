@@ -39,3 +39,12 @@ export {
 // Other exports
 export { exhaust } from './utils/other/exhaust.js';
 export { hasErrorMessage } from './utils/other/hasErrorMessage.js';
+
+// Error exports
+export {
+  DomainError,
+  NotFoundError,
+  UnavailableError,
+  ValidationError
+} from './errors/DomainError.js';
+export { HttpStatus } from './errors/types.js';

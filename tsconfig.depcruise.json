@@ -2,9 +2,16 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@template-monorepo/console": ["./apps/console/src"],
-      "@template-monorepo/color": ["./packages/color/src"],
-      "@template-monorepo/utils": ["./packages/utils/src"]
+      "@ygo-assistant/cards": ["./packages/cards/src"],
+      "@ygo-assistant/contracts": ["./packages/contracts/src"],
+      "@ygo-assistant/db": ["./packages/db/src"],
+      "@ygo-assistant/logger": ["./packages/logger/src"],
+      "@ygo-assistant/ollama": ["./packages/ollama/src"],
+      "@ygo-assistant/rag": ["./packages/rag/src"],
+      "@ygo-assistant/test-support": ["./packages/test-support/src"],
+      "@ygo-assistant/utils": ["./packages/utils/src"],
+      "@ygo-assistant/server": ["./apps/server/src"],
+      "@ygo-assistant/web": ["./apps/web/src"]
     }
   }
 }

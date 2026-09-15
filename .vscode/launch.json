@@ -7,12 +7,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Console",
+      "name": "Launch Server",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/apps/console/dist/main.js",
+      "program": "${workspaceFolder}/apps/server/dist/index.js",
       "preLaunchTask": "${defaultBuildTask}",
       "outFiles": [
-        "${workspaceFolder}/apps/console/dist/**/*.js",
+        "${workspaceFolder}/apps/server/dist/**/*.js",
         "${workspaceFolder}/packages/*/dist/**/*.js"
       ],
       "console": "integratedTerminal"

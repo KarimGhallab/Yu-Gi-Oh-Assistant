@@ -9,7 +9,7 @@
   "importOrder": [
     "<BUILTIN_MODULES>",
     "<THIRD_PARTY_MODULES>",
-    "@template-monorepo/(.*)",
+    "@ygo-assistant/(.*)",
     "^(.*)/shared/(.*)$",
     "^(.*)/packages/(.*)$",
     "^(.*)/modules/(.*)$",

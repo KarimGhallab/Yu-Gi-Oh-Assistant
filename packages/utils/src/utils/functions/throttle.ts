@@ -31,7 +31,9 @@ export const throttle = <F extends Function<any, any>>(
   let wait = false;
 
   return (...args: Parameters<F>): ReturnType<ThrottledFunction<F>> => {
-    if (wait) return undefined;
+    if (wait) {
+      return undefined;
+    }
 
     const val = fn(...args);
     wait = true;
@@ -59,7 +61,9 @@ export const throttleAsync = <F extends Function<any, Promise<any>>>(
   let wait = false;
 
   return async (...args: Parameters<F>) => {
-    if (wait) return undefined;
+    if (wait) {
+      return undefined;
+    }
 
     wait = true;
     try {

@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/utils" },
+    { "path": "packages/logger" },
+    { "path": "packages/cards" },
+    { "path": "packages/contracts" },
+    { "path": "packages/ollama" },
+    { "path": "packages/db" },
+    { "path": "packages/rag" },
+    { "path": "packages/test-support" },
+    { "path": "apps/server" },
+    { "path": "apps/web" }
+  ]
+}

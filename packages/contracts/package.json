@@ -1,0 +1,35 @@
+{
+  "name": "@ygo-assistant/contracts",
+  "version": "0.1.0",
+  "description": "Endpoint and SSE event contracts shared by the server and the client.",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch --preserveWatchOutput",
+    "watch": "tsc -b --watch --preserveWatchOutput",
+    "clean-all": "rm -rf dist && rm -rf node_modules",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@11.20.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "26.5.1",
+    "typescript": "^6.0.3"
+  },
+  "volta": {
+    "node": "26.5.0",
+    "pnpm": "11.20.0"
+  }
+}

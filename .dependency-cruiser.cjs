@@ -12,6 +12,133 @@ module.exports = {
         path: '^apps/'
       }
     },
+
+    /*
+     * Package layering. Each rule allows a source package to depend only on the
+     * packages it lists; its own files and external node_modules are always
+     * allowed. Cross-package imports go through a package entry point, enforced
+     * by the package `exports` maps.
+     */
+    {
+      name: 'layering-web',
+      severity: 'error',
+      comment: 'The web app may depend only on the cards and contracts packages.',
+      from: { path: '^apps/web/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/(?:cards|contracts)/', '^apps/web/']
+      }
+    },
+    {
+      name: 'layering-server',
+      severity: 'error',
+      comment:
+        'The server may depend only on cards, contracts, db, logger, ollama, rag, test-support, and utils.',
+      from: { path: '^apps/server/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: [
+          '^packages/(?:cards|contracts|db|logger|ollama|rag|test-support|utils)/',
+          '^apps/server/'
+        ]
+      }
+    },
+    {
+      name: 'layering-rag',
+      severity: 'error',
+      comment:
+        'The rag package may depend only on cards, db, logger, ollama, and utils.',
+      from: { path: '^packages/rag/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: [
+          '^packages/(?:cards|db|logger|ollama|utils)/',
+          '^packages/rag/'
+        ]
+      }
+    },
+    {
+      name: 'layering-db',
+      severity: 'error',
+      comment:
+        'The db package may depend only on cards, logger, ollama, and utils.',
+      from: { path: '^packages/db/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/(?:cards|logger|ollama|utils)/', '^packages/db/']
+      }
+    },
+    {
+      name: 'layering-ollama',
+      severity: 'error',
+      comment: 'The ollama package may depend only on logger and utils.',
+      from: { path: '^packages/ollama/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/(?:logger|utils)/', '^packages/ollama/']
+      }
+    },
+    {
+      name: 'layering-contracts',
+      severity: 'error',
+      comment: 'The contracts package may depend only on cards and utils.',
+      from: { path: '^packages/contracts/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/(?:cards|utils)/', '^packages/contracts/']
+      }
+    },
+    {
+      name: 'layering-logger',
+      severity: 'error',
+      comment: 'The logger package may depend only on utils.',
+      from: { path: '^packages/logger/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/utils/', '^packages/logger/']
+      }
+    },
+    {
+      name: 'layering-cards',
+      severity: 'error',
+      comment: 'The cards package is a leaf and may not depend on other packages.',
+      from: { path: '^packages/cards/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/cards/']
+      }
+    },
+    {
+      name: 'layering-utils',
+      severity: 'error',
+      comment: 'The utils package is a leaf and may not depend on other packages.',
+      from: { path: '^packages/utils/' },
+      to: {
+        path: '^(?:packages|apps)/',
+        pathNot: ['^packages/utils/']
+      }
+    },
+    {
+      name: 'layering-test-support',
+      severity: 'error',
+      comment:
+        'The test-support package may depend on packages but never on an app.',
+      from: { path: '^packages/test-support/' },
+      to: { path: '^apps/' }
+    },
+    {
+      name: 'test-support-is-test-only',
+      severity: 'error',
+      comment: 'Only test files may depend on the test-support package.',
+      from: {
+        pathNot: [
+          '[.](?:spec|test)[.](?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$',
+          '^packages/test-support/'
+        ]
+      },
+      to: { path: '^packages/test-support/' }
+    },
+
     {
       name: 'no-circular',
       severity: 'error',
@@ -38,7 +165,10 @@ module.exports = {
           '(^|/)[.][^/]+[.](?:js|cjs|mjs|ts|cts|mts|json)$', // dot files
           '[.]d[.]ts$', // TypeScript declaration files
           '(^|/)tsconfig[.]json$', // TypeScript config
-          '(^|/)(?:babel|webpack)[.]config[.](?:js|cjs|mjs|ts|cts|mts|json)$' // other configs
+          '(^|/)(?:babel|webpack)[.]config[.](?:js|cjs|mjs|ts|cts|mts|json)$', // other configs
+          '^(?:apps|packages)/[^/]+/src/index[.]ts$', // package entry points are roots
+          '^(?:apps|packages)/[^/]+/src/main[.]tsx?$', // app entry points are roots
+          '^(?:apps|packages)/[^/]+/vite[.]config[.](?:js|mjs|ts|mts)$' // build config
         ]
       },
       to: {}
