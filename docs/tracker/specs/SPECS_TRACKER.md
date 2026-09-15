@@ -13,7 +13,7 @@ in order; the `Blocked by` column is the dependency edge.
 | # | Spec | Status | Blocked by |
 | - | ---- | ------ | ---------- |
 | 01 | [Workspace foundation](./01-workspace-foundation.md) | Resolved (2026-09-15) | - |
-| 02 | [Ollama integration](./02-ollama-integration.md) | `ready-for-agent` | 01 |
+| 02 | [Ollama integration](./02-ollama-integration.md) | Resolved (2026-09-15) | 01 |
 | 03 | [Card catalog ingestion and index](./03-card-catalog-ingestion.md) | `ready-for-agent` | 01, 02 |
 | 04 | [Retrieval engine](./04-retrieval-engine.md) | `ready-for-agent` | 03 |
 | 05 | [Conversation store and CRUD](./05-conversation-store-and-crud.md) | `ready-for-agent` | 01 |

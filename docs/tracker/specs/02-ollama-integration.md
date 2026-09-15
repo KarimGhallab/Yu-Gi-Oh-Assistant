@@ -1,6 +1,6 @@
 # 02 - Ollama integration
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-15)
 - **Kind:** spec
 - **Blocked by:** 01
 - **Source:** architecture grilling, 2026-09-15

@@ -15,12 +15,14 @@ export interface FakeOllamaRequest {
 }
 
 /**
- * The response the fake server should write for a request. Omitting the status
- * means 200 and omitting the body means an empty JSON object.
+ * The response the fake server should write for a request. `json` is written as
+ * a single JSON body; `stream` is written chunk by chunk, as Ollama streams a
+ * chat completion. Omitting the status means 200.
  */
 export interface FakeOllamaResponse {
   status?: number;
   json?: unknown;
+  stream?: string[];
 }
 
 export type FakeOllamaHandler = (
@@ -92,6 +94,17 @@ export class FakeOllamaServer {
         path: request.url ?? '/',
         body
       });
+
+      if (result.stream !== undefined) {
+        response.statusCode = result.status ?? 200;
+        response.setHeader('content-type', 'application/x-ndjson');
+        for (const chunk of result.stream) {
+          response.write(chunk);
+        }
+        response.end();
+        return;
+      }
+
       response.statusCode = result.status ?? 200;
       response.setHeader('content-type', 'application/json');
       response.end(JSON.stringify(result.json ?? {}));

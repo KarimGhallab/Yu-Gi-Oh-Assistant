@@ -9,14 +9,14 @@ typed error instead of a broken partial answer.
 
 **Blocked by:** 07 - Ollama client: typed boundary and model listing.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] A chat request streams the completion, yielding a chunk per message as it
+- [x] A chat request streams the completion, yielding a chunk per message as it
       arrives and a final done chunk.
-- [ ] An optional JSON schema is forwarded as the structured-output format and
+- [x] An optional JSON schema is forwarded as the structured-output format and
       the temperature is forwarded; the model is taken from the request.
-- [ ] A stream line that fails validation yields the typed invalid-response
+- [x] A stream line that fails validation yields the typed invalid-response
       error; an unknown model yields the typed unknown-model error.
-- [ ] Tests run the real client against an in-process fake HTTP server that emits
+- [x] Tests run the real client against an in-process fake HTTP server that emits
       a chunked stream; no test needs a running Ollama or external network.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.

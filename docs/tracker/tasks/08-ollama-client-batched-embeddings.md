@@ -9,14 +9,14 @@ response fails loudly rather than reaching the index.
 
 **Blocked by:** 07 - Ollama client: typed boundary and model listing.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] A batch of input texts is sent as one request to the configured embedding
+- [x] A batch of input texts is sent as one request to the configured embedding
       endpoint, which may differ from the base URL.
-- [ ] One vector per input is returned, each of the configured dimensions, passed
+- [x] One vector per input is returned, each of the configured dimensions, passed
       through exactly as the server produced it (no re-normalization).
-- [ ] An unknown embedding model yields the typed unknown-model error; a
+- [x] An unknown embedding model yields the typed unknown-model error; a
       malformed or wrong-shaped response yields the typed invalid-response error.
-- [ ] Tests run the real client against an in-process fake HTTP server; no test
+- [x] Tests run the real client against an in-process fake HTTP server; no test
       needs a running Ollama or external network.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.

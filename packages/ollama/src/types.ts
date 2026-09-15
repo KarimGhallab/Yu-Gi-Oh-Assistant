@@ -25,12 +25,12 @@ export interface OllamaModel {
 
 /**
  * Configuration the concrete client needs. It mirrors the server's Ollama
- * configuration so the composition root can pass it through unchanged.
+ * configuration for the fields the client uses, so the composition root can
+ * pass it through unchanged.
  */
 export interface OllamaClientOptions {
   baseUrl: string;
   embeddingBaseUrl: string;
-  chatModel: string;
   embeddingModel: string;
   embeddingDimensions: number;
 }

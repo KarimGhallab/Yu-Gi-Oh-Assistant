@@ -15,12 +15,11 @@ numbering across specs, so blocking edges stay legible across features.
 | 05 | [Reusable test doubles for the composition-root seam](./05-test-doubles-seam.md) | Resolved (2026-09-15) | 04 | [01](../specs/01-workspace-foundation.md) |
 | 06 | [Single-origin client scaffold](./06-single-origin-client-scaffold.md) | Resolved (2026-09-15) | 04 | [01](../specs/01-workspace-foundation.md) |
 | 07 | [Ollama client: typed boundary and model listing](./07-ollama-client-boundary-and-model-listing.md) | Resolved (2026-09-15) | - | [02](../specs/02-ollama-integration.md) |
-| 08 | [Ollama client: batched embeddings](./08-ollama-client-batched-embeddings.md) | ready-for-agent | 07 | [02](../specs/02-ollama-integration.md) |
-| 09 | [Ollama client: streamed chat completions](./09-ollama-client-streamed-chat.md) | ready-for-agent | 07 | [02](../specs/02-ollama-integration.md) |
-| 10 | [Compose the real Ollama client into the server](./10-compose-ollama-client.md) | ready-for-agent | 08, 09 | [02](../specs/02-ollama-integration.md) |
+| 08 | [Ollama client: batched embeddings](./08-ollama-client-batched-embeddings.md) | Resolved (2026-09-15) | 07 | [02](../specs/02-ollama-integration.md) |
+| 09 | [Ollama client: streamed chat completions](./09-ollama-client-streamed-chat.md) | Resolved (2026-09-15) | 07 | [02](../specs/02-ollama-integration.md) |
+| 10 | [Compose the real Ollama client into the server](./10-compose-ollama-client.md) | Resolved (2026-09-15) | 08, 09 | [02](../specs/02-ollama-integration.md) |
 
 ## Frontier
 
-07 is resolved. 08 and 09 are ready to start in parallel, and 10 opens once both
-are green. Spec 03 (Card catalog ingestion) is next after spec 02; it is not yet
-broken into tickets.
+Spec 02 is complete (tickets 07-10 resolved). Spec 03 (Card catalog ingestion) is
+next and is not yet broken into tickets.
