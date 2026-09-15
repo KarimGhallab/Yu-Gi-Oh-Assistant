@@ -9,13 +9,13 @@ kept out of version control.
 **Blocked by:** 12 - Card domain and YGOPRODeck conversion; 13 - Build and read
 the local card index.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] English and French dumps are fetched and their raw JSON is saved under the
+- [x] English and French dumps are fetched and their raw JSON is saved under the
       data directory.
-- [ ] The data directory, holding the raw dump and the index, is gitignored.
-- [ ] The command converts, embeds, and writes the index and its metadata in one
+- [x] The data directory, holding the raw dump and the index, is gitignored.
+- [x] The command converts, embeds, and writes the index and its metadata in one
       run, and is wired as `db:populate` on the server app.
-- [ ] Tests drive the path against a fake dump server and a fake Ollama client;
+- [x] Tests drive the path against a fake dump server and a fake Ollama client;
       no test reaches YGOPRODeck.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.

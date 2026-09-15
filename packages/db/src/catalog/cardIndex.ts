@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { connect } from '@lancedb/lancedb';
 
 import type { Card } from '@ygo-assistant/cards';
+import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
@@ -16,10 +17,11 @@ import type {
 } from './types.js';
 
 const CARDS_TABLE = 'cards';
+const DEFAULT_EMBEDDING_BATCH_SIZE = 256;
 
 /**
- * Builds the card index for a data directory. It composes and embeds every
- * card's document in one batch, then replaces any existing index so a rebuild
+ * Builds the card index for a data directory. It composes the card documents,
+ * embeds them in bounded batches, then replaces any existing index so a rebuild
  * is always a full rebuild.
  */
 export async function buildCardIndex(
@@ -29,7 +31,11 @@ export async function buildCardIndex(
   await mkdir(directory, { recursive: true });
 
   const documents = options.cards.map(composeCardDocument);
-  const vectors = await options.embedder.embed(documents);
+  const vectors = await embedDocuments(
+    options.embedder,
+    documents,
+    options.batchSize ?? DEFAULT_EMBEDDING_BATCH_SIZE
+  );
   if (vectors.length !== options.cards.length) {
     throw new Error(
       `The embedder returned ${vectors.length} vectors for ${options.cards.length} cards`
@@ -78,6 +84,23 @@ export async function readCardIndex(
     count,
     metadata
   };
+}
+
+/**
+ * Embeds the documents in bounded batches, so a large dump does not become one
+ * enormous request.
+ */
+async function embedDocuments(
+  embedder: IOllamaClient,
+  documents: string[],
+  batchSize: number
+): Promise<number[][]> {
+  const vectors: number[][] = [];
+  for (let start = 0; start < documents.length; start += batchSize) {
+    const batch = documents.slice(start, start + batchSize);
+    vectors.push(...(await embedder.embed(batch)));
+  }
+  return vectors;
 }
 
 function toStoredRow(card: Card, vector: number[]): Record<string, unknown> {

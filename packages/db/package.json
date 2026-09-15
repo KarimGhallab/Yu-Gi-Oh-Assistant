@@ -26,6 +26,7 @@
   "dependencies": {
     "@lancedb/lancedb": "^0.38.0",
     "@ygo-assistant/cards": "workspace:*",
+    "@ygo-assistant/logger": "workspace:*",
     "@ygo-assistant/ollama": "workspace:*",
     "apache-arrow": "18.1.0",
     "zod": "^4.4.3"

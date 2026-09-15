@@ -55,13 +55,13 @@ function convertCard(
     frameType: raw.frameType,
     typeLine: raw.typeline ?? [],
     race: raw.race,
-    attribute: raw.attribute,
+    attribute: raw.attribute ?? undefined,
     level: toLevel(raw.level),
-    atk: raw.atk,
+    atk: raw.atk ?? undefined,
     def: raw.def ?? undefined,
-    linkVal: raw.linkval,
+    linkVal: raw.linkval ?? undefined,
     linkMarkers: raw.linkmarkers ?? [],
-    archetype: raw.archetype,
+    archetype: raw.archetype ?? undefined,
     effect: raw.desc,
     imageUrl: raw.card_images[0].image_url,
     sourceUrl: raw.ygoprodeck_url
@@ -71,6 +71,6 @@ function convertCard(
 /**
  * Link monsters report a level of zero, which is not a real level.
  */
-function toLevel(value: number | undefined): number | undefined {
-  return value !== undefined && value > 0 ? value : undefined;
+function toLevel(value: number | null | undefined): number | undefined {
+  return value !== null && value !== undefined && value > 0 ? value : undefined;
 }

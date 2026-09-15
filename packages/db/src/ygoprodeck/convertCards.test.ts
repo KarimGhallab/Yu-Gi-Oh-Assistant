@@ -136,6 +136,36 @@ describe('convertCardInfoResponse', () => {
     expect(card.effect).toBe('Draw 2 cards.');
   });
 
+  it('treats null optional fields as absent', () => {
+    const [card] = convert(
+      createRawCard({
+        typeline: null,
+        attribute: null,
+        level: null,
+        atk: null,
+        def: null,
+        linkval: null,
+        linkmarkers: null,
+        archetype: null
+      })
+    );
+
+    expect(card.typeLine).toEqual([]);
+    expect(card.attribute).toBeUndefined();
+    expect(card.level).toBeUndefined();
+    expect(card.atk).toBeUndefined();
+    expect(card.def).toBeUndefined();
+    expect(card.linkVal).toBeUndefined();
+    expect(card.linkMarkers).toEqual([]);
+    expect(card.archetype).toBeUndefined();
+  });
+
+  it('keeps a card whose race is empty', () => {
+    const [card] = convert(createRawCard({ race: '' }));
+
+    expect(card.race).toBe('');
+  });
+
   it('drops tokens and Skill Cards', () => {
     const cards = convertCardInfoResponse(
       {

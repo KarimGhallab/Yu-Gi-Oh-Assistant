@@ -11,6 +11,7 @@
   "exclude": ["node_modules", "src/**/*.test.ts"],
   "references": [
     { "path": "../cards/tsconfig.build.json" },
+    { "path": "../logger/tsconfig.build.json" },
     { "path": "../ollama/tsconfig.build.json" }
   ]
 }

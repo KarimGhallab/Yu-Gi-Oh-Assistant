@@ -154,6 +154,29 @@ describe('card index', () => {
     ]);
   });
 
+  it('embeds documents in batches of the configured size', async () => {
+    const directory = await createDataDir();
+    const cards = [
+      createDarkMagician(),
+      createPotOfGreed(),
+      createDarkMagician({ id: 89631139, name: 'Blue-Eyes White Dragon' })
+    ];
+    const batches: string[][] = [];
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards,
+      embedder: createEmbedder(batches),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15',
+      batchSize: 2
+    });
+
+    expect(batches.map(batch => batch.length)).toEqual([2, 1]);
+    expect(batches.flat()).toEqual(cards.map(composeCardDocument));
+  });
+
   it('stores one row per card per language', async () => {
     const directory = await createDataDir();
     const english = createDarkMagician();

@@ -56,6 +56,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.1
         version: 2.1.1(hono@4.13.7)
+      '@ygo-assistant/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@ygo-assistant/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -139,6 +142,9 @@ importers:
       '@ygo-assistant/cards':
         specifier: workspace:*
         version: link:../cards
+      '@ygo-assistant/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@ygo-assistant/ollama':
         specifier: workspace:*
         version: link:../ollama

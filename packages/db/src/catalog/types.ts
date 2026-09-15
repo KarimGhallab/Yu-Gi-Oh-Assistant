@@ -29,6 +29,11 @@ export interface BuildCardIndexOptions {
   embeddingModel: string;
   dimensions: number;
   datasetVersion: string;
+  /**
+   * How many composed documents to embed per request, bounding the size of a
+   * single call when the dump is large.
+   */
+  batchSize?: number;
 }
 
 /**

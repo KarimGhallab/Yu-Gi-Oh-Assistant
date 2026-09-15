@@ -12,25 +12,26 @@ const cardImageSchema = z.object({
 });
 
 /**
- * The subset of a YGOPRODeck card the catalog needs. Fields a card kind omits
- * are optional here, and the enum fields are validated so an upstream change is
- * caught rather than stored as free text.
+ * The subset of a YGOPRODeck card the catalog needs. Fields a card kind does
+ * not have are sent as `null` rather than omitted, so they are nullish here;
+ * the enum fields are validated so an upstream change is caught rather than
+ * stored as free text.
  */
 const ygoProdeckCardSchema = z.object({
   id: z.number().int(),
   name: z.string().min(1),
   desc: z.string(),
-  typeline: z.array(z.string()).optional(),
+  typeline: z.array(z.string()).nullish(),
   type: z.enum(CardType),
   frameType: z.enum(FrameType),
-  race: z.string().min(1),
-  attribute: z.enum(CardAttribute).optional(),
-  level: z.number().optional(),
-  atk: z.number().optional(),
-  def: z.number().nullable().optional(),
-  linkval: z.number().optional(),
-  linkmarkers: z.array(z.enum(LinkMarker)).optional(),
-  archetype: z.string().optional(),
+  race: z.string(),
+  attribute: z.enum(CardAttribute).nullish(),
+  level: z.number().nullish(),
+  atk: z.number().nullish(),
+  def: z.number().nullish(),
+  linkval: z.number().nullish(),
+  linkmarkers: z.array(z.enum(LinkMarker)).nullish(),
+  archetype: z.string().nullish(),
   ygoprodeck_url: z.string().min(1),
   card_images: z.array(cardImageSchema).min(1)
 });
