@@ -22,12 +22,11 @@ numbering across specs, so blocking edges stay legible across features.
 | 12 | [Card domain and YGOPRODeck conversion](./12-card-domain-and-ygoprodeck-conversion.md) | Resolved (2026-09-15) | - | [03](../specs/03-card-catalog-ingestion.md) |
 | 13 | [Build and read the local card index](./13-build-and-read-the-card-index.md) | Resolved (2026-09-15) | 12 | [03](../specs/03-card-catalog-ingestion.md) |
 | 14 | [Fetch the card dump and wire the populate command](./14-fetch-dump-and-populate-command.md) | Resolved (2026-09-15) | 12, 13 | [03](../specs/03-card-catalog-ingestion.md) |
-| 15 | [Guard server boot against a stale index](./15-guard-boot-against-stale-index.md) | ready-for-agent | 13 | [03](../specs/03-card-catalog-ingestion.md) |
+| 15 | [Guard server boot against a stale index](./15-guard-boot-against-stale-index.md) | Resolved (2026-09-15) | 13 | [03](../specs/03-card-catalog-ingestion.md) |
 | 16 | [Colorized dev logs and rotating production log files](./16-colorized-dev-logs-and-rotating-production-files.md) | ready-for-agent | - | [01](../specs/01-workspace-foundation.md), [10](../specs/10-local-run-ci-and-docs.md) |
 
 ## Frontier
 
-Spec 02 is complete (tickets 07-10 resolved). Spec 03 is in progress: 12-14 are
-resolved, so 15 is the frontier. Ticket 16 is an independent logging change and
-is also ready. Ticket 11 supersedes the single-origin setup in ticket 06 and spec
-01.
+Spec 02 (tickets 07-10) and spec 03 (tickets 12-15) are complete. The only open
+ticket is 16, the independent logging change. Ticket 11 supersedes the
+single-origin setup in ticket 06 and spec 01.

@@ -8,12 +8,12 @@ bad results from an index built with a different embedding model.
 
 **Blocked by:** 13 - Build and read the local card index.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] A boot check compares the index metadata with the configured embedding
+- [x] A boot check compares the index metadata with the configured embedding
       model and dimensions.
-- [ ] A missing index or a mismatch fails startup with a message naming the
+- [x] A missing index or a mismatch fails startup with a message naming the
       re-run-populate command.
-- [ ] A matching index passes silently.
-- [ ] Tested against a temporary index that disagrees with the configuration;
+- [x] A matching index passes silently.
+- [x] Tested against a temporary index that disagrees with the configuration;
       build and lint pass.
