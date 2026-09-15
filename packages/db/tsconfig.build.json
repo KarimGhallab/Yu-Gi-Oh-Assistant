@@ -9,5 +9,8 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/**/*.test.ts"],
-  "references": [{ "path": "../cards/tsconfig.build.json" }]
+  "references": [
+    { "path": "../cards/tsconfig.build.json" },
+    { "path": "../ollama/tsconfig.build.json" }
+  ]
 }

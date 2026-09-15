@@ -9,14 +9,14 @@ the count, and the metadata back.
 
 **Blocked by:** 12 - Card domain and YGOPRODeck conversion.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] The table carries every field retrieval filters on, plus `language` and the
+- [x] The table carries every field retrieval filters on, plus `language` and the
       composed-document vector.
-- [ ] A build embeds each card's composed document once per language and writes
+- [x] A build embeds each card's composed document once per language and writes
       one row per card per language.
-- [ ] The metadata record holds the dataset version, the embedding model, and the
+- [x] The metadata record holds the dataset version, the embedding model, and the
       dimensions, and can be read back.
-- [ ] Rows, count, and metadata are asserted in a temporary data directory with
+- [x] Rows, count, and metadata are asserted in a temporary data directory with
       the fake Ollama client.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.
