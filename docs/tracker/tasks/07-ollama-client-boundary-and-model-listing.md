@@ -11,19 +11,19 @@ validation, and error scaffolding the embedding and chat operations reuse.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-15)
 
-- [ ] The client is constructed from configuration (the base URL and the default
+- [x] The client is constructed from configuration (the base URL and the default
       models) and lists models, with every response validated against a schema
       before use.
-- [ ] Each listed model carries a structured-output flag derived from the
+- [x] Each listed model carries a structured-output flag derived from the
       capabilities the server reports for it; a model whose capabilities are
       absent is flagged as unsupported.
-- [ ] An unreachable server yields a typed error naming the URL and the fix; a
+- [x] An unreachable server yields a typed error naming the URL and the fix; a
       model reported missing by the details call yields a typed error naming the
       pull command; a schema-invalid response yields a distinct typed error.
-- [ ] The shared request, validation, and error scaffolding is in place for the
+- [x] The shared request, validation, and error scaffolding is in place for the
       embedding and chat operations to reuse.
-- [ ] Tests run the real client against an in-process fake HTTP server; no test
+- [x] Tests run the real client against an in-process fake HTTP server; no test
       needs a running Ollama or external network.
-- [ ] Build and lint pass.
+- [x] Build and lint pass.

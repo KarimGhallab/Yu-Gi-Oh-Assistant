@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Run the full test suite before pushing
+echo "(1) Running the test suite..."
+pnpm test

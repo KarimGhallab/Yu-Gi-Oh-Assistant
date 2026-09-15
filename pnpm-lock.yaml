@@ -154,6 +154,13 @@ importers:
         version: 6.0.3
 
   packages/ollama:
+    dependencies:
+      '@ygo-assistant/utils':
+        specifier: workspace:*
+        version: link:../utils
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: 26.5.1

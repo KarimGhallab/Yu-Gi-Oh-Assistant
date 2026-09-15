@@ -31,6 +31,9 @@ client provides the chat experience.
 
 ## Guardrails
 
+- Git is out of bounds. Never run any git command (status, add, commit, push,
+  branch, hooks): the maintainer handles all staging and committing. This
+  overrides any skill that tells an agent to commit its work.
 - ESM everywhere. Node and pnpm versions are pinned with volta; do not drift.
 - The card index and the raw card dump are gitignored. Never commit them.
 - The server binds to loopback by default. Never expose conversation history

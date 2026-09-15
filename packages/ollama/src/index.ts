@@ -1,8 +1,15 @@
-export { ChatRole } from './types.js';
+export { OllamaClient } from './OllamaClient.js';
+export {
+  OllamaInvalidResponseError,
+  OllamaModelNotFoundError,
+  OllamaUnreachableError
+} from './errors.js';
+export { ChatRole, OllamaCapability } from './types.js';
 export type {
   ChatChunk,
   ChatMessage,
   ChatRequest,
   IOllamaClient,
+  OllamaClientOptions,
   OllamaModel
 } from './types.js';

@@ -18,7 +18,8 @@
     "script:unused-code": "npx knip",
     "script:check-updates": "npx ncu --workspaces --interactive",
     "script:code-circular-dependencies": "npx madge --extensions ts --exclude .d.ts --warning --circular apps/ packages/",
-    "script:workspace-generate-dependency-graph": "npx depcruise . --output-type archi | dot -T svg > dependency-graph.svg"
+    "script:workspace-generate-dependency-graph": "npx depcruise . --output-type archi | dot -T svg > dependency-graph.svg",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",

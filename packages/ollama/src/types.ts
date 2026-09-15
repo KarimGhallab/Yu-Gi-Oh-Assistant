@@ -8,11 +8,31 @@ export enum ChatRole {
 }
 
 /**
+ * Capabilities Ollama can report for an installed model. Only the capabilities
+ * the client reasons about are enumerated.
+ */
+export enum OllamaCapability {
+  Completion = 'completion'
+}
+
+/**
  * A model available on the configured Ollama instance.
  */
 export interface OllamaModel {
   name: string;
   supportsStructuredOutput: boolean;
+}
+
+/**
+ * Configuration the concrete client needs. It mirrors the server's Ollama
+ * configuration so the composition root can pass it through unchanged.
+ */
+export interface OllamaClientOptions {
+  baseUrl: string;
+  embeddingBaseUrl: string;
+  chatModel: string;
+  embeddingModel: string;
+  embeddingDimensions: number;
 }
 
 /**
