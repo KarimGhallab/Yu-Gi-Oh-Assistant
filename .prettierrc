@@ -1,0 +1,22 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "bracketSameLine": true,
+  "arrowParens": "avoid",
+  "importOrder": [
+    "<BUILTIN_MODULES>",
+    "<THIRD_PARTY_MODULES>",
+    "@template-monorepo/(.*)",
+    "^(.*)/shared/(.*)$",
+    "^(.*)/packages/(.*)$",
+    "^(.*)/modules/(.*)$",
+    "^(.*)/app/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+}

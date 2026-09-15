@@ -1,0 +1,32 @@
+{
+  "name": "@template-monorepo/color",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc-watch --noClear --onSuccess \"npm start\"",
+    "watch": "tsc-watch --noClear",
+    "clean-all": "rm -rf dist && rm -rf node_modules",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@11.20.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "tsc-watch": "^7.2.1",
+    "typescript": "^6.0.3"
+  },
+  "volta": {
+    "node": "24.11.0",
+    "pnpm": "11.20.0"
+  }
+}

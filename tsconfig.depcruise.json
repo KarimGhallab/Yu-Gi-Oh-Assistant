@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@template-monorepo/console": ["./apps/console/src"],
+      "@template-monorepo/color": ["./packages/color/src"],
+      "@template-monorepo/utils": ["./packages/utils/src"]
+    }
+  }
+}
