@@ -7,7 +7,7 @@ import { type Message } from '@ygo-assistant/contracts';
  * describe rather than depending on the catalog package, so a stored answer and
  * a live turn are the same thing here.
  */
-type SuggestedCard = NonNullable<Message['cards']>[number];
+export type SuggestedCard = NonNullable<Message['cards']>[number];
 
 interface CardGridProps {
   cards: SuggestedCard[];

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T16:02:00.000Z",
+  "generatedAt": "2026-09-16T16:45:00.000Z",
   "title": "Design System: Yu-Gi-Oh Assistant",
   "extensions": {
     "colorMeta": {
@@ -190,7 +190,12 @@
     },
     "shadows": [],
     "motion": [],
-    "breakpoints": [{ "name": "md", "value": "48rem" }]
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "48rem"
+      }
+    ]
   },
   "components": [
     {
@@ -264,6 +269,14 @@
       "description": "One card an answer was built from: its printed face in a rail-bordered frame at the card's own ratio, its name under it, the whole tile a link to the source the facts came from. A tile whose image will not load keeps the frame and the name, with a quiet note in the frame.",
       "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-frame\"><img class=\"ds-card-image\" src=\"cards/89631139.jpg\" alt=\"\"></span><span class=\"ds-card-name\">Blue-Eyes White Dragon</span></a>",
       "css": ".ds-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; } .ds-card:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-card-frame { display: flex; align-items: center; justify-content: center; aspect-ratio: 421 / 614; border: 1px solid oklch(26.9% 0 none); background: oklch(20.5% 0 none); } .ds-card:hover .ds-card-frame { border-color: oklch(76.9% 0.188 70.08); } .ds-card-image { width: 100%; height: 100%; object-fit: contain; } .ds-card-name { color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-card-missing { color: oklch(55.6% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; padding: 0 8px; text-align: center; }"
+    },
+    {
+      "name": "Composer",
+      "kind": "form",
+      "refersTo": "composer-field",
+      "description": "Where the player asks for cards: a field on a 25% amber hairline, Send as the filled lamp of this surface, and a live status line beside it. A turn that gave way is an alert line above the field.",
+      "html": "<form class=\"ds-composer\"><textarea class=\"ds-composer-field\" rows=\"2\" placeholder=\"Ask for the cards you are looking for\"></textarea><div class=\"ds-composer-row\"><p class=\"ds-composer-status\" role=\"status\"></p><button class=\"ds-composer-send\" type=\"submit\">Send</button></div></form>",
+      "css": ".ds-composer { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid oklch(26.9% 0 none); padding: 24px; background: oklch(14.5% 0 none); } .ds-composer-field { width: 100%; resize: none; border: 1px solid oklch(76.9% 0.188 70.08 / 0.25); border-radius: 4px; background: oklch(20.5% 0 none); color: oklch(97% 0 none); padding: 8px 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-composer-field::placeholder { color: oklch(55.6% 0 none); } .ds-composer-field:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-composer-field:disabled { opacity: 0.6; } .ds-composer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; } .ds-composer-status { margin: 0; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-composer-send { background: oklch(76.9% 0.188 70.08); color: oklch(27.9% 0.077 45.635); border: 0; border-radius: 4px; padding: 6px 10px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; } .ds-composer-send:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-composer-send:disabled { opacity: 0.6; } .ds-composer-alert { margin: 0; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
     }
   ],
   "narrative": {

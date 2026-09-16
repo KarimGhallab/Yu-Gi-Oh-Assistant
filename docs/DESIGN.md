@@ -88,6 +88,18 @@ components:
   message-prose:
     textColor: '{colors.ink}'
     typography: '{typography.body}'
+  composer-field:
+    backgroundColor: '{colors.surface-panel}'
+    textColor: '{colors.ink}'
+    borderColor: 'oklch(76.9% 0.188 70.08 / 0.25)'
+    rounded: '{rounded.base}'
+    padding: '8px 12px'
+    typography: '{typography.body}'
+  composer-field-placeholder:
+    textColor: '{colors.ink-faint}'
+  status-line:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
 ---
 
 # Design System: Yu-Gi-Oh Assistant
@@ -158,7 +170,13 @@ the accent and failure.
 
 **The One Lamp Rule.** Amber marks what is actionable, chosen, or focused, and
 nothing else. No amber headings, no amber decoration, no amber dividers. Its
-rarity is what makes it read as light.
+rarity is what makes it read as light. The conversation screen is where the rule
+is under the most pressure, because it shows the sidebar's New fill, the
+composer's field wash, and the composer's Send fill at once. The wash is a wash
+rather than a fill, and the two fills are the primary action of two different
+regions; whether one screen should carry two filled controls at all is
+undecided. Until it is, two fills in two regions is the limit, and a wash is the
+whisper that does not count as a lamp.
 
 **The No Second Accent Rule.** There is no secondary or tertiary colour. Failure
 is the only exception, it is text only, and it never becomes a fill.
@@ -291,6 +309,23 @@ level deep.
   acts.
 - **Focus:** the same 2px Halo Amber outline at 2px offset. There is no inner
   glow and no border-colour change.
+
+### Composer
+
+- **Where:** docked at the bottom edge of the conversation, below the message
+  area, separated by a 1px Rail Grey hairline on its top edge. It is the only
+  thing on that surface that does not scroll.
+- **Field:** a textarea on a Bench Slate surface, 4px radius, one hairline of
+  25% amber rather than a rail, Body text in Bone White, Dust Grey placeholder.
+  Focus draws the same 2px Halo Amber outline as every other control, and the
+  border does not change.
+- **Send:** the primary button, the filled lamp of this surface. It is out of
+  action while a turn runs, and so is the field.
+- **Status:** Body, Ash Grey, sitting beside the Send control as a live region.
+  It says the turn is running, and what the search was understood as; it is empty
+  when nothing is running.
+- **Failure:** the alert line above the field, because the composer is the control
+  the failed turn came from. The field stays usable, so the player can ask again.
 
 ### Notice Panel (empty state, missing conversation, failure)
 

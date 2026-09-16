@@ -61,6 +61,13 @@ export interface ContractSchema<T> {
 }
 
 /**
+ * A failure the client reports when it cannot read what the server answered,
+ * whether the body was not JSON at all or a frame the contracts do not describe.
+ */
+export const malformedAnswer = (cause?: unknown): ApiError =>
+  new ApiError(ApiFailureKind.Malformed, UNREADABLE_MESSAGE, { cause });
+
+/**
  * The one place the client talks to the server. A path is resolved against the
  * configured base URL, and the answer is validated with the contract schema
  * before it is handed back, so nothing downstream sees a shape the shared
@@ -84,10 +91,33 @@ export async function apiRequest<T>(
   try {
     return schema.parse(payload);
   } catch (error) {
-    throw new ApiError(ApiFailureKind.Malformed, UNREADABLE_MESSAGE, {
-      cause: error
+    throw malformedAnswer(error);
+  }
+}
+
+/**
+ * The same request when its answer arrives in pieces rather than as one body.
+ * Only reaching the server and being answered is settled here; what the pieces
+ * say is the caller's to read, so a turn can be refused exactly like any other
+ * request before any of it is read.
+ */
+export async function apiStream(
+  path: string,
+  init: RequestInit
+): Promise<ReadableStream<Uint8Array>> {
+  const response = await send(path, init);
+
+  if (!response.ok) {
+    throw new ApiError(ApiFailureKind.Refused, await refusalMessage(response), {
+      status: response.status
     });
   }
+
+  if (response.body === null) {
+    throw malformedAnswer();
+  }
+
+  return response.body;
 }
 
 async function send(

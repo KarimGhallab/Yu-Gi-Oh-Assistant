@@ -40,7 +40,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 30  | [A reopened conversation returns its turns' cards](./30-a-reopened-conversation-returns-its-cards.md)            | Resolved (2026-09-16) | -          | [08](../specs/08-chat-client.md)                                                      |
 | 31  | [The chat frame, the sidebar, and the conversation route](./31-the-chat-frame-the-sidebar-and-the-route.md)      | Resolved (2026-09-16) | 29         | [08](../specs/08-chat-client.md)                                                      |
 | 32  | [A conversation reopens with its history](./32-a-conversation-reopens-with-its-history.md)                       | Resolved (2026-09-16) | 30, 31     | [08](../specs/08-chat-client.md)                                                      |
-| 33  | [The client streams a turn](./33-the-client-streams-a-turn.md)                                                   | `ready-for-agent`     | 32         | [08](../specs/08-chat-client.md)                                                      |
+| 33  | [The client streams a turn](./33-the-client-streams-a-turn.md)                                                   | Resolved (2026-09-16) | 32         | [08](../specs/08-chat-client.md)                                                      |
 | 34  | [Rename and delete a conversation from the sidebar](./34-rename-and-delete-a-conversation-from-the-sidebar.md)   | `ready-for-agent`     | 31         | [08](../specs/08-chat-client.md)                                                      |
 | 35  | [The chat works without a mouse](./35-the-chat-works-without-a-mouse.md)                                         | `ready-for-agent`     | 33, 34     | [08](../specs/08-chat-client.md)                                                      |
 
@@ -49,9 +49,9 @@ numbering across specs, so blocking edges stay legible across features.
 Specs 04 (Retrieval engine), 05 (Conversation store and CRUD), 06
 (Prompt-to-filter parsing), and 07 (Grounded answer and streamed turn) are fully
 landed: 17 through 28 are resolved. Spec 08 (Chat client) is ticketed as 29
-through 35, and 29 through 32 are resolved. The frontier is 33, streaming a turn
-into the history that now renders, and 34, renaming and deleting from the
-sidebar, which 31 unblocked; 35 closes the feature once both are done.
+through 35, and 29 through 33 are resolved. The frontier is 34, renaming and
+deleting from the sidebar, which 31 unblocked; 35 closes the feature once it is
+done.
 
 Spec 09 (Transparent controls) follows 08 and will need the model listing a
 picker reads: there is no models endpoint yet, so that spec should ticket one.

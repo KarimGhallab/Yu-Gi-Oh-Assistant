@@ -1,8 +1,16 @@
-import { QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  type TurnEvent,
+  TurnEventName,
+  TurnStage,
+  TurnStatus,
+  turnEventSchema
+} from '@ygo-assistant/contracts';
 
 import App from './App.js';
 import { createQueryClient } from './queryClient.js';
@@ -134,7 +142,58 @@ const stubFetch = (handler: FetchHandler): ReturnType<typeof vi.fn> =>
 const requestedUrls = (fetchMock: ReturnType<typeof vi.fn>): string[] =>
   fetchMock.mock.calls.map(call => String(call[0]));
 
-const renderApp = (path: string): void => {
+interface TurnStream {
+  response: Response;
+  push(event: TurnEvent): void;
+  pushText(text: string): void;
+  close(): void;
+}
+
+/**
+ * The turn a request answers with, under the test's own hand: the server writes
+ * frames as it works, so the test writes them too, and can look at the screen
+ * between them.
+ */
+const turnStream = (): TurnStream => {
+  const { readable, writable } = new TransformStream<Uint8Array>();
+  const writer = writable.getWriter();
+  const write = (text: string): void => {
+    void writer.write(new TextEncoder().encode(text));
+  };
+
+  return {
+    response: new Response(readable, {
+      headers: { 'content-type': 'text/event-stream' }
+    }),
+    push: event =>
+      write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`),
+    pushText: write,
+    close: () => {
+      void writer.close();
+    }
+  };
+};
+
+const send = async (text: string): Promise<void> => {
+  await userEvent.type(
+    await screen.findByRole('textbox', { name: 'Your request' }),
+    text
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+};
+
+/**
+ * A frame the server would write. The frame is put through the contracts on its
+ * way out, the way the server puts it through them on its way in, so a frame the
+ * client could not read is a failing test rather than a silent one.
+ */
+const arrives = async (stream: TurnStream, frame: unknown): Promise<void> => {
+  await act(async () => {
+    stream.push(turnEventSchema.parse(frame));
+  });
+};
+
+const renderApp = (path: string): QueryClient => {
   // The client the app runs on, so what the tests see is what a player sees.
   const client = createQueryClient();
 
@@ -145,6 +204,8 @@ const renderApp = (path: string): void => {
       </MemoryRouter>
     </QueryClientProvider>
   );
+
+  return client;
 };
 
 describe('the chat', () => {
@@ -555,6 +616,521 @@ describe('the chat', () => {
     await userEvent.tab();
 
     expect(screen.getByRole('link', { name: 'Dark Magician' })).toHaveFocus();
+  });
+
+  it('sends what the player typed and shows it before the server confirms it', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, []))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+    await send('A cheap way to stop my opponent attacking');
+
+    expect(
+      screen.getByText('A cheap way to stop my opponent attacking')
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          text: 'A cheap way to stop my opponent attacking'
+        })
+      })
+    );
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+
+    expect(
+      screen.getAllByText('A cheap way to stop my opponent attacking')
+    ).toHaveLength(1);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('shows the turn as the server reports it, with its cards and its answer in pieces', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    expect(within(history).getByText('I want a dragon')).toBeInTheDocument();
+
+    await arrives(turn, {
+      type: TurnEventName.Status,
+      status: TurnStatus.FreeTextOnly
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'No filters were understood'
+    );
+
+    await arrives(turn, {
+      type: TurnEventName.Cards,
+      cards: [BLUE_EYES, DARK_MAGICIAN]
+    });
+    const cards = within(history).getByRole('list', {
+      name: 'Suggested cards'
+    });
+    expect(
+      within(cards)
+        .getAllByRole('listitem')
+        .map(card => card.textContent)
+    ).toEqual(['Blue-Eyes White Dragon', 'Dark Magician']);
+
+    // The filters a parse found are read and validated, and nothing this client
+    // renders yet: showing them is feature 09.
+    await arrives(turn, {
+      type: TurnEventName.Filters,
+      filters: [],
+      query: 'I want a dragon'
+    });
+
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'The biggest body '
+    });
+    expect(within(history).getByRole('log')).toHaveTextContent(
+      'The biggest body'
+    );
+
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'is Blue-Eyes White Dragon.'
+    });
+    expect(within(history).getByRole('log')).toHaveTextContent(
+      'The biggest body is Blue-Eyes White Dragon.'
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('replaces the turn it built with the one the server stored', async () => {
+    const turn = turnStream();
+    let title: string | null = null;
+    let stored: MessageFixture[] = [];
+    const fetchMock = stubFetch((url, init) => {
+      if (init?.method === 'POST') {
+        return turn.response;
+      }
+
+      const conversation = createConversation(2, { title });
+
+      return url === '/api/conversations'
+        ? json([conversation])
+        : json(withMessages(conversation, stored));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    await arrives(turn, { type: TurnEventName.Cards, cards: [BLUE_EYES] });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'Blue-Eyes is the biggest body.'
+    });
+
+    // The turn is stored as it finishes, and the first message is what named the
+    // conversation, so this is what the server holds when the client asks again.
+    title = 'I want a dragon';
+    stored = [
+      playerMessage(11, 'I want a dragon'),
+      assistantMessage(12, 'Blue-Eyes is the biggest body.', [BLUE_EYES])
+    ];
+    await arrives(turn, { type: TurnEventName.AnswerEnd });
+    await arrives(turn, { type: TurnEventName.TurnEnd, messageId: 12 });
+
+    expect(
+      await screen.findByRole('heading', { name: 'I want a dragon' })
+    ).toBeInTheDocument();
+    expect(
+      await within(history).findByText('Blue-Eyes is the biggest body.')
+    ).toBeInTheDocument();
+    expect(within(history).getAllByText('I want a dragon')).toHaveLength(1);
+    expect(
+      within(history).getAllByText('Blue-Eyes is the biggest body.')
+    ).toHaveLength(1);
+    expect(
+      requestedUrls(fetchMock).filter(url => url === '/api/conversations/2')
+    ).toHaveLength(2);
+  });
+
+  it('names the stage that failed and leaves no half-written answer', async () => {
+    const turn = turnStream();
+    let stored: MessageFixture[] = [];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'POST') {
+          return turn.response;
+        }
+
+        const conversation = createConversation(2, { title: null });
+
+        return url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation, stored));
+      })
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'Blue-Eyes is '
+    });
+    expect(within(history).getByText(/Blue-Eyes is/)).toBeInTheDocument();
+
+    // The turn gives way at the answer stage: the question was stored, the prose
+    // was not, and the server hands back its account of what happened.
+    stored = [playerMessage(11, 'I want a dragon')];
+    await arrives(turn, {
+      type: TurnEventName.Error,
+      stage: TurnStage.Answer,
+      message: 'The model stopped answering'
+    });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The answer could not be written: The model stopped answering'
+    );
+    expect(within(history).queryByText(/Blue-Eyes is/)).not.toBeInTheDocument();
+    expect(within(history).getAllByText('I want a dragon')).toHaveLength(1);
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toBeEnabled();
+  });
+
+  it("surfaces the server's own message when a turn is refused before it starts", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'POST') {
+          return json({ error: 'The model qwen3:4b is not installed' }, 503);
+        }
+
+        return url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, []));
+      })
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The model qwen3:4b is not installed'
+    );
+    expect(screen.getByText('I want a dragon')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toBeEnabled();
+  });
+
+  it('takes one request at a time and says so while the turn runs', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, []))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'The assistant is working'
+    );
+    expect(
+      screen.getByRole('textbox', { name: 'Your request' })
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(
+      fetchMock.mock.calls.filter(call => call[1]?.method === 'POST')
+    ).toHaveLength(1);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('shows the answer and no grid when the search found no cards', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('What about something that comes back from the graveyard?');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    await arrives(turn, { type: TurnEventName.Cards, cards: [] });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'I could not find a card that matches that request.'
+    });
+
+    expect(
+      within(history).getByText(/could not find a card/)
+    ).toBeInTheDocument();
+    expect(
+      within(history).queryByRole('list', { name: 'Suggested cards' })
+    ).not.toBeInTheDocument();
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('announces the answer as it is written, a piece at a time', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'Blue-Eyes '
+    });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'is the biggest body.'
+    });
+
+    // What is announced is each piece as it arrives, rather than the answer
+    // growing and being read out again from the beginning every time.
+    const announced = within(history).getByRole('log');
+
+    expect(
+      Array.from(announced.querySelectorAll('span')).map(
+        piece => piece.textContent
+      )
+    ).toEqual(['Blue-Eyes ', 'is the biggest body.']);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('asks from an example prompt in a conversation with nothing in it', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) => {
+      if (init?.method === 'POST') {
+        return turn.response;
+      }
+
+      return url === '/api/conversations'
+        ? json([GRAVEYARD])
+        : json(withMessages(GRAVEYARD, []));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', {
+        name: 'Something to support a Red-Eyes deck'
+      })
+    );
+
+    expect(
+      screen.getAllByText('Something to support a Red-Eyes deck')
+    ).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ text: 'Something to support a Red-Eyes deck' })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('reads a frame the server split across pieces', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const frame = `event: cards\ndata: ${JSON.stringify({
+      type: TurnEventName.Cards,
+      cards: [BLUE_EYES]
+    })}\n\n`;
+
+    await act(async () => {
+      turn.pushText(frame.slice(0, 20));
+    });
+
+    expect(
+      within(history).queryByRole('list', { name: 'Suggested cards' })
+    ).not.toBeInTheDocument();
+
+    await act(async () => {
+      turn.pushText(frame.slice(20));
+    });
+
+    expect(
+      await within(history).findByRole('list', { name: 'Suggested cards' })
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('refuses a frame the contracts do not describe', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'POST') {
+          return turn.response;
+        }
+
+        return url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, []));
+      })
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+
+    await act(async () => {
+      turn.pushText(
+        'event: cards\ndata: {"type":"cards","cards":[{"id":"nope"}]}\n\n'
+      );
+    });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The server answered with something this app does not understand.'
+    );
+  });
+
+  it('does not show the question twice when the conversation is read mid-turn', async () => {
+    const turn = turnStream();
+    let stored: MessageFixture[] = [];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'POST') {
+          return turn.response;
+        }
+
+        return url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored));
+      })
+    );
+
+    const client = renderApp('/c/2');
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    expect(within(history).getAllByText('I want a dragon')).toHaveLength(1);
+
+    // The server stores the question before the turn runs, so a read of the
+    // conversation while it is still running carries the same question back.
+    stored = [playerMessage(11, 'I want a dragon')];
+    await act(async () => {
+      await client.refetchQueries();
+    });
+
+    expect(within(history).getAllByText('I want a dragon')).toHaveLength(1);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('stops the turn when the player opens another conversation', async () => {
+    const turn = turnStream();
+    let signalled: AbortSignal | null | undefined;
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'POST') {
+          signalled = init.signal;
+          return turn.response;
+        }
+
+        return url === '/api/conversations'
+          ? json([GRAVEYARD, UNTITLED])
+          : json(withMessages(GRAVEYARD, []));
+      })
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+    await screen.findByRole('region', { name: 'Messages' });
+
+    await userEvent.click(
+      await screen.findByRole('link', { name: 'New conversation' })
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
+    ).toBeInTheDocument();
+    expect(signalled?.aborted).toBe(true);
   });
 
   it('reaches the conversations without a mouse', async () => {
