@@ -97,6 +97,9 @@ components:
     typography: '{typography.body}'
   composer-field-placeholder:
     textColor: '{colors.ink-faint}'
+  nav-row-action:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
   status-line:
     textColor: '{colors.ink-muted}'
     typography: '{typography.body}'
@@ -271,6 +274,27 @@ level deep.
 - **Default / Hover / Active:** Ash Grey text on the panel; hover lifts the text
   to Bone White over a 60% Rail Grey wash; the open conversation takes the Rail
   Grey fill at full strength with Bone White text and `aria-current="page"`.
+- **A row's actions:** renaming and deleting live on the row they belong to, as
+  two text controls in Ash Grey that lift to Bone White when the row is pointed
+  at or holds focus, and named for their conversation so a screen reader hears
+  "Rename Graveyard toolbox" rather than a list of Renames. They are quiet at
+  rest and always in the tab order, and always announced, because opacity is not
+  what assistive technology reads.
+- **Renaming:** the row becomes a field holding the name it has, with Save and
+  Cancel. Opening it moves focus into the field and selects the name, so typing
+  replaces it and Enter saves it; Escape, Cancel, or an empty name leaves the
+  name it had and puts focus back on the row.
+- **Deleting:** the one irreversible action asks first, in the row itself rather
+  than in a dialog: the row asks the question and offers Delete and Cancel, the
+  confirmation is what the Delete control is described by, and focus moves to it.
+  Nothing else in the app is confirmed. What focus returns to when the row is
+  gone is the conversation that took its place in the list, or the control that
+  starts a new one when there is no list left.
+- **The skip:** on a conversation address the first thing focus finds is a way
+  past the list, because the list is as long as the player's history and every row
+  has controls of its own. It is a Bench Slate panel that appears over the frame
+  while it holds focus, and it lands on the request field, or on the conversation
+  itself when there is nothing to ask in yet.
 - **Mobile treatment:** identical, because the sidebar stacks rather than
   collapsing into a drawer. The list scrolls inside the sidebar's 16rem cap.
 

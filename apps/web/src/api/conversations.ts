@@ -6,7 +6,7 @@ import {
   conversationWithMessagesSchema
 } from '@ygo-assistant/contracts';
 
-import { apiRequest } from './client.js';
+import { apiRequest, apiSend } from './client.js';
 
 /**
  * The conversation endpoints the chat reads and writes. A conversation is
@@ -30,4 +30,27 @@ export const createConversation = (): Promise<Conversation> =>
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({})
+  });
+
+/**
+ * Names a conversation. Only the title is sent: renaming is not where the
+ * language or the model is chosen, and an omitted field is left alone.
+ */
+export const renameConversation = (
+  id: string,
+  title: string
+): Promise<Conversation> =>
+  apiRequest(
+    `/api/conversations/${encodeURIComponent(id)}`,
+    conversationSchema,
+    {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ title })
+    }
+  );
+
+export const deleteConversation = (id: string): Promise<void> =>
+  apiSend(`/api/conversations/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
   });

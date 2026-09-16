@@ -1,5 +1,12 @@
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -602,8 +609,13 @@ describe('the chat', () => {
     renderApp('/c/2');
     await screen.findByRole('region', { name: 'Messages' });
 
-    // The way in is the brand, the control that starts a conversation, and the
-    // conversation that is open, so the cards the answer suggested come next.
+    // The first stop is the way past the sidebar, and then the way in is the
+    // brand, the control that starts a conversation, the conversation that is
+    // open and the two things that can be done to it, so the cards the answer
+    // suggested come next.
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -863,9 +875,7 @@ describe('the chat', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'The assistant is working'
     );
-    expect(
-      screen.getByRole('textbox', { name: 'Your request' })
-    ).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -1131,6 +1141,407 @@ describe('the chat', () => {
       await screen.findByRole('heading', { name: 'Graveyard toolbox' })
     ).toBeInTheDocument();
     expect(signalled?.aborted).toBe(true);
+  });
+
+  it('renames a conversation from the sidebar', async () => {
+    let title: string | null = 'Graveyard toolbox';
+    const fetchMock = stubFetch((url, init) => {
+      if (init?.method === 'PATCH') {
+        title = (JSON.parse(String(init.body)) as { title: string }).title;
+        return json(createConversation(2, { title }));
+      }
+
+      const conversation = createConversation(2, { title });
+
+      return url === '/api/conversations'
+        ? json([conversation])
+        : json(withMessages(conversation));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
+    );
+
+    const field = screen.getByRole('textbox', { name: 'Conversation name' });
+    expect(field).toHaveValue('Graveyard toolbox');
+
+    await userEvent.clear(field);
+    await userEvent.type(field, 'Banish toolbox');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Banish toolbox' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Banish toolbox' })
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ title: 'Banish toolbox' })
+      })
+    );
+  });
+
+  it('keeps the old name and says what went wrong when a rename fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'PATCH') {
+          return json({ error: 'That name is not allowed' }, 400);
+        }
+
+        const conversation = createConversation(2, {
+          title: 'Graveyard toolbox'
+        });
+
+        return url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation));
+      })
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
+    );
+
+    const field = screen.getByRole('textbox', { name: 'Conversation name' });
+    await userEvent.clear(field);
+    await userEvent.type(field, 'Nope');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'That name is not allowed'
+    );
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
+    ).toBeInTheDocument();
+  });
+
+  it('asks before deleting a conversation, and removes it when told to', async () => {
+    let listed = [GRAVEYARD, UNTITLED];
+    const fetchMock = stubFetch((url, init) => {
+      if (init?.method === 'DELETE') {
+        listed = listed.filter(conversation => conversation.id !== 1);
+        return new Response(null, { status: 204 });
+      }
+
+      return url === '/api/conversations'
+        ? json(listed)
+        : json(withMessages(GRAVEYARD));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete New conversation' })
+    );
+
+    // Nothing is deleted until the deletion has been confirmed, and the
+    // confirmation is what the deletion is named for.
+    expect(screen.getByText('Delete this conversation?')).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(call => call[1]?.method === 'DELETE')
+    ).toBe(false);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete New conversation' })
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('link', { name: 'New conversation' })
+      ).not.toBeInTheDocument();
+    });
+
+    // The player was reading one conversation and deleted another, so they are
+    // left where they were, on the conversation that took its place.
+    expect(
+      screen.getByRole('heading', { name: 'Graveyard toolbox' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
+    ).toHaveFocus();
+  });
+
+  it('leaves the conversation alone and says what went wrong when a delete fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'DELETE'
+          ? json({ error: 'The conversation is in use' }, 409)
+          : url === '/api/conversations'
+            ? json([GRAVEYARD])
+            : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete Graveyard toolbox' })
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete Graveyard toolbox' })
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The conversation is in use'
+    );
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
+    ).toHaveFocus();
+  });
+
+  it('renames from the keyboard', async () => {
+    let title: string | null = 'Graveyard toolbox';
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'PATCH') {
+          title = (JSON.parse(String(init.body)) as { title: string }).title;
+          return json(createConversation(2, { title }));
+        }
+
+        const conversation = createConversation(2, { title });
+
+        return url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation));
+      })
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
+    );
+
+    const field = screen.getByRole('textbox', { name: 'Conversation name' });
+    expect(field).toHaveFocus();
+
+    await userEvent.clear(field);
+    await userEvent.type(field, 'Banish toolbox{Enter}');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Banish toolbox' })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByRole('link', { name: 'Banish toolbox' })
+      ).toHaveFocus();
+    });
+  });
+
+  it('leaves a rename alone when it is called off', async () => {
+    const fetchMock = stubFetch(url =>
+      url === '/api/conversations'
+        ? json([GRAVEYARD])
+        : json(withMessages(GRAVEYARD))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
+    );
+    await userEvent.keyboard('{Escape}');
+
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
+    ).toHaveFocus();
+    expect(fetchMock.mock.calls.some(call => call[1]?.method === 'PATCH')).toBe(
+      false
+    );
+  });
+
+  it('leaves a conversation alone when the deletion is called off', async () => {
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'DELETE'
+        ? new Response(null, { status: 204 })
+        : url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete Graveyard toolbox' })
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(call => call[1]?.method === 'DELETE')
+    ).toBe(false);
+  });
+
+  it('moves off the conversation that is deleted', async () => {
+    let listed = [GRAVEYARD];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'DELETE') {
+          listed = [];
+          return new Response(null, { status: 204 });
+        }
+
+        return url === '/api/conversations'
+          ? json(listed)
+          : json(withMessages(GRAVEYARD));
+      })
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete Graveyard toolbox' })
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete Graveyard toolbox' })
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Start a conversation' })
+    ).toBeInTheDocument();
+  });
+
+  it("reaches a conversation's actions without a mouse", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('link', { name: 'Graveyard toolbox' });
+
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+
+    expect(
+      screen.getByRole('button', { name: 'Rename Graveyard toolbox' })
+    ).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(
+      screen.getByRole('button', { name: 'Delete Graveyard toolbox' })
+    ).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+
+    expect(screen.getByText('Delete this conversation?')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Delete Graveyard toolbox' })
+    ).toHaveFocus();
+  });
+
+  it('reaches the request without passing every conversation', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('textbox', { name: 'Your request' });
+
+    await userEvent.tab();
+
+    const skip = screen.getByRole('link', {
+      name: 'Skip to the conversation'
+    });
+    expect(skip).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toHaveFocus();
+  });
+
+  it('leaves the keyboard where the next request will be typed', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : url === '/api/conversations'
+            ? json([GRAVEYARD])
+            : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('I want a dragon');
+
+    const field = screen.getByRole('textbox', { name: 'Your request' });
+    expect(field).toHaveFocus();
+
+    // A player can write the next request while this one is still answering.
+    await userEvent.type(field, 'and a trap card');
+    expect(field).toHaveValue('and a trap card');
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('leaves the keyboard on the row it renamed', async () => {
+    let title: string | null = 'Graveyard toolbox';
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'PATCH') {
+          title = (JSON.parse(String(init.body)) as { title: string }).title;
+          return json(createConversation(2, { title }));
+        }
+
+        const conversation = createConversation(2, { title });
+
+        return url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation));
+      })
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
+    );
+
+    const name = screen.getByRole('textbox', { name: 'Conversation name' });
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Banish toolbox');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('link', { name: 'Banish toolbox' })
+      ).toHaveFocus();
+    });
   });
 
   it('reaches the conversations without a mouse', async () => {

@@ -1,7 +1,7 @@
-import { type SubmitEvent, useState } from 'react';
+import { type SubmitEvent, useRef, useState } from 'react';
 
 const FIELD_CLASS =
-  'w-full resize-none rounded border border-amber-500/25 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
+  'w-full resize-none rounded border border-amber-500/25 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 const SEND_CLASS =
   'shrink-0 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
@@ -19,8 +19,11 @@ interface ComposerProps {
  * holds the two things that are about the request rather than about the history:
  * the turn that is running, and the turn that gave way.
  *
- * The field and the control are out of action while a turn runs, and the
- * announcement says so, so a second request cannot be started by mistake.
+ * The send control is out of action while a turn runs, and the announcement
+ * says so, so a second request cannot be started by mistake. The field itself
+ * stays usable: a player can write the next request while the answer arrives,
+ * and the keyboard is left where it can type rather than on a control that has
+ * just gone dead.
  */
 export default function Composer({
   onSend,
@@ -29,6 +32,7 @@ export default function Composer({
   failure
 }: ComposerProps) {
   const [text, setText] = useState('');
+  const field = useRef<HTMLTextAreaElement>(null);
   const ready = text.trim().length > 0 && !running;
 
   const submit = (event: SubmitEvent<HTMLFormElement>): void => {
@@ -41,6 +45,7 @@ export default function Composer({
     const request = text.trim();
     setText('');
     onSend(request);
+    field.current?.focus();
   };
 
   return (
@@ -58,10 +63,10 @@ export default function Composer({
       </label>
       <textarea
         id="prompt"
+        ref={field}
         rows={2}
         value={text}
         onChange={event => setText(event.target.value)}
-        disabled={running}
         placeholder="Ask for the cards you are looking for"
         className={FIELD_CLASS}
       />

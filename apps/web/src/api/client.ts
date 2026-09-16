@@ -96,6 +96,21 @@ export async function apiRequest<T>(
 }
 
 /**
+ * A request whose answer is its status and nothing else, which is what a delete
+ * answers with. A 204 is a success here rather than a body the client cannot
+ * read, so it does not go through the single-body path.
+ */
+export async function apiSend(path: string, init: RequestInit): Promise<void> {
+  const response = await send(path, init);
+
+  if (!response.ok) {
+    throw new ApiError(ApiFailureKind.Refused, await refusalMessage(response), {
+      status: response.status
+    });
+  }
+}
+
+/**
  * The same request when its answer arrives in pieces rather than as one body.
  * Only reaching the server and being answered is settled here; what the pieces
  * say is the caller's to read, so a turn can be refused exactly like any other

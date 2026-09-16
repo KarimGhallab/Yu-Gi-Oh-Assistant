@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T16:45:00.000Z",
+  "generatedAt": "2026-09-16T18:15:00.000Z",
   "title": "Design System: Yu-Gi-Oh Assistant",
   "extensions": {
     "colorMeta": {
@@ -277,6 +277,21 @@
       "description": "Where the player asks for cards: a field on a 25% amber hairline, Send as the filled lamp of this surface, and a live status line beside it. A turn that gave way is an alert line above the field.",
       "html": "<form class=\"ds-composer\"><textarea class=\"ds-composer-field\" rows=\"2\" placeholder=\"Ask for the cards you are looking for\"></textarea><div class=\"ds-composer-row\"><p class=\"ds-composer-status\" role=\"status\"></p><button class=\"ds-composer-send\" type=\"submit\">Send</button></div></form>",
       "css": ".ds-composer { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid oklch(26.9% 0 none); padding: 24px; background: oklch(14.5% 0 none); } .ds-composer-field { width: 100%; resize: none; border: 1px solid oklch(76.9% 0.188 70.08 / 0.25); border-radius: 4px; background: oklch(20.5% 0 none); color: oklch(97% 0 none); padding: 8px 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-composer-field::placeholder { color: oklch(55.6% 0 none); } .ds-composer-field:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-composer-field:disabled { opacity: 0.6; } .ds-composer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; } .ds-composer-status { margin: 0; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-composer-send { background: oklch(76.9% 0.188 70.08); color: oklch(27.9% 0.077 45.635); border: 0; border-radius: 4px; padding: 6px 10px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; } .ds-composer-send:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-composer-send:disabled { opacity: 0.6; } .ds-composer-alert { margin: 0; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Nav Row Action",
+      "kind": "button",
+      "refersTo": "nav-row-action",
+      "description": "A conversation's own controls, renaming and deleting, quiet until the row is pointed at or holds focus. Always in the tab order and always announced, since opacity is not what assistive technology reads.",
+      "html": "<span class=\"ds-nav-row-actions\"><a class=\"ds-nav-row\" href=\"#\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\">Rename</button><button class=\"ds-nav-row-action\" type=\"button\">Delete</button></span>",
+      "css": ".ds-nav-row-actions { display: flex; align-items: center; gap: 4px; } .ds-nav-row-action { flex-shrink: 0; border: 0; background: none; padding: 0 4px; border-radius: 4px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; opacity: 0; } .ds-nav-row-actions:hover .ds-nav-row-action, .ds-nav-row-actions:focus-within .ds-nav-row-action { opacity: 1; } .ds-nav-row-action:hover { color: oklch(97% 0 none); } .ds-nav-row-action:focus-visible { opacity: 1; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Skip Link",
+      "kind": "nav",
+      "description": "The first thing focus finds on a conversation, so the keyboard is not walked down the whole conversation list. Hidden until it holds focus, then a Bench Slate panel over the frame.",
+      "html": "<a class=\"ds-skip\" href=\"#conversation\">Skip to the conversation</a>",
+      "css": ".ds-skip { position: absolute; left: 16px; top: 16px; z-index: 10; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-radius: 4px; background: oklch(20.5% 0 none); padding: 8px 12px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; } .ds-skip:focus-visible { width: auto; height: auto; clip-path: none; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
     }
   ],
   "narrative": {

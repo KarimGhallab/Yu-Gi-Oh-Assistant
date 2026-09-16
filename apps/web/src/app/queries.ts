@@ -14,8 +14,10 @@ import type {
 
 import {
   createConversation,
+  deleteConversation,
   getConversation,
-  listConversations
+  listConversations,
+  renameConversation
 } from '../api/conversations.js';
 
 /**
@@ -85,6 +87,50 @@ export function useStartConversation(): UseMutationResult<
       // Refreshing the list is the sidebar's business, and the player is on
       // their way to the conversation already: waiting for the list here would
       // hold the navigation behind a request nobody is looking at.
+      void refreshConversations(client);
+    }
+  });
+}
+
+export interface RenameConversationRequest {
+  id: string;
+  title: string;
+}
+
+/**
+ * Renames a conversation and refreshes what reads conversations, which is both
+ * the list it is named in and the page it is open on.
+ */
+export function useRenameConversation(): UseMutationResult<
+  Conversation,
+  Error,
+  RenameConversationRequest
+> {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: RenameConversationRequest) =>
+      renameConversation(request.id, request.title),
+    onSuccess: () => {
+      void refreshConversations(client);
+    }
+  });
+}
+
+/**
+ * Deletes a conversation and refreshes the list that showed it. Where the player
+ * ends up if it was the open one belongs to the surface that asked.
+ */
+export function useDeleteConversation(): UseMutationResult<
+  void,
+  Error,
+  string
+> {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteConversation(id),
+    onSuccess: () => {
       void refreshConversations(client);
     }
   });

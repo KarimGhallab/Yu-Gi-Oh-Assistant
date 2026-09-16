@@ -30,7 +30,7 @@ export default function ExamplePrompts({ onChoose }: ExamplePromptsProps) {
             <button
               type="button"
               onClick={() => onChoose(prompt)}
-              className="rounded text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
+              className="rounded text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
               {prompt}
             </button>
           </li>
