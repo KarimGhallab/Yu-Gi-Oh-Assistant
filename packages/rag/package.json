@@ -26,7 +26,8 @@
   "dependencies": {
     "@ygo-assistant/cards": "workspace:*",
     "@ygo-assistant/db": "workspace:*",
-    "@ygo-assistant/ollama": "workspace:*"
+    "@ygo-assistant/ollama": "workspace:*",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "26.5.1",
