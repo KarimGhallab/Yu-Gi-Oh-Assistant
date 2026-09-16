@@ -17,6 +17,7 @@ import {
 import {
   type TurnEvent,
   TurnEventName,
+  TurnStage,
   TurnStatus,
   conversationWithMessagesSchema,
   turnEventSchema
@@ -28,12 +29,13 @@ import {
   databasePath,
   openAppStore
 } from '@ygo-assistant/db';
-import type { ILogger } from '@ygo-assistant/logger';
+import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type {
   ChatChunk,
   IOllamaClient,
   OllamaModel
 } from '@ygo-assistant/ollama';
+import { OllamaUnreachableError } from '@ygo-assistant/ollama';
 import { FakeOllamaClient } from '@ygo-assistant/test-support';
 
 import { loadConfig } from '../../config/index.js';
@@ -42,6 +44,7 @@ import { createServer } from '../server.js';
 const DIMENSIONS = 3;
 const EMBEDDING_MODEL = 'nomic-embed-text:latest';
 const CHAT_MODEL = 'llama3.1:8b';
+const BASE_URL = 'http://127.0.0.1:11434';
 const REQUEST = 'light monsters that banish cards';
 const QUERY_VECTOR = [1, 0, 0];
 
@@ -110,6 +113,34 @@ const silentLogger: ILogger = {
   info: () => {},
   warn: () => {},
   error: () => {}
+};
+
+interface LogRecord {
+  level: string;
+  message: string;
+  context: LogContext | undefined;
+}
+
+const createRecordingLogger = (): {
+  logger: ILogger;
+  records: LogRecord[];
+} => {
+  const records: LogRecord[] = [];
+  const record =
+    (level: string) =>
+    (message: string, context?: LogContext): void => {
+      records.push({ level, message, context });
+    };
+
+  return {
+    logger: {
+      debug: record('debug'),
+      info: record('info'),
+      warn: record('warn'),
+      error: record('error')
+    },
+    records
+  };
 };
 
 interface Frame {
@@ -208,7 +239,7 @@ describe('turn routes', () => {
     });
   };
 
-  const app = (client: IOllamaClient) =>
+  const app = (client: IOllamaClient, logger: ILogger = silentLogger) =>
     createServer({
       config: loadConfig({
         DATA_DIR: dataDir,
@@ -218,7 +249,7 @@ describe('turn routes', () => {
         RETRIEVAL_TOP_K: '10',
         RETRIEVAL_SHOWN: '1'
       }),
-      logger: silentLogger,
+      logger,
       ollama: client,
       store
     });
@@ -226,9 +257,10 @@ describe('turn routes', () => {
   const postTurn = async (
     client: IOllamaClient,
     id: number,
-    body: unknown = { text: REQUEST }
+    body: unknown = { text: REQUEST },
+    logger: ILogger = silentLogger
   ): Promise<Response> =>
-    app(client).request(`/api/conversations/${id}/messages`, {
+    app(client, logger).request(`/api/conversations/${id}/messages`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body)
@@ -237,9 +269,10 @@ describe('turn routes', () => {
   const runTurn = async (
     client: IOllamaClient,
     id: number,
-    body: unknown = { text: REQUEST }
+    body: unknown = { text: REQUEST },
+    logger: ILogger = silentLogger
   ): Promise<Frame[]> =>
-    readFrames(await (await postTurn(client, id, body)).text());
+    readFrames(await (await postTurn(client, id, body, logger)).text());
 
   const startConversation = (language = Language.English): Promise<number> =>
     store.conversations
@@ -499,6 +532,159 @@ describe('turn routes', () => {
       content: answer,
       cardIds: []
     });
+  });
+
+  it('fails the turn when the model dies partway through the answer', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [
+        [{ content: PARSE_ANSWER, done: true }],
+        [
+          { content: 'Blue-Eyes ', done: false },
+          { content: 'fits', done: false }
+        ]
+      ],
+      chatFailures: [undefined, new OllamaUnreachableError(BASE_URL)]
+    });
+    const { logger, records } = createRecordingLogger();
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, undefined, logger);
+
+    expect(eventNames(frames)).toEqual([
+      TurnEventName.TurnStart,
+      TurnEventName.Filters,
+      TurnEventName.Cards,
+      TurnEventName.AnswerDelta,
+      TurnEventName.AnswerDelta,
+      TurnEventName.Error
+    ]);
+    expect(frames.at(-1)?.event).toMatchObject({
+      stage: TurnStage.Answer,
+      message: expect.stringContaining('unreachable')
+    });
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      level: 'warn',
+      context: { conversationId, stage: TurnStage.Answer }
+    });
+
+    const response = await app(client).request(
+      `/api/conversations/${conversationId}`
+    );
+    const conversation = conversationWithMessagesSchema.parse(
+      await response.json()
+    );
+
+    expect(conversation.messages.map(message => message.role)).toEqual([
+      'user'
+    ]);
+  });
+
+  it('fails the turn when the model answers with nothing at all', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [[{ content: PARSE_ANSWER, done: true }], []]
+    });
+    const { logger, records } = createRecordingLogger();
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, undefined, logger);
+
+    expect(eventNames(frames)).toEqual([
+      TurnEventName.TurnStart,
+      TurnEventName.Filters,
+      TurnEventName.Cards,
+      TurnEventName.Error
+    ]);
+    expect(frames.at(-1)?.event).toMatchObject({
+      stage: TurnStage.Answer,
+      message: 'The turn failed'
+    });
+    expect(records[0]).toMatchObject({
+      level: 'error',
+      context: { conversationId, stage: TurnStage.Answer }
+    });
+
+    const messages = await store.messages.list(conversationId);
+    expect(messages.map(message => message.role)).toEqual([MessageRole.User]);
+  });
+
+  it('fails the turn when the parse cannot reach the model', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [[]],
+      chatFailures: [new Error('connection refused')]
+    });
+    const { logger, records } = createRecordingLogger();
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, undefined, logger);
+
+    expect(eventNames(frames)).toEqual([
+      TurnEventName.TurnStart,
+      TurnEventName.Error
+    ]);
+    expect(frames.at(-1)?.event).toEqual({
+      type: TurnEventName.Error,
+      stage: TurnStage.Parse,
+      message: 'The turn failed'
+    });
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      level: 'error',
+      context: { conversationId, stage: TurnStage.Parse }
+    });
+    expect(records[0]?.context?.message).toContain('connection refused');
+
+    const messages = await store.messages.list(conversationId);
+    expect(messages.map(message => message.role)).toEqual([MessageRole.User]);
+  });
+
+  it('fails the turn when the search cannot run', async () => {
+    const client: IOllamaClient = {
+      listModels: async () => [CHAT_MODEL_CAPABILITY],
+      embed: async () => {
+        throw new OllamaUnreachableError(BASE_URL);
+      },
+      chat: async function* chatForTheParse() {
+        yield { content: PARSE_ANSWER, done: true };
+      }
+    };
+    const { logger, records } = createRecordingLogger();
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, undefined, logger);
+
+    expect(eventNames(frames)).toEqual([
+      TurnEventName.TurnStart,
+      TurnEventName.Filters,
+      TurnEventName.Error
+    ]);
+    expect(frames.at(-1)?.event).toMatchObject({
+      stage: TurnStage.Search,
+      message: expect.stringContaining('unreachable')
+    });
+    expect(records[0]).toMatchObject({
+      level: 'warn',
+      context: { conversationId, stage: TurnStage.Search }
+    });
+
+    const messages = await store.messages.list(conversationId);
+    expect(messages.map(message => message.role)).toEqual([MessageRole.User]);
+  });
+
+  it('refuses a body that does not parse before it streams', async () => {
+    const client = createClient(PARSE_ANSWER);
+
+    const response = await postTurn(client, await startConversation(), {});
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toContain('text');
+    expect(client.chatRequests).toEqual([]);
   });
 
   it('refuses a conversation that does not exist before it streams', async () => {

@@ -13,7 +13,8 @@ export enum TurnEventName {
   Cards = 'cards',
   AnswerDelta = 'answer.delta',
   AnswerEnd = 'answer.end',
-  TurnEnd = 'turn.end'
+  TurnEnd = 'turn.end',
+  Error = 'error'
 }
 
 /**
@@ -22,6 +23,16 @@ export enum TurnEventName {
  */
 export enum TurnStatus {
   FreeTextOnly = 'free-text-only'
+}
+
+/**
+ * Which part of the turn gave way, so a client can say what failed without
+ * reading a message meant for the player.
+ */
+export enum TurnStage {
+  Parse = 'parse',
+  Search = 'search',
+  Answer = 'answer'
 }
 
 /**
@@ -84,7 +95,9 @@ const answerDeltaEventSchema = z.object({
 });
 
 /**
- * The answer is complete.
+ * The answer is complete. It says the prose ended, not that the turn survived:
+ * the turn is stored only once `turn.end` carries its id, so a client finishes
+ * the answer here and finishes the turn at `turn.end`.
  */
 const answerEndEventSchema = z.object({
   type: z.literal(TurnEventName.AnswerEnd)
@@ -100,6 +113,17 @@ const turnEndEventSchema = z.object({
 });
 
 /**
+ * The turn gave way, and this is the last thing it has to say. Whatever prose
+ * arrived before it is not an answer: the turn is terminal, and the conversation
+ * keeps the question with no reply rather than a half-finished one.
+ */
+const errorEventSchema = z.object({
+  type: z.literal(TurnEventName.Error),
+  stage: z.enum(TurnStage),
+  message: z.string().min(1)
+});
+
+/**
  * Everything a turn streams, in the order it arrives, so a client can validate
  * each frame and act on it without a second source of truth.
  */
@@ -110,7 +134,8 @@ export const turnEventSchema = z.discriminatedUnion('type', [
   cardsEventSchema,
   answerDeltaEventSchema,
   answerEndEventSchema,
-  turnEndEventSchema
+  turnEndEventSchema,
+  errorEventSchema
 ]);
 
 export type TurnRequest = z.infer<typeof turnRequestSchema>;

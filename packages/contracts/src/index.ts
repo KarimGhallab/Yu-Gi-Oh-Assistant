@@ -23,6 +23,7 @@ export {
 export type { ConversationWithMessages, Message } from './messages.js';
 export {
   TurnEventName,
+  TurnStage,
   TurnStatus,
   turnEventSchema,
   turnRequestSchema

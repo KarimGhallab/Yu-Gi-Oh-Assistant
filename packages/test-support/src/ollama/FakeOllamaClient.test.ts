@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ChatChunk } from '@ygo-assistant/ollama';
+
 import { FakeOllamaClient } from './FakeOllamaClient.js';
 
 const collect = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
@@ -108,5 +110,31 @@ describe('FakeOllamaClient', () => {
     );
 
     expect(second).toEqual([{ content: 'and again', done: true }]);
+  });
+
+  it('streams a call and then fails it when the call is scripted to fail', async () => {
+    const client = new FakeOllamaClient({
+      chatResponses: [
+        [{ content: 'the answer begins ', done: false }],
+        [{ content: '{"query":"x"}', done: true }]
+      ],
+      chatFailures: [new Error('the model died'), undefined]
+    });
+    const streamed: ChatChunk[] = [];
+
+    const dies = async (): Promise<void> => {
+      for await (const chunk of client.chat({
+        model: 'qwen3:4b',
+        messages: []
+      })) {
+        streamed.push(chunk);
+      }
+    };
+
+    await expect(dies()).rejects.toThrow('the model died');
+    expect(streamed).toEqual([{ content: 'the answer begins ', done: false }]);
+    await expect(
+      collect(client.chat({ model: 'qwen3:4b', messages: [] }))
+    ).resolves.toEqual([{ content: '{"query":"x"}', done: true }]);
   });
 });

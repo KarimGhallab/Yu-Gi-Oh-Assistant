@@ -2,6 +2,7 @@ import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
 import {
   type TurnEvent,
   TurnEventName,
+  TurnStage,
   TurnStatus
 } from '@ygo-assistant/contracts';
 import { type Conversation, MessageRole } from '@ygo-assistant/db';
@@ -13,6 +14,7 @@ import {
   retrieveCards,
   streamGroundedAnswer
 } from '@ygo-assistant/rag';
+import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
 
 import type { ServerDependencies } from '../types.js';
 
@@ -36,6 +38,12 @@ const NO_CARDS_ANSWER =
   'I could not find a card that matches that request. Try broadening it.';
 
 /**
+ * What the turn says when it gave way for a reason it cannot explain to the
+ * player, such as a bug of ours.
+ */
+const TURN_FAILED_MESSAGE = 'The turn failed';
+
+/**
  * Runs one turn end to end and yields what it is doing as it does it: the
  * search that was understood, the cards it found, the answer as it is written,
  * and the id the answer was stored under.
@@ -54,75 +62,129 @@ export async function* runTurn(
 
   yield { type: TurnEventName.TurnStart, userMessageId: input.userMessageId };
 
-  const parse = await parseCardRequest({
-    client: dependencies.ollama,
-    model,
-    supportsStructuredOutput: await supportsStructuredOutput(
+  let stage = TurnStage.Parse;
+  try {
+    const parse = await parseCardRequest({
+      client: dependencies.ollama,
+      model,
+      // Reading the model's capability belongs to understanding the request, so
+      // it fails and is reported as part of the parse stage rather than a stage
+      // of its own.
+      supportsStructuredOutput: await supportsStructuredOutput(
+        dependencies,
+        model
+      ),
+      request: text
+    });
+    const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
+    const query: RetrievalQuery = {
+      text: searchText(parse, filters, text),
+      filters,
+      language: conversation.language
+    };
+
+    if (leftNothingToSearch(parse)) {
+      yield { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly };
+    }
+
+    // The event reports the search that is actually about to run, so a client
+    // rendering the chips shows what retrieval was asked for, even when the
+    // parse kept no free text of its own and the request was searched instead.
+    yield { type: TurnEventName.Filters, filters, query: query.text };
+
+    stage = TurnStage.Search;
+    const ranked = await retrieveCards({
+      dataDir: dependencies.config.dataDir,
+      embedder: dependencies.ollama,
+      query,
+      ranking: {
+        topK: dependencies.config.retrieval.topK,
+        minScore: dependencies.config.retrieval.minScore
+      }
+    });
+    const cards = ranked
+      .slice(0, dependencies.config.retrieval.shown)
+      .map(rankedCard => rankedCard.card);
+
+    yield { type: TurnEventName.Cards, cards };
+
+    stage = TurnStage.Answer;
+    let answer = '';
+    for await (const delta of answerDeltas(
       dependencies,
-      model
-    ),
-    request: text
-  });
-  const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
-  const query: RetrievalQuery = {
-    text: searchText(parse, filters, text),
-    filters,
-    language: conversation.language
+      model,
+      text,
+      conversation.language,
+      cards
+    )) {
+      answer += delta;
+      yield { type: TurnEventName.AnswerDelta, text: delta };
+    }
+
+    if (answer.trim().length === 0) {
+      throw new Error(
+        'The model answered with nothing, so there is nothing to store'
+      );
+    }
+
+    yield { type: TurnEventName.AnswerEnd };
+
+    const message = await dependencies.store.messages.append({
+      conversationId: conversation.id,
+      role: MessageRole.Assistant,
+      content: answer,
+      filters,
+      cardIds: cards.map(card => card.id)
+    });
+
+    yield { type: TurnEventName.TurnEnd, messageId: message.id };
+  } catch (error) {
+    logFailure(dependencies, input, stage, error);
+    yield {
+      type: TurnEventName.Error,
+      stage,
+      message: failureMessage(error)
+    };
+  }
+}
+
+/**
+ * What the player is told went wrong. A failure the domain understands explains
+ * itself the way the API's error boundary lets it, because those messages are
+ * written for whoever has to fix the thing. Anything else is a bug, and a bug's
+ * message is not something to put in a stream.
+ */
+function failureMessage(error: unknown): string {
+  return error instanceof DomainError ? error.message : TURN_FAILED_MESSAGE;
+}
+
+/**
+ * Records a turn that gave way, with the stage it died at: a failure the domain
+ * understands is a warning, and anything else is an error whose detail stays in
+ * the log rather than reaching the player.
+ */
+function logFailure(
+  dependencies: ServerDependencies,
+  input: TurnInput,
+  stage: TurnStage,
+  error: unknown
+): void {
+  const context = {
+    conversationId: input.conversation.id,
+    stage,
+    message: describeError(error)
   };
 
-  if (leftNothingToSearch(parse)) {
-    yield { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly };
+  if (error instanceof DomainError) {
+    dependencies.logger.warn('Turn failed', context);
+    return;
   }
 
-  // The event reports the search that is actually about to run, so a client
-  // rendering the chips shows what retrieval was asked for, even when the parse
-  // kept no free text of its own and the request was searched instead.
-  yield { type: TurnEventName.Filters, filters, query: query.text };
+  dependencies.logger.error('Turn failed unexpectedly', context);
+}
 
-  const ranked = await retrieveCards({
-    dataDir: dependencies.config.dataDir,
-    embedder: dependencies.ollama,
-    query,
-    ranking: {
-      topK: dependencies.config.retrieval.topK,
-      minScore: dependencies.config.retrieval.minScore
-    }
-  });
-  const cards = ranked
-    .slice(0, dependencies.config.retrieval.shown)
-    .map(rankedCard => rankedCard.card);
-
-  yield { type: TurnEventName.Cards, cards };
-
-  let answer = '';
-  for await (const delta of answerDeltas(
-    dependencies,
-    model,
-    text,
-    conversation.language,
-    cards
-  )) {
-    answer += delta;
-    yield { type: TurnEventName.AnswerDelta, text: delta };
-  }
-
-  if (answer.trim().length === 0) {
-    throw new Error(
-      'The model answered with nothing, so there is nothing to store'
-    );
-  }
-
-  yield { type: TurnEventName.AnswerEnd };
-
-  const message = await dependencies.store.messages.append({
-    conversationId: conversation.id,
-    role: MessageRole.Assistant,
-    content: answer,
-    filters,
-    cardIds: cards.map(card => card.id)
-  });
-
-  yield { type: TurnEventName.TurnEnd, messageId: message.id };
+function describeError(error: unknown): string {
+  return hasErrorMessage(error) ? error.message : String(error);
 }
 
 /**
