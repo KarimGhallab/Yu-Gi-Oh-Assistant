@@ -23,7 +23,11 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@11.20.0",
-  "dependencies": {},
+  "dependencies": {
+    "@ygo-assistant/cards": "workspace:*",
+    "@ygo-assistant/db": "workspace:*",
+    "@ygo-assistant/ollama": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "26.5.1",
     "typescript": "^6.0.3"

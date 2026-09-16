@@ -13,18 +13,28 @@ import { delay } from '@ygo-assistant/utils';
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
 import { indexDirectory } from './paths.js';
-import { normalizeCardRow } from './row.js';
+import { buildWhereClause } from './predicate.js';
+import { normalizeCard, normalizeCardRow } from './row.js';
 import { createCardArrowSchema } from './schema.js';
 import type {
   BuildCardIndexOptions,
   CardIndexContents,
-  IndexMetadata
+  CardQueryOptions,
+  IndexMetadata,
+  ScoredCard,
+  SearchCardIndexOptions
 } from './types.js';
 
 const CARDS_TABLE = 'cards';
 const DEFAULT_EMBEDDING_BATCH_SIZE = 256;
 const EMBEDDING_ATTEMPTS = 3;
 const EMBEDDING_RETRY_DELAY_MS = 500;
+const COSINE_DISTANCE_TYPE = 'cosine';
+const DISTANCE_COLUMN = '_distance';
+const IDENTITY_ORDER = [
+  { columnName: 'id', ascending: true },
+  { columnName: 'name', ascending: true }
+];
 
 /**
  * Builds the card index for a data directory. It composes the card documents,
@@ -91,6 +101,68 @@ export async function readCardIndex(
     count,
     metadata
   };
+}
+
+/**
+ * Searches one language partition by a query vector, returning the nearest
+ * cards with their cosine similarity to it, closest first. Structured filters
+ * narrow the partition before the vector search runs.
+ */
+export async function searchCardIndex(
+  dataDir: string,
+  options: SearchCardIndexOptions
+): Promise<ScoredCard[]> {
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table
+    .query()
+    .nearestTo(options.vector)
+    .distanceType(COSINE_DISTANCE_TYPE)
+    .where(buildWhereClause(options.language, options.filters ?? []))
+    .limit(options.limit)
+    .toArray();
+
+  return rows.map(row => ({
+    card: normalizeCard(row),
+    score: cosineSimilarity(row)
+  }));
+}
+
+/**
+ * Reads the cards of one language partition that match the structured filters,
+ * with no vector involved. The rows come back in a stable identity order so a
+ * filter-only request is reproducible.
+ */
+export async function scanCardIndex(
+  dataDir: string,
+  options: CardQueryOptions
+): Promise<Card[]> {
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table
+    .query()
+    .where(buildWhereClause(options.language, options.filters ?? []))
+    .orderBy(IDENTITY_ORDER)
+    .limit(options.limit)
+    .toArray();
+
+  return rows.map(row => normalizeCard(row));
+}
+
+/**
+ * LanceDB reports a cosine distance, which runs from 0 for identical vectors to
+ * 2 for opposite ones; the application reasons in similarity instead.
+ */
+function cosineSimilarity(row: Record<string, unknown>): number {
+  const distance = row[DISTANCE_COLUMN];
+  if (typeof distance !== 'number') {
+    throw new Error(
+      `The index search did not return a numeric distance: ${String(distance)}`
+    );
+  }
+  return 1 - distance;
 }
 
 /**

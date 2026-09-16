@@ -7,9 +7,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   type Card,
   CardAttribute,
+  CardFilterField,
+  type CardFilters,
   CardType,
+  FilterOperator,
   FrameType,
-  Language
+  Language,
+  LinkMarker,
+  cardMatchesFilters
 } from '@ygo-assistant/cards';
 import {
   type IOllamaClient,
@@ -17,7 +22,12 @@ import {
 } from '@ygo-assistant/ollama';
 
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
-import { buildCardIndex, readCardIndex } from './cardIndex.js';
+import {
+  buildCardIndex,
+  readCardIndex,
+  scanCardIndex,
+  searchCardIndex
+} from './cardIndex.js';
 
 const DIMENSIONS = 3;
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
@@ -37,6 +47,21 @@ const createEmbedder = (
     throw new Error('The card index never streams chat completions');
   }
 });
+
+const createScriptedEmbedder = (vectors: number[][]): IOllamaClient => {
+  let cursor = 0;
+  return {
+    listModels: async () => [],
+    embed: async inputs => {
+      const batch = vectors.slice(cursor, cursor + inputs.length);
+      cursor += inputs.length;
+      return batch;
+    },
+    chat: () => {
+      throw new Error('The card index never streams chat completions');
+    }
+  };
+};
 
 const createDarkMagician = (overrides: Partial<Card> = {}): Card => ({
   id: 46986414,
@@ -268,5 +293,481 @@ describe('card index', () => {
     expect(count).toBe(1);
     expect(rows.map(row => row.name)).toEqual(['Pot of Greed']);
     expect(metadata.datasetVersion).toBe('ygoprodeck-2026-09-16');
+  });
+
+  describe('searchCardIndex', () => {
+    const QUERY = [1, 0, 0];
+    const SEARCH_DIMENSIONS = 3;
+
+    const buildIndex = async (
+      directory: string,
+      cards: Card[],
+      vectors: number[][]
+    ): Promise<void> => {
+      await buildCardIndex({
+        dataDir: directory,
+        cards,
+        embedder: createScriptedEmbedder(vectors),
+        embeddingModel: EMBEDDING_MODEL,
+        dimensions: SEARCH_DIMENSIONS,
+        datasetVersion: 'ygoprodeck-2026-09-16'
+      });
+    };
+
+    const createBlueEyes = (): Card =>
+      createDarkMagician({ id: 89631139, name: 'Blue-Eyes White Dragon' });
+
+    const createMagicienSombre = (): Card =>
+      createDarkMagician({
+        language: Language.French,
+        name: 'Magicien Sombre'
+      });
+
+    it('returns the nearest cards ordered by similarity, with their score', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createPotOfGreed(), createBlueEyes()],
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ]
+      );
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 10
+      });
+
+      expect(results.map(result => result.card.name)).toEqual([
+        'Dark Magician',
+        'Pot of Greed',
+        'Blue-Eyes White Dragon'
+      ]);
+      expect(results[0].score).toBeCloseTo(1, 5);
+      expect(results[1].score).toBeCloseTo(Math.SQRT1_2, 5);
+      expect(results[2].score).toBeCloseTo(0, 5);
+    });
+
+    it('limits the number of rows it returns', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createPotOfGreed(), createBlueEyes()],
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ]
+      );
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 2
+      });
+
+      expect(results.map(result => result.card.name)).toEqual([
+        'Dark Magician',
+        'Pot of Greed'
+      ]);
+    });
+
+    it('scopes the search to the requested language', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createMagicienSombre()],
+        [
+          [0, 1, 0],
+          [1, 0, 0]
+        ]
+      );
+
+      const english = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 1
+      });
+      const french = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.French,
+        limit: 1
+      });
+
+      expect(english.map(result => result.card.name)).toEqual([
+        'Dark Magician'
+      ]);
+      expect(french.map(result => result.card.name)).toEqual([
+        'Magicien Sombre'
+      ]);
+    });
+
+    it('returns nothing when the language has no cards', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()], [[1, 0, 0]]);
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.French,
+        limit: 10
+      });
+
+      expect(results).toEqual([]);
+    });
+  });
+
+  describe('structured filters', () => {
+    const FILTER_DIMENSIONS = 3;
+
+    const createBlueEyes = (): Card =>
+      createDarkMagician({
+        id: 89631139,
+        name: 'Blue-Eyes White Dragon',
+        attribute: CardAttribute.Light,
+        race: 'Dragon',
+        level: 8,
+        atk: 3000,
+        def: 2500,
+        archetype: 'Blue-Eyes'
+      });
+
+    const createDecodeTalker = (): Card =>
+      createDarkMagician({
+        id: 1861629,
+        name: 'Decode Talker',
+        type: CardType.LinkMonster,
+        frameType: FrameType.Link,
+        typeLine: ['Cyberse', 'Link', 'Effect'],
+        race: 'Cyberse',
+        level: undefined,
+        def: undefined,
+        linkVal: 3,
+        linkMarkers: [
+          LinkMarker.Top,
+          LinkMarker.BottomLeft,
+          LinkMarker.BottomRight
+        ],
+        archetype: 'Code Talker'
+      });
+
+    const createGravekeepersSpy = (): Card =>
+      createDarkMagician({
+        id: 3050,
+        name: "Gravekeeper's Spy",
+        type: CardType.EffectMonster,
+        frameType: FrameType.Effect,
+        level: 4,
+        atk: 1200,
+        def: 2000,
+        archetype: "Gravekeeper's"
+      });
+
+    const createPercentDragon = (): Card =>
+      createDarkMagician({
+        id: 4097,
+        name: 'Percent Dragon',
+        attribute: CardAttribute.Wind,
+        race: 'Dragon',
+        level: 4,
+        atk: 1500,
+        def: 1200,
+        archetype: 'Dragon%'
+      });
+
+    const createLaJinn = (): Card =>
+      createDarkMagician({
+        id: 97590747,
+        name: 'La Jinn the Mystical Genie of the Lamp',
+        attribute: CardAttribute.Dark,
+        race: 'Fiend',
+        level: 4,
+        atk: 1800,
+        def: 1000,
+        archetype: undefined
+      });
+
+    const englishCards = (): Card[] => [
+      createDarkMagician(),
+      createPotOfGreed(),
+      createBlueEyes(),
+      createDecodeTalker(),
+      createGravekeepersSpy(),
+      createPercentDragon(),
+      createLaJinn()
+    ];
+
+    const seedIndex = async (
+      directory: string,
+      cards: Card[],
+      vectors: number[][] = cards.map(() => [1, 0, 0])
+    ): Promise<void> => {
+      await buildCardIndex({
+        dataDir: directory,
+        cards,
+        embedder: createScriptedEmbedder(vectors),
+        embeddingModel: EMBEDDING_MODEL,
+        dimensions: FILTER_DIMENSIONS,
+        datasetVersion: 'ygoprodeck-2026-09-16'
+      });
+    };
+
+    const scan = (
+      directory: string,
+      filters: CardFilters,
+      language: Language = Language.English
+    ): ReturnType<typeof scanCardIndex> =>
+      scanCardIndex(directory, { language, filters, limit: 100 });
+
+    it('matches exactly the cards the card filter predicate matches', async () => {
+      const directory = await createDataDir();
+      const cards = englishCards();
+      await seedIndex(directory, cards);
+
+      const filterCases: CardFilters[] = [
+        [],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Lte,
+            value: 4
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Gte,
+            value: 7
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Ne,
+            value: 7
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Atk,
+            operator: FilterOperator.Gt,
+            value: 2000
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Attribute,
+            operator: FilterOperator.Eq,
+            value: CardAttribute.Dark
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Attribute,
+            operator: FilterOperator.Ne,
+            value: CardAttribute.Dark
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Type,
+            operator: FilterOperator.Eq,
+            value: CardType.SpellCard
+          }
+        ],
+        [
+          {
+            field: CardFilterField.FrameType,
+            operator: FilterOperator.Eq,
+            value: FrameType.Spell
+          }
+        ],
+        [
+          {
+            field: CardFilterField.FrameType,
+            operator: FilterOperator.Ne,
+            value: FrameType.Spell
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.Ne,
+            value: 'Greed'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: 'spellcaster'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.Contains,
+            value: 'MAGICIAN'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.StartsWith,
+            value: 'code'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.EndsWith,
+            value: 'TALKER'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.LinkMarkers,
+            operator: FilterOperator.Contains,
+            value: LinkMarker.Top
+          }
+        ],
+        [
+          {
+            field: CardFilterField.LinkMarkers,
+            operator: FilterOperator.Contains,
+            value: LinkMarker.Right
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: 'Dragon'
+          },
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Lte,
+            value: 4
+          }
+        ]
+      ];
+
+      const observed: Record<string, string[]> = {};
+      const expected: Record<string, string[]> = {};
+      for (const filters of filterCases) {
+        const key = JSON.stringify(filters);
+        const rows = await scan(directory, filters);
+        observed[key] = rows.map(row => row.name).sort();
+        expected[key] = cards
+          .filter(card => cardMatchesFilters(card, filters))
+          .map(card => card.name)
+          .sort();
+      }
+
+      expect(observed).toEqual(expected);
+    });
+
+    it('returns filter matches in a stable identity order', async () => {
+      const directory = await createDataDir();
+      await seedIndex(directory, englishCards());
+      const filters: CardFilters = [
+        { field: CardFilterField.Level, operator: FilterOperator.Lte, value: 4 }
+      ];
+
+      const first = await scan(directory, filters);
+      const second = await scan(directory, filters);
+
+      expect(first.map(row => row.id)).toEqual([3050, 4097, 97590747]);
+      expect(second.map(row => row.name)).toEqual(first.map(row => row.name));
+    });
+
+    it('scopes a filtered scan to the requested language', async () => {
+      const directory = await createDataDir();
+      await seedIndex(directory, [
+        ...englishCards(),
+        createDarkMagician({
+          language: Language.French,
+          name: 'Magicien Sombre'
+        })
+      ]);
+      const filters: CardFilters = [
+        {
+          field: CardFilterField.Level,
+          operator: FilterOperator.Gte,
+          value: 7
+        }
+      ];
+
+      const english = await scan(directory, filters);
+      const french = await scan(directory, filters, Language.French);
+
+      expect(english.map(row => row.name)).toEqual([
+        'Dark Magician',
+        'Blue-Eyes White Dragon'
+      ]);
+      expect(french.map(row => row.name)).toEqual(['Magicien Sombre']);
+    });
+
+    it('keeps quotes and percent signs inside a value literal', async () => {
+      const directory = await createDataDir();
+      await seedIndex(directory, englishCards());
+
+      const quoted = await scan(directory, [
+        {
+          field: CardFilterField.Archetype,
+          operator: FilterOperator.Eq,
+          value: "Gravekeeper's"
+        }
+      ]);
+      const containsQuote = await scan(directory, [
+        {
+          field: CardFilterField.Archetype,
+          operator: FilterOperator.Contains,
+          value: "'s"
+        }
+      ]);
+      const percent = await scan(directory, [
+        {
+          field: CardFilterField.Archetype,
+          operator: FilterOperator.Contains,
+          value: '%'
+        }
+      ]);
+
+      expect(quoted.map(row => row.name)).toEqual(["Gravekeeper's Spy"]);
+      expect(containsQuote.map(row => row.name)).toEqual(["Gravekeeper's Spy"]);
+      expect(percent.map(row => row.name)).toEqual(['Percent Dragon']);
+    });
+
+    it('narrows a vector search with the filters', async () => {
+      const directory = await createDataDir();
+      await seedIndex(
+        directory,
+        [createDarkMagician(), createPotOfGreed(), createBlueEyes()],
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ]
+      );
+
+      const results = await searchCardIndex(directory, {
+        vector: [1, 0, 0],
+        language: Language.English,
+        filters: [
+          {
+            field: CardFilterField.Type,
+            operator: FilterOperator.Eq,
+            value: CardType.SpellCard
+          }
+        ],
+        limit: 10
+      });
+
+      expect(results.map(result => result.card.name)).toEqual(['Pot of Greed']);
+      expect(results[0].score).toBeCloseTo(Math.SQRT1_2, 5);
+    });
   });
 });

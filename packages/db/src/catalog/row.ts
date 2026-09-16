@@ -1,4 +1,5 @@
 import {
+  type Card,
   CardAttribute,
   CardType,
   FrameType,
@@ -15,11 +16,11 @@ const CARD_ATTRIBUTES = new Set<string>(Object.values(CardAttribute));
 const LINK_MARKERS = new Set<string>(Object.values(LinkMarker));
 
 /**
- * Turns a row read back from LanceDB into a typed card row. LanceDB returns
- * list columns as Arrow vectors, nullable columns as null, and enum columns as
- * plain strings, so this is where a stored row becomes a domain row again.
+ * Turns a row read back from LanceDB into a typed card. LanceDB returns list
+ * columns as Arrow vectors, nullable columns as null, and enum columns as plain
+ * strings, so this is where a stored row becomes a domain card again.
  */
-export function normalizeCardRow(row: Record<string, unknown>): IndexedCardRow {
+export function normalizeCard(row: Record<string, unknown>): Card {
   return {
     id: toNumber(row.id, 'id'),
     name: toString(row.name, 'name'),
@@ -39,7 +40,17 @@ export function normalizeCardRow(row: Record<string, unknown>): IndexedCardRow {
     archetype: toOptionalString(row.archetype),
     effect: toString(row.effect, 'effect'),
     imageUrl: toString(row.imageUrl, 'imageUrl'),
-    sourceUrl: toString(row.sourceUrl, 'sourceUrl'),
+    sourceUrl: toString(row.sourceUrl, 'sourceUrl')
+  };
+}
+
+/**
+ * Turns a row read back from LanceDB into a typed card row: the card fields
+ * plus the composed-document vector.
+ */
+export function normalizeCardRow(row: Record<string, unknown>): IndexedCardRow {
+  return {
+    ...normalizeCard(row),
     vector: toNumberArray(row.vector, 'vector')
   };
 }

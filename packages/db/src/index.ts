@@ -1,7 +1,9 @@
 export {
   buildCardIndex,
   readCardIndex,
-  readCardIndexMetadata
+  readCardIndexMetadata,
+  scanCardIndex,
+  searchCardIndex
 } from './catalog/cardIndex.js';
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
 export { indexDirectory } from './catalog/paths.js';
@@ -16,8 +18,11 @@ export { cardInfoResponseSchema } from './ygoprodeck/schemas.js';
 export type {
   BuildCardIndexOptions,
   CardIndexContents,
+  CardQueryOptions,
   IndexedCardRow,
-  IndexMetadata
+  IndexMetadata,
+  ScoredCard,
+  SearchCardIndexOptions
 } from './catalog/types.js';
 export type {
   PopulateCardIndexOptions,
