@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T15:40:00.000Z",
+  "generatedAt": "2026-09-16T16:02:00.000Z",
   "title": "Design System: Yu-Gi-Oh Assistant",
   "extensions": {
     "colorMeta": {
@@ -256,11 +256,19 @@
       "description": "The server's own message, verbatim, beside the control that failed. The only non-amber colour, and text only.",
       "html": "<p class=\"ds-alert\" role=\"alert\">The card index is not ready</p>",
       "css": ".ds-alert { margin: 0; padding: 0 16px 8px; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Card Tile",
+      "kind": "custom",
+      "refersTo": "card-tile",
+      "description": "One card an answer was built from: its printed face in a rail-bordered frame at the card's own ratio, its name under it, the whole tile a link to the source the facts came from. A tile whose image will not load keeps the frame and the name, with a quiet note in the frame.",
+      "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-frame\"><img class=\"ds-card-image\" src=\"cards/89631139.jpg\" alt=\"\"></span><span class=\"ds-card-name\">Blue-Eyes White Dragon</span></a>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; } .ds-card:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-card-frame { display: flex; align-items: center; justify-content: center; aspect-ratio: 421 / 614; border: 1px solid oklch(26.9% 0 none); background: oklch(20.5% 0 none); } .ds-card:hover .ds-card-frame { border-color: oklch(76.9% 0.188 70.08); } .ds-card-image { width: 100%; height: 100%; object-fit: contain; } .ds-card-name { color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-card-missing { color: oklch(55.6% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; padding: 0 8px; text-align: center; }"
     }
   ],
   "narrative": {
     "northStar": "The Duelist's Workbench",
-    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is built next. That is where the tray of framed cards, the amber rail around the active turn, and the model's reading set as marginalia belong.\n\nFlatness is deliberate and the system has no motion yet. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and the only transition in the app is a colour change that happens instantly.",
+    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is being built. Its history and its grid of framed cards are in place, and the amber rail around the active turn and the model's reading set as marginalia follow.\n\nFlatness is deliberate and the system has no motion yet. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and the only transition in the app is a colour change that happens instantly.",
     "keyCharacteristics": [
       "Near-neutral, three-step dark surfaces with no shadows.",
       "One accent, amber, reserved for action, selection, and focus.",

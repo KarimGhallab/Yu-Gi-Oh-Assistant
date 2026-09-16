@@ -75,6 +75,19 @@ components:
   alert-line:
     textColor: '{colors.danger}'
     typography: '{typography.body}'
+  card-tile:
+    borderColor: '{colors.rail}'
+    backgroundColor: '{colors.surface-panel}'
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+  card-tile-hover:
+    borderColor: '{colors.accent}'
+  message-label:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.label}'
+  message-prose:
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
 ---
 
 # Design System: Yu-Gi-Oh Assistant
@@ -93,9 +106,9 @@ between the player and the cards.
 
 The bench is a direction rather than a finished expression. The incumbent
 implementation carries the surfaces, the amber, the density, and the flatness;
-the conversation surface, which is where the bench actually shows, is built next.
-That is where the tray of framed cards, the amber rail around the active turn,
-and the model's reading set as marginalia belong.
+the conversation surface, which is where the bench actually shows, is being
+built: its history and its grid of framed cards are in place, and the amber rail
+around the active turn and the model's reading set as marginalia follow.
 
 Flatness is deliberate and the system has no motion yet. Depth is tonal: three
 steps of near-black do the work shadows would do elsewhere, and the only
@@ -196,8 +209,8 @@ becomes a line; prose caps at 68 characters for the same reason. Structure comes
 from 1px hairlines in Rail Grey, not from enclosed boxes.
 
 There is exactly one breakpoint in use, `48rem`. The system is otherwise fluid:
-rows truncate, prose wraps, and the card tray scrolls sideways rather than
-reflowing into a grid.
+rows truncate, prose wraps, and the card grid reflows to fill the width it is
+given, two cards wide on a phone and six or more on a desktop window.
 
 ## Elevation & Depth
 
@@ -243,16 +256,23 @@ level deep.
 - **Mobile treatment:** identical, because the sidebar stacks rather than
   collapsing into a drawer. The list scrolls inside the sidebar's 16rem cap.
 
-### Cards (the tray)
+### Cards (the grid)
 
 - **Shape:** square corners, 1px Rail Grey border, image at its native
-  proportions, never cropped.
-- **Background:** the card image is the surface. The tray scrolls horizontally on
-  a narrow window instead of reflowing into a grid.
-- **Selection:** an amber rail or border marks the card under consideration. This
+  proportions, never cropped. The frame is sized by the card's printed ratio, so
+  a card is never letterboxed by a guess.
+- **Background:** the card image is the surface; the frame behind it is Bench
+  Slate.
+- **Name:** Body, Bone White, under the frame. It is the link's label, so a card
+  is announced by its name and the image itself carries no text.
+- **Selection:** hovering or focusing a card steps its border to Lamp Amber. This
   is the accent doing the work the One Lamp Rule allows it.
-- **Status:** built with the conversation surface (ticket 32). Until then, the
-  only card rendering in the app is the thumbnail in a dense row.
+- **Layout:** a wrapping grid, `repeat(auto-fill, minmax(9rem, 1fr))` with 0.75rem
+  gutters and no sideways scroll. A suggestion is a set to compare, so it reflows
+  to two cards wide on a phone and six or more on a desktop window.
+- **Missing image:** the frame stands and says so in Body scale, Ash Grey, and
+  silent to assistive technology; the name and the link remain, so a card is
+  never an empty box.
 
 ### Cards / Containers (panels)
 
@@ -275,7 +295,10 @@ level deep.
 ### Notice Panel (empty state, missing conversation, failure)
 
 - **Shape:** a centred column, nothing enclosed, maximum 28rem of body text.
-- **Heading:** Title, Bone White.
+- **Heading:** Title, Bone White, when the notice is the whole page. A notice
+  standing in for content inside a page, such as an empty conversation, is below
+  that page's own heading, so it takes a `h2` at the Label scale instead and the
+  page keeps a single title.
 - **Body:** Body, Ash Grey.
 - **Action:** one primary button or link, or none.
 - **Use it for:** everything that stands in for content that is not there, so the

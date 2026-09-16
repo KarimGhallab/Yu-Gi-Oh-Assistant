@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router';
 
 import { ApiError, ApiFailureKind } from '../api/client.js';
+import ExamplePrompts from './ExamplePrompts.js';
+import MessageHistory from './MessageHistory.js';
 import Notice, { ACTION_CLASS } from './Notice.js';
 import { conversationTitle } from './conversationTitle.js';
 import { useConversation } from './queries.js';
@@ -58,10 +60,12 @@ export default function ConversationPage() {
       </header>
       <section
         aria-label="Messages"
-        className="min-h-0 flex-1 overflow-y-auto p-6">
-        <p className="text-sm text-neutral-500">
-          This conversation's messages will appear here.
-        </p>
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+        {conversation.data.messages.length === 0 ? (
+          <ExamplePrompts />
+        ) : (
+          <MessageHistory messages={conversation.data.messages} />
+        )}
       </section>
     </div>
   );

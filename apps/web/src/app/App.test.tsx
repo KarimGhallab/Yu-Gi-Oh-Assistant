@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -36,6 +36,78 @@ const withMessages = (
   ...conversation,
   messages
 });
+
+interface CardFixture {
+  id: number;
+  name: string;
+  language: string;
+  type: string;
+  frameType: string;
+  typeLine: string[];
+  race: string;
+  linkMarkers: string[];
+  effect: string;
+  imageUrl: string;
+  sourceUrl: string;
+}
+
+const createCard = (
+  id: number,
+  name: string,
+  overrides: Partial<CardFixture> = {}
+): CardFixture => ({
+  id,
+  name,
+  language: 'en',
+  type: 'Effect Monster',
+  frameType: 'effect',
+  typeLine: ['Effect Monster'],
+  race: 'Dragon',
+  linkMarkers: [],
+  effect: 'When this card is summoned, it does something useful.',
+  imageUrl: `https://images.example.test/cards/${id}.jpg`,
+  sourceUrl: `https://example.test/cards/${id}`,
+  ...overrides
+});
+
+interface MessageFixture {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  cards?: CardFixture[];
+  createdAt: string;
+}
+
+const said = (
+  id: number,
+  role: string,
+  content: string,
+  overrides: Partial<MessageFixture> = {}
+): MessageFixture => ({
+  id,
+  conversationId: 2,
+  role,
+  content,
+  createdAt: '2026-09-16T10:00:00.000Z',
+  ...overrides
+});
+
+const playerMessage = (id: number, content: string): MessageFixture =>
+  said(id, 'user', content);
+
+const assistantMessage = (
+  id: number,
+  content: string,
+  cards?: CardFixture[]
+): MessageFixture =>
+  cards === undefined
+    ? said(id, 'assistant', content)
+    : said(id, 'assistant', content, { cards });
+
+const BLUE_EYES = createCard(89631139, 'Blue-Eyes White Dragon');
+const DARK_MAGICIAN = createCard(46986414, 'Dark Magician');
+const RED_EYES = createCard(10000, 'Red-Eyes Black Dragon');
 
 const GRAVEYARD = createConversation(2, { title: 'Graveyard toolbox' });
 const UNTITLED = createConversation(1, { title: null });
@@ -307,6 +379,182 @@ describe('the chat', () => {
       'The server answered with something this app does not understand.'
     );
     expect(screen.queryByText('made up')).not.toBeInTheDocument();
+  });
+
+  it('opens a conversation on what was said in it, in the order it was said', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'Something to stop my opponent attacking'),
+                assistantMessage(
+                  12,
+                  'Blue-Eyes White Dragon is the biggest body below.'
+                ),
+                playerMessage(13, 'Is it cheap?')
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const turns = within(history).getAllByRole('listitem');
+
+    expect(turns).toHaveLength(3);
+    expect(within(turns[0]).getByText('You')).toBeInTheDocument();
+    expect(
+      within(turns[0]).getByText('Something to stop my opponent attacking')
+    ).toBeInTheDocument();
+    expect(within(turns[1]).getByText('Assistant')).toBeInTheDocument();
+    expect(
+      within(turns[1]).getByText(
+        'Blue-Eyes White Dragon is the biggest body below.'
+      )
+    ).toBeInTheDocument();
+    expect(within(turns[2]).getByText('You')).toBeInTheDocument();
+    expect(within(turns[2]).getByText('Is it cheap?')).toBeInTheDocument();
+  });
+
+  it("shows an answer's cards in the order the server ranked them", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'These are the ones to look at.', [
+                  BLUE_EYES,
+                  DARK_MAGICIAN,
+                  RED_EYES
+                ])
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const answer = within(history).getAllByRole('listitem')[1];
+    const cards = within(answer).getByRole('list', { name: 'Suggested cards' });
+
+    expect(
+      within(cards)
+        .getAllByRole('listitem')
+        .map(card => card.textContent)
+    ).toEqual([
+      'Blue-Eyes White Dragon',
+      'Dark Magician',
+      'Red-Eyes Black Dragon'
+    ]);
+    expect(
+      Array.from(cards.querySelectorAll('img')).map(image =>
+        image.getAttribute('src')
+      )
+    ).toEqual([BLUE_EYES.imageUrl, DARK_MAGICIAN.imageUrl, RED_EYES.imageUrl]);
+    expect(
+      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+  });
+
+  it('keeps a card readable when its image cannot be loaded', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'This is the one to look at.', [BLUE_EYES])
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const cards = within(history).getByRole('list', {
+      name: 'Suggested cards'
+    });
+
+    for (const image of cards.querySelectorAll('img')) {
+      fireEvent.error(image);
+    }
+
+    expect(cards.querySelector('img')).toBeNull();
+    expect(within(cards).getByText('No image')).toBeInTheDocument();
+    expect(
+      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+  });
+
+  it('says what can be asked in a conversation with nothing in it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Ask for cards' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Something to support a Red-Eyes deck')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('A cheap way to stop my opponent attacking')
+    ).toBeInTheDocument();
+  });
+
+  it("reaches a card's source without a mouse", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'These are the ones to look at.', [
+                  BLUE_EYES,
+                  DARK_MAGICIAN
+                ])
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('region', { name: 'Messages' });
+
+    // The way in is the brand, the control that starts a conversation, and the
+    // conversation that is open, so the cards the answer suggested come next.
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+
+    expect(
+      screen.getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('link', { name: 'Dark Magician' })).toHaveFocus();
   });
 
   it('reaches the conversations without a mouse', async () => {
