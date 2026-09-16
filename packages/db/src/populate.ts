@@ -2,9 +2,9 @@ import { type Card, Language } from '@ygo-assistant/cards';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
-import { buildCardIndex } from './catalog/cardIndex.js';
 import { computeDatasetVersion } from './catalog/datasetVersion.js';
-import { convertCardInfoResponse } from './ygoprodeck/convertCards.js';
+import { buildCardIndex } from './catalog/index/cardIndex.js';
+import { convertCardInfoResponse } from './ygoprodeck/convert/convertCards.js';
 import { fetchCardDump } from './ygoprodeck/fetchCardDump.js';
 
 /**

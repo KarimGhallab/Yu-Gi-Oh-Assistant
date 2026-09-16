@@ -4,13 +4,13 @@
   "description": "HTTP API, SSE turn stream, and composition root for the Yu-Gi-Oh assistant.",
   "private": true,
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "tsc -b && tsx watch --env-file-if-exists=.env src/index.ts",
+    "dev": "tsc -b && tsx watch --env-file-if-exists=.env src/server.ts",
     "watch": "tsc -b --watch --preserveWatchOutput",
-    "start": "node --env-file-if-exists=.env dist/index.js",
-    "db:populate": "tsc -b && tsx --env-file-if-exists=.env src/populateCommand.ts",
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "db:populate": "tsc -b && tsx --env-file-if-exists=.env src/populate/populateCommand.ts",
     "clean-all": "rm -rf dist && rm -rf node_modules",
     "clean": "rm -rf dist"
   },

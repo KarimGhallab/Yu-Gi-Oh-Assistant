@@ -34,6 +34,16 @@ export interface CreateConversationInput {
 }
 
 /**
+ * The fields a conversation update may change. A field that is absent is left
+ * alone, so an update only moves what it names.
+ */
+export interface UpdateConversationInput {
+  title?: string;
+  language?: Language;
+  model?: string;
+}
+
+/**
  * A stored message. The parsed filters and the suggested card ids are filled by
  * the turn that produced the reply, so a message that carried neither has
  * neither.
@@ -62,11 +72,15 @@ export interface AppendMessageInput {
 /**
  * Reads and writes conversations. Persistence is swappable behind this seam, so
  * every method is asynchronous even though the current driver is synchronous.
+ * The commands raise when an id names no conversation, the way appending a
+ * message does, because none of them can proceed without one.
  */
 export interface IConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
   find(id: number): Promise<Conversation | undefined>;
   list(): Promise<Conversation[]>;
+  update(id: number, changes: UpdateConversationInput): Promise<Conversation>;
+  delete(id: number): Promise<void>;
 }
 
 /**

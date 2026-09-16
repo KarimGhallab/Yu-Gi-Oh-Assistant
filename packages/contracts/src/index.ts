@@ -7,11 +7,13 @@ export type { ApiError } from './apiError.js';
 export {
   conversationListSchema,
   conversationSchema,
-  createConversationRequestSchema
+  createConversationRequestSchema,
+  updateConversationRequestSchema
 } from './conversations.js';
 export type {
   Conversation,
-  CreateConversationRequest
+  CreateConversationRequest,
+  UpdateConversationRequest
 } from './conversations.js';
 export {
   MessageRole,

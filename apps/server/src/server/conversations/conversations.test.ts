@@ -4,30 +4,31 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { Language } from '@ygo-assistant/cards';
+import type { CardFilters } from '@ygo-assistant/cards';
 import {
   CardAttribute,
   CardFilterField,
-  FilterOperator
+  FilterOperator,
+  Language
 } from '@ygo-assistant/cards';
-import type { CardFilters } from '@ygo-assistant/cards';
 import {
   MessageRole,
   conversationListSchema,
   conversationSchema,
   conversationWithMessagesSchema
 } from '@ygo-assistant/contracts';
+import type { IAppStore } from '@ygo-assistant/db';
 import {
   MessageRole as StoredMessageRole,
   databasePath,
   openAppStore
 } from '@ygo-assistant/db';
-import type { IAppStore } from '@ygo-assistant/db';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
+import { delay } from '@ygo-assistant/utils';
 
-import { loadConfig } from '../config/index.js';
-import { createServer } from './server.js';
+import { loadConfig } from '../../config/index.js';
+import { createServer } from '../server.js';
 
 const CHAT_MODEL = 'llama3.1:8b';
 
@@ -79,6 +80,16 @@ describe('conversation routes', () => {
       method: 'POST',
       body,
       headers: { 'content-type': 'application/json' }
+    });
+
+  const getConversation = (id: number | string) =>
+    app().request(`/api/conversations/${id}`);
+
+  const startConversation = (title?: string) =>
+    store.conversations.create({
+      title,
+      language: Language.English,
+      model: CHAT_MODEL
     });
 
   it('creates a conversation defaulting to English and the configured chat model', async () => {
@@ -187,16 +198,6 @@ describe('conversation routes', () => {
   });
 
   describe('reopening a conversation', () => {
-    const getConversation = (id: number | string) =>
-      app().request(`/api/conversations/${id}`);
-
-    const startConversation = (title?: string) =>
-      store.conversations.create({
-        title,
-        language: Language.English,
-        model: CHAT_MODEL
-      });
-
     it('returns the conversation with its messages in the order they were said', async () => {
       const created = await startConversation('Graveyard toolbox');
       await store.messages.append({
@@ -295,11 +296,13 @@ describe('conversation routes', () => {
       await startConversation();
 
       const responses = await Promise.all(
-        ['+1', '1e0', '1.0', '0x1', '1abc'].map(form => getConversation(form))
+        ['+1', '1e0', '1.0', '0x1', '1abc', '0001', '0'].map(form =>
+          getConversation(form)
+        )
       );
 
       expect(responses.map(response => response.status)).toEqual([
-        404, 404, 404, 404, 404
+        404, 404, 404, 404, 404, 404, 404
       ]);
     });
 
@@ -320,6 +323,173 @@ describe('conversation routes', () => {
       );
       expect(reopened.messages.map(message => message.content)).toEqual([
         'a light monster that banishes'
+      ]);
+    });
+  });
+
+  describe('managing a conversation', () => {
+    const patchConversation = (id: number | string, body: string) =>
+      app().request(`/api/conversations/${id}`, {
+        method: 'PATCH',
+        body,
+        headers: { 'content-type': 'application/json' }
+      });
+
+    const deleteConversation = (id: number | string) =>
+      app().request(`/api/conversations/${id}`, { method: 'DELETE' });
+
+    it('renames a conversation and returns it renamed', async () => {
+      const created = await startConversation();
+
+      const response = await patchConversation(
+        created.id,
+        JSON.stringify({ title: 'Graveyard toolbox' })
+      );
+
+      expect(response.status).toBe(200);
+      expect(conversationSchema.parse(await response.json())).toMatchObject({
+        id: created.id,
+        title: 'Graveyard toolbox',
+        language: Language.English,
+        model: CHAT_MODEL
+      });
+    });
+
+    it('reopens a conversation with the settings it was given', async () => {
+      const created = await startConversation();
+
+      await patchConversation(
+        created.id,
+        JSON.stringify({
+          title: 'Graveyard toolbox',
+          language: Language.French,
+          model: 'qwen3:4b'
+        })
+      );
+      const response = await app().request(`/api/conversations/${created.id}`);
+
+      expect(
+        conversationWithMessagesSchema.parse(await response.json())
+      ).toMatchObject({
+        title: 'Graveyard toolbox',
+        language: Language.French,
+        model: 'qwen3:4b'
+      });
+    });
+
+    it('moves a renamed conversation to the front of the list', async () => {
+      const first = await startConversation('First');
+      await startConversation('Second');
+      await delay(5);
+
+      await patchConversation(
+        first.id,
+        JSON.stringify({ title: 'Renamed first' })
+      );
+      const response = await app().request('/api/conversations');
+
+      expect(
+        conversationListSchema
+          .parse(await response.json())
+          .map(conversation => conversation.title)
+      ).toEqual(['Renamed first', 'Second']);
+    });
+
+    it('rejects a malformed patch body without changing anything', async () => {
+      const created = await startConversation('Graveyard toolbox');
+
+      const response = await patchConversation(
+        created.id,
+        JSON.stringify({ language: 'klingon' })
+      );
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: expect.any(String) });
+      await expect(store.conversations.find(created.id)).resolves.toMatchObject(
+        { title: 'Graveyard toolbox', language: Language.English }
+      );
+    });
+
+    it('rejects a patch body that is not JSON without changing anything', async () => {
+      const created = await startConversation('Graveyard toolbox');
+
+      const response = await patchConversation(created.id, 'not json at all');
+
+      expect(response.status).toBe(400);
+      await expect(store.conversations.find(created.id)).resolves.toMatchObject(
+        { title: 'Graveyard toolbox' }
+      );
+    });
+
+    it('answers an unknown conversation with not found on both endpoints', async () => {
+      const patch = await patchConversation(404, JSON.stringify({}));
+      const remove = await deleteConversation(404);
+
+      expect(patch.status).toBe(404);
+      expect(remove.status).toBe(404);
+    });
+
+    it('answers an id that only spells a number with not found on both endpoints', async () => {
+      await startConversation();
+
+      const responses = await Promise.all(
+        ['+1', '1e0'].flatMap(form => [
+          patchConversation(form, JSON.stringify({})),
+          deleteConversation(form)
+        ])
+      );
+
+      expect(responses.map(response => response.status)).toEqual([
+        404, 404, 404, 404
+      ]);
+    });
+
+    it('deletes a conversation and everything said in it', async () => {
+      const created = await startConversation();
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.User,
+        content: 'a light monster that banishes'
+      });
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.Assistant,
+        content: 'Try these'
+      });
+
+      const response = await deleteConversation(created.id);
+
+      expect(response.status).toBe(204);
+      expect(await response.text()).toBe('');
+      expect((await getConversation(created.id)).status).toBe(404);
+      await expect(
+        store.conversations.find(created.id)
+      ).resolves.toBeUndefined();
+      await expect(store.messages.list(created.id)).resolves.toEqual([]);
+    });
+
+    it('leaves the other conversations and their messages alone', async () => {
+      const doomed = await startConversation('Doomed');
+      const kept = await startConversation('Kept');
+      await store.messages.append({
+        conversationId: kept.id,
+        role: StoredMessageRole.User,
+        content: 'a dark monster that searches'
+      });
+
+      await deleteConversation(doomed.id);
+
+      const listed = await app().request('/api/conversations');
+      expect(
+        conversationListSchema
+          .parse(await listed.json())
+          .map(conversation => conversation.id)
+      ).toEqual([kept.id]);
+      const reopened = conversationWithMessagesSchema.parse(
+        await (await getConversation(kept.id)).json()
+      );
+      expect(reopened.messages.map(message => message.content)).toEqual([
+        'a dark monster that searches'
       ]);
     });
   });

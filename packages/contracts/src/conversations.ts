@@ -32,7 +32,22 @@ export const createConversationRequestSchema = z.object({
   model: z.string().min(1).optional()
 });
 
+/**
+ * A request to change part of a conversation. Unlike creation, an omitted field
+ * means "leave this one alone", so a patch only ever moves what it names, and
+ * anything it does name has to be a value the conversation could have been
+ * created with.
+ */
+export const updateConversationRequestSchema = z.object({
+  title: z.string().min(1).optional(),
+  language: z.enum(Language).optional(),
+  model: z.string().min(1).optional()
+});
+
 export type Conversation = z.infer<typeof conversationSchema>;
 export type CreateConversationRequest = z.infer<
   typeof createConversationRequestSchema
+>;
+export type UpdateConversationRequest = z.infer<
+  typeof updateConversationRequestSchema
 >;

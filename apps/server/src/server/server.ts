@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { apiErrorSchema } from '@ygo-assistant/contracts';
 import { DomainError, HttpStatus } from '@ygo-assistant/utils';
 
-import { createConversationRoutes } from './conversations.js';
+import { createConversationRoutes } from './conversations/conversations.js';
 import type { ServerDependencies } from './types.js';
 
 /**

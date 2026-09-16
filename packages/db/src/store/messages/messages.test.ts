@@ -4,15 +4,20 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CardAttribute, CardFilterField, Language } from '@ygo-assistant/cards';
 import type { CardFilters } from '@ygo-assistant/cards';
-import { FilterOperator } from '@ygo-assistant/cards';
+import {
+  CardAttribute,
+  CardFilterField,
+  FilterOperator,
+  Language
+} from '@ygo-assistant/cards';
 import { NotFoundError } from '@ygo-assistant/utils';
 
-import { openAppStore } from './appStore.js';
-import { databasePath } from './paths.js';
-import { MessageRole } from './types.js';
-import type { IAppStore } from './types.js';
+import { openAppStore } from '../app/appStore.js';
+
+import { databasePath } from '../paths.js';
+import type { IAppStore } from '../types.js';
+import { MessageRole } from '../types.js';
 
 const MODEL = 'llama3.1:8b';
 

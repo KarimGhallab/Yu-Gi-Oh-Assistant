@@ -1,4 +1,4 @@
-export { OllamaClient } from './OllamaClient.js';
+export { OllamaClient } from './client/OllamaClient.js';
 export {
   OllamaInvalidResponseError,
   OllamaModelNotFoundError,

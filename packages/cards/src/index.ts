@@ -1,22 +1,22 @@
 export {
   CardAttribute,
-  CardFilterField,
   CardType,
-  FilterOperator,
   FrameType,
   Language,
   LinkMarker
 } from './enums.js';
 export {
-  cardFiltersSchema,
+  CardFilterField,
   cardFilterSchema,
-  cardMatchesFilters
-} from './filters.js';
+  cardFiltersSchema,
+  cardMatchesFilters,
+  FilterOperator
+} from './filters/filters.js';
 export type {
   CardFilter,
   CardFilters,
   ComparisonOperator,
   EqualityOperator,
   TextOperator
-} from './filters.js';
+} from './filters/filters.js';
 export type { Card } from './types.js';

@@ -1,13 +1,13 @@
 import { serve } from '@hono/node-server';
 
-import { databasePath, openAppStore } from '@ygo-assistant/db';
 import type { IAppStore } from '@ygo-assistant/db';
+import { databasePath, openAppStore } from '@ygo-assistant/db';
 import { hasErrorMessage } from '@ygo-assistant/utils';
 
 import { createServerLogger } from './appLogger.js';
 import { loadConfig } from './config/index.js';
-import { ensureIndexMatchesConfig } from './indexGuard.js';
-import { createOllamaClient } from './ollamaClient.js';
+import { ensureIndexMatchesConfig } from './index-guard/indexGuard.js';
+import { createOllamaClient } from './ollama-client/ollamaClient.js';
 import { createServer, logBinding } from './server/index.js';
 
 async function main(): Promise<void> {

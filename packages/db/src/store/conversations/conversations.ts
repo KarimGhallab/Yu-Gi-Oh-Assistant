@@ -1,11 +1,14 @@
 import type { DatabaseSync } from 'node:sqlite';
 
-import { toLanguage, toNumber, toOptionalString, toString } from './row.js';
+import { NotFoundError } from '@ygo-assistant/utils';
+
+import { toLanguage, toNumber, toOptionalString, toString } from '../row.js';
 import type {
   Conversation,
   CreateConversationInput,
-  IConversationRepository
-} from './types.js';
+  IConversationRepository,
+  UpdateConversationInput
+} from '../types.js';
 
 const COLUMNS = 'id, title, language, model, created_at, updated_at';
 
@@ -52,6 +55,56 @@ export class ConversationRepository implements IConversationRepository {
       .all();
 
     return rows.map(row => toConversation(row));
+  }
+
+  /**
+   * Moves the fields the update names and leaves the rest, touching the
+   * modified time so a renamed conversation becomes the most recent one. The
+   * title cannot be cleared back to untitled: a conversation is named, renamed,
+   * or left alone.
+   */
+  async update(
+    id: number,
+    changes: UpdateConversationInput
+  ): Promise<Conversation> {
+    const row = this._database
+      .prepare(
+        `UPDATE conversations
+         SET title = COALESCE(?, title),
+             language = COALESCE(?, language),
+             model = COALESCE(?, model),
+             updated_at = ?
+         WHERE id = ?
+         RETURNING ${COLUMNS}`
+      )
+      .get(
+        changes.title ?? null,
+        changes.language ?? null,
+        changes.model ?? null,
+        new Date().toISOString(),
+        id
+      );
+
+    if (row === undefined) {
+      throw new NotFoundError(`No conversation has id ${id}`);
+    }
+
+    return toConversation(row);
+  }
+
+  /**
+   * Removes the conversation and, through the reference the messages table
+   * declares, everything said in it. One statement is one transaction, so no
+   * message can be left behind.
+   */
+  async delete(id: number): Promise<void> {
+    const result = this._database
+      .prepare('DELETE FROM conversations WHERE id = ?')
+      .run(id);
+
+    if (result.changes === 0) {
+      throw new NotFoundError(`No conversation has id ${id}`);
+    }
   }
 }
 

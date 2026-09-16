@@ -2,14 +2,14 @@ import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
-import { ConversationRepository } from './conversations.js';
-import { MessageRepository } from './messages.js';
-import { migrate } from './migrations.js';
+import { ConversationRepository } from '../conversations/conversations.js';
+import { MessageRepository } from '../messages/messages.js';
+import { migrate } from '../migrations.js';
 import type {
   IAppStore,
   IConversationRepository,
   IMessageRepository
-} from './types.js';
+} from '../types.js';
 
 class SqliteAppStore implements IAppStore {
   public readonly conversations: IConversationRepository;
@@ -30,10 +30,15 @@ class SqliteAppStore implements IAppStore {
  * any pending migrations, and returns the store over it. Owning the connection
  * is the caller's responsibility, which is what keeps the store out of a
  * module-level singleton.
+ *
+ * Foreign keys are switched on explicitly rather than left to whatever the
+ * driver happens to default to, because the messages of a deleted conversation
+ * go with it through the reference the schema declares.
  */
 export async function openAppStore(path: string): Promise<IAppStore> {
   await mkdir(dirname(path), { recursive: true });
   const database = new DatabaseSync(path);
+  database.exec('PRAGMA foreign_keys = ON');
 
   try {
     migrate(database);

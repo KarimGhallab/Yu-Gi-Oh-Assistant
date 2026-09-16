@@ -2,17 +2,17 @@ import type { DatabaseSync } from 'node:sqlite';
 
 import { z } from 'zod';
 
-import { cardFiltersSchema } from '@ygo-assistant/cards';
 import type { CardFilters } from '@ygo-assistant/cards';
+import { cardFiltersSchema } from '@ygo-assistant/cards';
 import { NotFoundError } from '@ygo-assistant/utils';
 
-import { toMessageRole, toNumber, toOptionalString, toString } from './row.js';
-import { MessageRole } from './types.js';
+import { toMessageRole, toNumber, toOptionalString, toString } from '../row.js';
 import type {
   AppendMessageInput,
   IMessageRepository,
   Message
-} from './types.js';
+} from '../types.js';
+import { MessageRole } from '../types.js';
 
 const COLUMNS =
   'id, conversation_id, role, content, filters_json, card_ids_json, created_at';

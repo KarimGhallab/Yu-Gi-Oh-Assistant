@@ -1,11 +1,11 @@
-import { OllamaInvalidResponseError } from './errors.js';
-import { OllamaHttp } from './http.js';
+import { OllamaInvalidResponseError } from '../errors.js';
+import { OllamaHttp } from '../http.js';
 import {
   chatChunkSchema,
   embedResponseSchema,
   showResponseSchema,
   tagsResponseSchema
-} from './schemas.js';
+} from '../schemas.js';
 import {
   type ChatChunk,
   type ChatRequest,
@@ -13,7 +13,7 @@ import {
   OllamaCapability,
   type OllamaClientOptions,
   type OllamaModel
-} from './types.js';
+} from '../types.js';
 
 /**
  * Talks to a configured Ollama server over HTTP. The composition root builds

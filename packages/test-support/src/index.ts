@@ -1,3 +1,3 @@
-export { FakeOllamaClient } from './FakeOllamaClient.js';
-export type { FakeOllamaResponses } from './FakeOllamaClient.js';
-export { TempDataDir } from './TempDataDir.js';
+export { TempDataDir } from './data-dir/TempDataDir.js';
+export { FakeOllamaClient } from './ollama/FakeOllamaClient.js';
+export type { FakeOllamaResponses } from './ollama/FakeOllamaClient.js';

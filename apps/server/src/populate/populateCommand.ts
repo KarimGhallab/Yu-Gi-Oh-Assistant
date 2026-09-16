@@ -1,8 +1,8 @@
 import { populateCardIndex } from '@ygo-assistant/db';
 import { createLogger } from '@ygo-assistant/logger';
 
-import { NodeEnvironment, loadConfig } from './config/index.js';
-import { createOllamaClient } from './ollamaClient.js';
+import { NodeEnvironment, loadConfig } from '../config/index.js';
+import { createOllamaClient } from '../ollama-client/ollamaClient.js';
 
 const config = loadConfig(process.env);
 const logger = createLogger({

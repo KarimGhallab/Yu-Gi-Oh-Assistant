@@ -48,7 +48,13 @@ const storeStub: IAppStore = {
       throw new Error('These tests never store a conversation');
     },
     find: async () => undefined,
-    list: async () => []
+    list: async () => [],
+    update: async () => {
+      throw new Error('These tests never update a conversation');
+    },
+    delete: async () => {
+      throw new Error('These tests never delete a conversation');
+    }
   },
   messages: {
     append: async () => {
