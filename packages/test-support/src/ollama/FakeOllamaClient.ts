@@ -19,6 +19,7 @@ export interface FakeOllamaResponses {
   models?: OllamaModel[];
   embeddings?: number[][];
   chatChunks?: ChatChunk[];
+  chatResponses?: ChatChunk[][];
 }
 
 /**
@@ -47,7 +48,10 @@ export class FakeOllamaClient implements IOllamaClient {
 
   chat(request: ChatRequest): AsyncIterable<ChatChunk> {
     this.chatRequests.push(request);
-    const chunks = this._responses.chatChunks ?? DEFAULT_CHAT_CHUNKS;
+    const scripted =
+      this._responses.chatResponses?.[this.chatRequests.length - 1];
+    const chunks =
+      scripted ?? this._responses.chatChunks ?? DEFAULT_CHAT_CHUNKS;
 
     return {
       [Symbol.asyncIterator]: async function* () {

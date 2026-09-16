@@ -21,3 +21,5 @@ export {
   messageSchema
 } from './messages.js';
 export type { ConversationWithMessages, Message } from './messages.js';
+export { TurnEventName, turnEventSchema, turnRequestSchema } from './turn.js';
+export type { TurnEvent, TurnRequest } from './turn.js';

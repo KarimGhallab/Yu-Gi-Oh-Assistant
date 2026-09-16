@@ -36,3 +36,14 @@ Refusing an unknown conversation and a malformed body before the stream opens is
 what keeps those two failures as plain client errors instead of a stream that
 starts and then errors, which would leave the client unable to tell a rejected
 request from a turn that died mid-flight.
+
+**Notes from 25:** Two things the implementation left for this ticket. Hono's
+`streamSSE` writes its own `event: error` frame, with a bare message, only when
+it is given an `onError` callback, so a failure raised inside the turn closes the
+stream silently today; the error frame this ticket promises has to be framed by
+the turn itself and validated against the contract like every other frame, not
+delegated to the helper. And on Node a client that disconnects does not abort the
+turn: the model call runs to completion and the answer is still stored. Both are
+harmless for a local single-user app, but each is a decision worth recording.
+`dependencies.logger` is also untouched by the turn so far, so the stage and
+conversation context this ticket's criterion asks for is new work.

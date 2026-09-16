@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Card } from '../card/card.js';
 import {
   CardAttribute,
   CardType,
@@ -7,7 +8,6 @@ import {
   Language,
   LinkMarker
 } from '../enums.js';
-import type { Card } from '../types.js';
 import {
   CardFilterField,
   FilterOperator,

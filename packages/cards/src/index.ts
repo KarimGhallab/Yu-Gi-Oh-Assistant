@@ -1,3 +1,5 @@
+export { cardSchema } from './card/card.js';
+export type { Card } from './card/card.js';
 export {
   CardAttribute,
   CardType,
@@ -19,4 +21,3 @@ export type {
   EqualityOperator,
   TextOperator
 } from './filters/filters.js';
-export type { Card } from './types.js';

@@ -32,7 +32,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 22  | [Rename, reconfigure, and delete a conversation](./22-rename-reconfigure-and-delete-a-conversation.md)           | Resolved (2026-09-16) | 20, 21     | [05](../specs/05-conversation-store-and-crud.md)                                      |
 | 23  | [Parse a prompt into filters with structured output](./23-parse-a-prompt-into-filters-with-structured-output.md) | Resolved (2026-09-16) | -          | [06](../specs/06-prompt-to-filter-parsing.md)                                         |
 | 24  | [JSON-mode parsing with a single repair retry](./24-json-mode-parsing-with-a-repair-retry.md)                    | Resolved (2026-09-16) | 23         | [06](../specs/06-prompt-to-filter-parsing.md)                                         |
-| 25  | [A turn streams an answer and is saved](./25-a-turn-streams-an-answer-and-is-saved.md)                           | `ready-for-agent`     | -          | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
+| 25  | [A turn streams an answer and is saved](./25-a-turn-streams-an-answer-and-is-saved.md)                           | Resolved (2026-09-16) | -          | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
 | 26  | [The turn says so when the search comes up short](./26-the-turn-says-so-when-the-search-comes-up-short.md)       | `ready-for-agent`     | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
 | 27  | [The turn fails cleanly](./27-the-turn-fails-cleanly.md)                                                         | `ready-for-agent`     | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
 | 28  | [A turn honors the player's overrides](./28-a-turn-honors-the-players-overrides.md)                              | `ready-for-agent`     | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
@@ -41,7 +41,7 @@ numbering across specs, so blocking edges stay legible across features.
 
 Specs 04 (Retrieval engine), 05 (Conversation store and CRUD), and 06
 (Prompt-to-filter parsing) are fully landed: 17 through 24 are resolved. Spec 07
-(Grounded answer and streamed turn) is ticketed as 25 through 28: 25 is the
-frontier, and 26, 27, and 28 each wait only on it, so they can land in any order.
-Spec 08 (Chat client) waits on 07, and spec 09 (Transparent controls) waits on
-08. Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.
+(Grounded answer and streamed turn) is ticketed as 25 through 28: 25 landed, so
+26, 27, and 28 are the frontier, each waiting only on it. Spec 08 (Chat client)
+waits on 07, and spec 09 (Transparent controls) waits on 08. Ticket 11 supersedes
+the single-origin setup in ticket 06 and spec 01.
