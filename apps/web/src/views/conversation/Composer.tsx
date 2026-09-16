@@ -1,4 +1,4 @@
-import { type SubmitEvent, useRef, useState } from 'react';
+import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 
 import SendIcon from '../../shared/components/icons/SendIcon.js';
 
@@ -26,6 +26,11 @@ interface ComposerProps {
  * stays usable: a player can write the next request while the answer arrives,
  * and the keyboard is left where it can type rather than on a control that has
  * just gone dead.
+ *
+ * Opening a conversation puts the keyboard in the field, because opening one is
+ * how a player arrives to ask. The conversation's surface is keyed by the
+ * conversation, so this is once per conversation opened rather than once per
+ * render.
  */
 export default function Composer({
   onSend,
@@ -36,6 +41,10 @@ export default function Composer({
   const [text, setText] = useState('');
   const field = useRef<HTMLTextAreaElement>(null);
   const ready = text.trim().length > 0 && !running;
+
+  useEffect(() => {
+    field.current?.focus();
+  }, []);
 
   const submit = (event: SubmitEvent<HTMLFormElement>): void => {
     event.preventDefault();

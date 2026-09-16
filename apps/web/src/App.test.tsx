@@ -137,6 +137,17 @@ const json = (body: unknown, status = 200): Response =>
 const notFound = (id: number): Response =>
   json({ error: `No conversation has id ${id}` }, 404);
 
+/**
+ * Nothing focused, which is where a test of the tab order from the top starts.
+ * Opening a conversation puts the keyboard in the request field, so a test that
+ * means to walk the document from its start has to clear that first.
+ */
+const clearFocus = (): void => {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+};
+
 type FetchHandler = (
   url: string,
   init: RequestInit | undefined
@@ -609,11 +620,13 @@ describe('the chat', () => {
 
     renderApp('/c/2');
     await screen.findByRole('region', { name: 'Messages' });
+    clearFocus();
 
     // The first stop is the way past the sidebar, and then the way in is the
-    // brand, the control that starts a conversation, the conversation that is
-    // open and the two things that can be done to it, so the cards the answer
-    // suggested come next.
+    // control that folds the list, the brand, the control that starts a
+    // conversation, the conversation that is open and the two things that can be
+    // done to it, so the cards the answer suggested come next.
+    await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -1194,6 +1207,118 @@ describe('the chat', () => {
     expect(send.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('puts the keyboard in the prompt when a conversation is opened', async () => {
+    const banish = createConversation(3, { title: 'Banish toolbox' });
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD, banish])
+          : json(withMessages(url.includes('/3') ? banish : GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('link', { name: 'Banish toolbox' })
+    );
+
+    const field = await screen.findByRole('textbox', { name: 'Your request' });
+    await waitFor(() => expect(field).toHaveFocus());
+  });
+
+  it('folds the conversations away, and keeps them as named marks', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('region', { name: 'Messages' });
+
+    const fold = screen.getByRole('button', {
+      name: 'Hide the conversations'
+    });
+    expect(fold).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      screen.getByRole('button', { name: 'Rename Graveyard toolbox' })
+    ).toBeInTheDocument();
+
+    await userEvent.click(fold);
+
+    expect(
+      screen.getByRole('button', { name: 'Show the conversations' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByRole('button', { name: 'Rename Graveyard toolbox' })
+    ).not.toBeInTheDocument();
+
+    const mark = screen.getByRole('link', { name: 'Graveyard toolbox' });
+    expect(mark).toHaveTextContent('G');
+  });
+
+  it('names a folded conversation when its mark is pointed at', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('region', { name: 'Messages' });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Hide the conversations' })
+    );
+
+    const mark = screen.getByRole('link', { name: 'Graveyard toolbox' });
+    await userEvent.hover(mark);
+
+    // The page's own heading carries the same words, so the sidebar is where the
+    // name is looked for.
+    const sidebar = within(screen.getByRole('complementary'));
+    expect(sidebar.getByText('Graveyard toolbox')).toBeInTheDocument();
+
+    await userEvent.unhover(mark);
+
+    expect(sidebar.queryByText('Graveyard toolbox')).not.toBeInTheDocument();
+  });
+
+  it('does nothing when the rail itself is pointed at', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD))
+      )
+    );
+
+    renderApp('/c/2');
+    await screen.findByRole('region', { name: 'Messages' });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Hide the conversations' })
+    );
+    await userEvent.hover(
+      screen.getByRole('navigation', { name: 'Conversations' })
+    );
+
+    const sidebar = within(screen.getByRole('complementary'));
+    expect(sidebar.queryByText('Graveyard toolbox')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Rename Graveyard toolbox' })
+    ).not.toBeInTheDocument();
+  });
+
   it('renames a conversation from the sidebar', async () => {
     let title: string | null = 'Graveyard toolbox';
     const fetchMock = stubFetch((url, init) => {
@@ -1481,7 +1606,9 @@ describe('the chat', () => {
 
     renderApp('/c/2');
     await screen.findByRole('link', { name: 'Graveyard toolbox' });
+    clearFocus();
 
+    await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -1518,6 +1645,7 @@ describe('the chat', () => {
 
     renderApp('/c/2');
     await screen.findByRole('textbox', { name: 'Your request' });
+    clearFocus();
 
     await userEvent.tab();
 
@@ -1605,6 +1733,11 @@ describe('the chat', () => {
 
     renderApp('/');
     await screen.findByRole('link', { name: 'Graveyard toolbox' });
+
+    await userEvent.tab();
+    expect(
+      screen.getByRole('button', { name: 'Hide the conversations' })
+    ).toHaveFocus();
 
     await userEvent.tab();
     expect(

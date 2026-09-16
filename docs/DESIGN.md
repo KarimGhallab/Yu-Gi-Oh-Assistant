@@ -288,17 +288,38 @@ level deep.
 ### Navigation
 
 - **Style:** the conversation list is a `nav` of rows, one per conversation, plus
-  the brand mark and the new-conversation control above it, which carries the
-  plus.
-- **Default / Hover / Active:** Ash Grey text on the panel; hover lifts the text
-  to Bone White over a 60% Rail Grey wash; the open conversation takes the Rail
-  Grey fill at full strength with Bone White text and `aria-current="page"`.
-- **A row's actions:** renaming and deleting live on the row they belong to, as
-  two marks in Ash Grey that lift to Bone White when the row is pointed at or
-  holds focus, each named for its conversation so a screen reader hears
-  "Rename Graveyard toolbox" rather than a list of marks. The word is what goes,
-  the name is not, because opacity is not what assistive technology reads and
-  neither is a glyph. They are quiet at rest and always in the tab order.
+  the brand mark, the fold control, and the new-conversation control above it,
+  the last of which carries the plus.
+- **Default / Hover / Active:** Ash Grey text on the panel; hover lifts the whole
+  row to Bone White over a 60% Rail Grey wash; the open conversation takes the
+  Rail Grey fill at full strength with Bone White text and `aria-current="page"`
+  on its name. The fill belongs to the row rather than to the name, so a row's
+  own controls sit on the surface they belong to, and the row draws the focus
+  outline for its name: a ring around the name alone would box the row in two.
+- **A row's actions:** renaming and deleting sit on the row's own surface, right
+  of the name, as two marks in Ash Grey that lift to Bone White when the row is
+  pointed at or holds focus, each named for its conversation so a screen reader
+  hears "Rename Graveyard toolbox" rather than a list of marks. The word is what
+  goes, the name is not, because opacity is not what assistive technology reads
+  and neither is a glyph. They are quiet at rest and always in the tab order.
+- **Folded:** the fold control collapses the list to a 4rem rail, a column on a
+  wide window and a row that scrolls sideways on a narrow one, and folds it back.
+  Its mark points the way the list will go, into the panel to fold it away and out
+  of it to bring it back, so the drawing says what the control is about to do
+  rather than only that a control was there.
+  A folded conversation is a square mark carrying the first letter of its name,
+  which is enough to recognise one by and not enough to name it: the mark is
+  named for its conversation for assistive technology, and the letter itself is
+  the only thing on screen that identifies it. Folding closes a row that was
+  being renamed or confirmed, because that field is not on screen in a rail.
+- **A folded conversation's name:** pointing at or focusing a mark shows the
+  whole name beside it, in a Bench Slate panel with a 1px Rail Grey hairline and
+  no shadow, placed from the mark's own box and fixed to the window, because the
+  rail scrolls and anything inside it would be clipped by it. The mark is what
+  answers, not the rail: pointing at the rail itself does nothing, and no hover
+  opens the list. The name is a convenience rather than the way a conversation is
+  carried, since the mark is already named for assistive technology, so nothing
+  about a conversation depends on hovering.
 - **Renaming:** the row becomes a field holding the name it has, with Save and
   Cancel. Opening it moves focus into the field and selects the name, so typing
   replaces it and Enter saves it; Escape, Cancel, or an empty name leaves the
@@ -314,8 +335,12 @@ level deep.
   has controls of its own. It is a Bench Slate panel that appears over the frame
   while it holds focus, and it lands on the request field, or on the conversation
   itself when there is nothing to ask in yet.
-- **Mobile treatment:** identical, because the sidebar stacks rather than
-  collapsing into a drawer. The list scrolls inside the sidebar's 16rem cap.
+- **Mobile treatment:** the sidebar stacks above the conversation rather than
+  sitting beside it, because the two want the width. Folded there it is the header
+  row and one row of marks, with a mark's name shown below it rather than beside
+  it. A touch screen has nothing to hover, so there the marks are the control and
+  the fold control is what opens the list. The list scrolls inside the sidebar's
+  16rem cap.
 
 ### Cards (the grid)
 
@@ -361,7 +386,9 @@ level deep.
 - **Field:** a textarea on a Bench Slate surface, 4px radius, one hairline of
   25% amber rather than a rail, Body text in Bone White, Dust Grey placeholder.
   Focus draws the same 2px Halo Amber outline as every other control, and the
-  border does not change.
+  border does not change. Opening a conversation puts the keyboard in this field,
+  because opening one is how a player arrives to ask, so the conversation
+  address needs no further stop to start typing.
 - **Send:** the primary button, the filled lamp of this surface, carrying the
   arrow. It is out of action while a turn runs, while the field stays usable so
   the next request can be written as the answer arrives.
@@ -410,6 +437,9 @@ level deep.
   sits in, beside the word it belongs to, or named for what it acts on when it is
   the whole control. The set is hand-drawn, and it does not grow a second weight,
   a fill, or a second size.
+- **Do** keep the pointer's affordances the pointer's: a folded conversation's
+  mark, the fold control, and the list itself are each reachable without hovering,
+  so no name and no conversation is behind a hover.
 
 ### Don't:
 

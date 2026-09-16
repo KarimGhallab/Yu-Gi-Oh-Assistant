@@ -19,9 +19,9 @@ export default function TrashIcon({ className }: IconProps) {
       strokeWidth="1.5"
       viewBox="0 0 24 24"
       width="16">
-      <path d="M4 7h16" />
-      <path d="M10 7V5h4v2" />
-      <path d="M6.5 7v12h11V7" />
+      <path d="M4 4h16" />
+      <path d="M10 4V2h4v2" />
+      <path d="M5.5 4v18h13V4" />
     </svg>
   );
 }
