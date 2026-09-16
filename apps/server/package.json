@@ -20,6 +20,8 @@
   "packageManager": "pnpm@11.20.0",
   "dependencies": {
     "@hono/node-server": "^2.1.1",
+    "@ygo-assistant/cards": "workspace:*",
+    "@ygo-assistant/contracts": "workspace:*",
     "@ygo-assistant/db": "workspace:*",
     "@ygo-assistant/logger": "workspace:*",
     "@ygo-assistant/ollama": "workspace:*",

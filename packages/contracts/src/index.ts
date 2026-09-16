@@ -1,5 +1,15 @@
 /**
- * Package entry point. The endpoint and stream contracts are added as they are
- * implemented.
+ * Package entry point: the endpoint and stream contracts shared by the server
+ * and the client, so both validate the same shapes.
  */
-export {};
+export { apiErrorSchema } from './apiError.js';
+export type { ApiError } from './apiError.js';
+export {
+  conversationListSchema,
+  conversationSchema,
+  createConversationRequestSchema
+} from './conversations.js';
+export type {
+  Conversation,
+  CreateConversationRequest
+} from './conversations.js';

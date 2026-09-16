@@ -10,6 +10,8 @@
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/**/*.test.ts"],
   "references": [
+    { "path": "../../packages/cards/tsconfig.build.json" },
+    { "path": "../../packages/contracts/tsconfig.build.json" },
     { "path": "../../packages/db/tsconfig.build.json" },
     { "path": "../../packages/logger/tsconfig.build.json" },
     { "path": "../../packages/ollama/tsconfig.build.json" },

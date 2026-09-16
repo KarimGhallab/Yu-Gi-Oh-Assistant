@@ -1,5 +1,9 @@
 import { serve } from '@hono/node-server';
 
+import { databasePath, openAppStore } from '@ygo-assistant/db';
+import type { IAppStore } from '@ygo-assistant/db';
+import { hasErrorMessage } from '@ygo-assistant/utils';
+
 import { createServerLogger } from './appLogger.js';
 import { loadConfig } from './config/index.js';
 import { ensureIndexMatchesConfig } from './indexGuard.js';
@@ -14,14 +18,26 @@ async function main(): Promise<void> {
     await ensureIndexMatchesConfig(config);
   } catch (error) {
     logger.error('The card index is not usable', {
-      message: error instanceof Error ? error.message : String(error)
+      message: describeError(error)
     });
     process.exitCode = 1;
     return;
   }
 
   const ollama = createOllamaClient(config.ollama);
-  const app = createServer({ config, logger, ollama });
+
+  let store: IAppStore;
+  try {
+    store = await openAppStore(databasePath(config.dataDir));
+  } catch (error) {
+    logger.error('The conversation store is not usable', {
+      message: describeError(error)
+    });
+    process.exitCode = 1;
+    return;
+  }
+
+  const app = createServer({ config, logger, ollama, store });
 
   logBinding(logger, config.host);
   serve(
@@ -30,6 +46,10 @@ async function main(): Promise<void> {
       logger.info('Server listening', { port: info.port, host: config.host });
     }
   );
+}
+
+function describeError(error: unknown): string {
+  return hasErrorMessage(error) ? error.message : String(error);
 }
 
 await main();
