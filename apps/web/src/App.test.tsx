@@ -1144,6 +1144,56 @@ describe('the chat', () => {
     expect(signalled?.aborted).toBe(true);
   });
 
+  it('marks a row action instead of wording it, and keeps it named', async () => {
+    const conversation = createConversation(2, { title: 'Graveyard toolbox' });
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation))
+      )
+    );
+
+    renderApp('/c/2');
+
+    const rename = await screen.findByRole('button', {
+      name: 'Rename Graveyard toolbox'
+    });
+    const remove = screen.getByRole('button', {
+      name: 'Delete Graveyard toolbox'
+    });
+
+    expect(rename.textContent).toBe('');
+    expect(remove.textContent).toBe('');
+    expect(rename.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(remove.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('keeps the word on the controls that carry one', async () => {
+    const conversation = createConversation(2, { title: 'Graveyard toolbox' });
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([conversation])
+          : json(withMessages(conversation))
+      )
+    );
+
+    renderApp('/c/2');
+
+    const start = await screen.findByRole('button', {
+      name: 'New conversation'
+    });
+    const send = await screen.findByRole('button', { name: 'Send' });
+
+    expect(start).toHaveTextContent('New');
+    expect(send).toHaveTextContent('Send');
+    expect(start.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(send.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('renames a conversation from the sidebar', async () => {
     let title: string | null = 'Graveyard toolbox';
     const fetchMock = stubFetch((url, init) => {

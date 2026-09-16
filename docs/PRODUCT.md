@@ -95,7 +95,7 @@ live instance is not.
   from the YGOPRODeck dump.
 - The decision record: feature specs, tickets, and their Outcomes under
   `docs/tracker`, plus the domain docs.
-- Absent, and not to be fabricated: logo, icons, imagery, committed screenshots,
+- Absent, and not to be fabricated: logo, imagery, committed screenshots,
   testimonials, user counts, benchmarks, or pricing.
 
 ## Product Principles

@@ -1,10 +1,12 @@
 import { type SubmitEvent, useRef, useState } from 'react';
 
+import SendIcon from '../../shared/components/icons/SendIcon.js';
+
 const FIELD_CLASS =
   'w-full resize-none rounded border border-amber-500/25 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 const SEND_CLASS =
-  'shrink-0 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
+  'inline-flex shrink-0 items-center gap-1.5 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
 
 interface ComposerProps {
   onSend(text: string): void;
@@ -76,6 +78,7 @@ export default function Composer({
           {announcement ?? ''}
         </p>
         <button type="submit" disabled={!ready} className={SEND_CLASS}>
+          <SendIcon />
           Send
         </button>
       </div>

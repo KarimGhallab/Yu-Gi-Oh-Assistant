@@ -14,12 +14,15 @@ import {
   useRenameConversation,
   useStartConversation
 } from '../queries.js';
+import PencilIcon from './icons/PencilIcon.js';
+import PlusIcon from './icons/PlusIcon.js';
+import TrashIcon from './icons/TrashIcon.js';
 
 const BRAND_CLASS =
   'min-w-0 truncate rounded text-sm font-semibold tracking-wide text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 const START_CLASS =
-  'shrink-0 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
+  'inline-flex shrink-0 items-center gap-1.5 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
 
 const ROW_FORM_CLASS = 'flex items-center gap-1 py-0.5 pl-2';
 
@@ -27,13 +30,13 @@ const ROW_FIELD_CLASS =
   'min-w-0 flex-1 rounded border border-amber-500/25 bg-neutral-900 px-1.5 py-1 text-sm text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 /**
- * A quiet action on a row. It is text rather than a control, so the list stays
- * a list of conversations; it comes forward when the row is pointed at or
- * reached, and it is always announced, because opacity is not what assistive
- * technology reads.
+ * A quiet action on a row. It is a mark rather than a word, so the list stays a
+ * list of conversations; it comes forward when the row is pointed at or
+ * reached, and it is named for the conversation it acts on, because opacity is
+ * not what assistive technology reads and neither is a glyph.
  */
 const ROW_ACTION_CLASS =
-  'shrink-0 rounded px-1 text-sm text-neutral-400 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-neutral-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
+  'inline-flex shrink-0 items-center justify-center rounded p-1.5 text-neutral-400 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-neutral-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 /** A control of the row that is being edited or confirmed, always visible. */
 const ROW_BUTTON_CLASS =
@@ -214,6 +217,7 @@ export default function Sidebar() {
           aria-label="New conversation"
           onClick={() => void start()}
           disabled={startConversation.isPending}>
+          <PlusIcon />
           New
         </button>
       </div>
@@ -324,7 +328,7 @@ export default function Sidebar() {
                       })
                     }
                     className={ROW_ACTION_CLASS}>
-                    Rename
+                    <PencilIcon />
                   </button>
                   <button
                     type="button"
@@ -333,7 +337,7 @@ export default function Sidebar() {
                       setEditing({ kind: 'deleting', id: conversation.id })
                     }
                     className={ROW_ACTION_CLASS}>
-                    Delete
+                    <TrashIcon />
                   </button>
                 </div>
               )}

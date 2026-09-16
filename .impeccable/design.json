@@ -226,7 +226,7 @@
       "name": "Sidebar Row (open)",
       "kind": "nav",
       "refersTo": "nav-row-active",
-      "description": "The conversation the address names, filled with the rail colour and marked with aria-current.",
+      "description": "The conversation the address names, filled with the rail color and marked with aria-current.",
       "html": "<a class=\"ds-nav-row ds-nav-row-active\" href=\"#\" aria-current=\"page\">Graveyard toolbox</a>",
       "css": ".ds-nav-row-active { background: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-nav-row-active:hover { background: oklch(26.9% 0 none); color: oklch(97% 0 none); }"
     },
@@ -258,7 +258,7 @@
       "name": "Alert Line",
       "kind": "custom",
       "refersTo": "alert-line",
-      "description": "The server's own message, verbatim, beside the control that failed. The only non-amber colour, and text only.",
+      "description": "The server's own message, verbatim, beside the control that failed. The only non-amber color, and text only.",
       "html": "<p class=\"ds-alert\" role=\"alert\">The card index is not ready</p>",
       "css": ".ds-alert { margin: 0; padding: 0 16px 8px; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
     },
@@ -282,9 +282,17 @@
       "name": "Nav Row Action",
       "kind": "button",
       "refersTo": "nav-row-action",
-      "description": "A conversation's own controls, renaming and deleting, quiet until the row is pointed at or holds focus. Always in the tab order and always announced, since opacity is not what assistive technology reads.",
-      "html": "<span class=\"ds-nav-row-actions\"><a class=\"ds-nav-row\" href=\"#\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\">Rename</button><button class=\"ds-nav-row-action\" type=\"button\">Delete</button></span>",
-      "css": ".ds-nav-row-actions { display: flex; align-items: center; gap: 4px; } .ds-nav-row-action { flex-shrink: 0; border: 0; background: none; padding: 0 4px; border-radius: 4px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; opacity: 0; } .ds-nav-row-actions:hover .ds-nav-row-action, .ds-nav-row-actions:focus-within .ds-nav-row-action { opacity: 1; } .ds-nav-row-action:hover { color: oklch(97% 0 none); } .ds-nav-row-action:focus-visible { opacity: 1; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+      "description": "A conversation's own controls, renaming and deleting, drawn as marks rather than words so the list stays a list of conversations. Quiet until the row is pointed at or holds focus, always in the tab order, and each named for its conversation, because opacity is not what assistive technology reads and neither is a glyph.",
+      "html": "<span class=\"ds-nav-row-actions\"><a class=\"ds-nav-row\" href=\"#\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Rename Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\">M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z</svg></button><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Delete Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 7h16\"/><path d=\"M10 7V5h4v2\"/><path d=\"M6.5 7v12h11V7\"/></svg></button></span>",
+      "css": ".ds-nav-row-actions { display: flex; align-items: center; gap: 4px; } .ds-nav-row-action { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border: 0; background: none; padding: 6px; border-radius: 4px; color: oklch(70.8% 0 none); opacity: 0; } .ds-nav-row-actions:hover .ds-nav-row-action, .ds-nav-row-actions:focus-within .ds-nav-row-action { opacity: 1; } .ds-nav-row-action:hover { color: oklch(97% 0 none); } .ds-nav-row-action:focus-visible { opacity: 1; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Icon",
+      "kind": "custom",
+      "refersTo": "icon",
+      "description": "A control's mark, drawn in the set rather than imported: a 24-unit box on a 1.5px stroke, rendered at 16px, in the color of the control it sits in. It marks a control and never carries meaning alone.",
+      "html": "<button class=\"ds-btn-primary ds-icon-label\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 5v14M5 12h14\"/></svg>New</button>",
+      "css": ".ds-icon-label { display: inline-flex; align-items: center; gap: 6px; } .ds-icon { flex-shrink: 0; width: 16px; height: 16px; }"
     },
     {
       "name": "Skip Link",
@@ -296,7 +304,7 @@
   ],
   "narrative": {
     "northStar": "The Duelist's Workbench",
-    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is being built. Its history and its grid of framed cards are in place, and the amber rail around the active turn and the model's reading set as marginalia follow.\n\nFlatness is deliberate and the system has no motion yet. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and the only transition in the app is a colour change that happens instantly.",
+    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is being built. Its history and its grid of framed cards are in place, and the amber rail around the active turn and the model's reading set as marginalia follow.\n\nFlatness is deliberate and the system has no motion yet. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and the only transition in the app is a color change that happens instantly.",
     "keyCharacteristics": [
       "Near-neutral, three-step dark surfaces with no shadows.",
       "One accent, amber, reserved for action, selection, and focus.",
@@ -313,12 +321,12 @@
       },
       {
         "name": "The No Second Accent Rule",
-        "body": "There is no secondary or tertiary colour. Failure is the only exception, it is text only, and it never becomes a fill.",
+        "body": "There is no secondary or tertiary color. Failure is the only exception, it is text only, and it never becomes a fill.",
         "section": "colors"
       },
       {
         "name": "The No Display Rule",
-        "body": "Nothing shouts. 18px is the ceiling, and there is no display or headline size to reach for. Hierarchy comes from colour, space, and hairlines, not from scale.",
+        "body": "Nothing shouts. 18px is the ceiling, and there is no display or headline size to reach for. Hierarchy comes from color, space, and hairlines, not from scale.",
         "section": "typography"
       }
     ],
@@ -328,14 +336,15 @@
       "Do use 1px Rail Grey hairlines to separate, and cap prose at about 68 characters and notices at 28rem.",
       "Do set machine facts (filters, counts, card stats, identifiers) in 12px mono, and everything a person reads in the platform stack.",
       "Do give a new full-page surface its own Room Black background. The frame carries it today and the document body stays transparent.",
-      "Do keep every control reachable by keyboard with a visible 2px Halo Amber outline, and keep aria-current on the open conversation."
+      "Do keep every control reachable by keyboard with a visible 2px Halo Amber outline, and keep aria-current on the open conversation.",
+      "Do keep an icon at 16px on a 1.5px stroke, the color of the control it sits in, beside the word it belongs to, or named for what it acts on when it is the whole control. The set is hand-drawn, and it does not grow a second weight, a fill, or a second size."
     ],
     "donts": [
-      "Don't introduce a second accent, a gradient, or a coloured heading; the one exception is Signal Red as text about a failure.",
-      "Don't go above 18px anywhere. If something needs more weight, change its colour, its space, or its hairline instead.",
+      "Don't introduce a second accent, a gradient, or a colored heading; the one exception is Signal Red as text about a failure.",
+      "Don't go above 18px anywhere. If something needs more weight, change its color, its space, or its hairline instead.",
       "Don't add shadows, blur, or elevation effects. If a surface needs to communicate hierarchy, use a tonal step.",
       "Don't add motion without deciding the motion question first; the system is instant today by design, not by accident.",
-      "Don't introduce a webfont, an icon font, or iconography in the chrome. The system's voice is the platform's, and the app has no icons.",
+      "Don't introduce a webfont, an icon font, or an icon as decoration. The set is hand-drawn, one stroke weight, and it marks controls only: the cards, the conversation, and the notices carry no icons at all.",
       "Don't crop, round, tilt, or restyle a card image. The card is a record of a real object and keeps its printed proportions.",
       "Don't use a box, a card container, or a nested rectangle where a hairline and a spacing step would do."
     ]

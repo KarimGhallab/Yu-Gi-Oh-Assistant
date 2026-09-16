@@ -127,7 +127,7 @@ around the active turn and the model's reading set as marginalia follow.
 
 Flatness is deliberate and the system has no motion yet. Depth is tonal: three
 steps of near-black do the work shadows would do elsewhere, and the only
-transition in the app is a colour change that happens instantly.
+transition in the app is a color change that happens instantly.
 
 **Key Characteristics:**
 
@@ -166,7 +166,7 @@ the accent and failure.
 - **Bone White** (`oklch(97% 0 none)`): primary text.
 - **Ash Grey** (`oklch(70.8% 0 none)`): secondary text, inactive navigation.
 - **Dust Grey** (`oklch(55.6% 0 none)`): tertiary text and placeholders.
-- **Signal Red** (`oklch(70.4% 0.191 22.216)`): failure text. The one colour that
+- **Signal Red** (`oklch(70.4% 0.191 22.216)`): failure text. The one color that
   is not the lamp, and it is only ever a sentence about something going wrong.
 
 ### Named Rules
@@ -181,7 +181,7 @@ regions; whether one screen should carry two filled controls at all is
 undecided. Until it is, two fills in two regions is the limit, and a wash is the
 whisper that does not count as a lamp.
 
-**The No Second Accent Rule.** There is no secondary or tertiary colour. Failure
+**The No Second Accent Rule.** There is no secondary or tertiary color. Failure
 is the only exception, it is text only, and it never becomes a fill.
 
 ## Typography
@@ -211,7 +211,7 @@ stats, and identifiers.
 ### Named Rules
 
 **The No Display Rule.** Nothing shouts. 18px is the ceiling, and there is no
-display or headline size to reach for. Hierarchy comes from colour, space, and
+display or headline size to reach for. Hierarchy comes from color, space, and
 hairlines, not from scale.
 
 ## Layout
@@ -241,7 +241,7 @@ steps: Room Black is the room, Bench Slate is a panel standing in it, and Rail
 Grey draws the edge or fills the row that is open. A surface that needs to feel
 closer moves up one step, not forward.
 
-Motion is deliberately absent: state changes are instant colour swaps. Whether
+Motion is deliberately absent: state changes are instant color swaps. Whether
 the system should grow a small transition vocabulary is an undecided decision
 rather than a prohibition, so nothing here forbids motion; nothing adds it yet
 either.
@@ -267,19 +267,38 @@ level deep.
 - **Secondary / Ghost:** none exist. A second action is a text link at Bone
   White, or an amber text button when it is the primary action of a notice.
 
+### Icons
+
+- **Set:** one hand-drawn set, the platform's voice drawn as geometry rather than
+  borrowed from an icon font or a second library. It is a control's mark, never
+  decoration.
+- **Shape:** a 24-unit drawing box, 1.5px stroke, round caps and joins, rendered
+  at 16px, and sitting before the word it belongs to with a 6px gap.
+- **Color:** `currentColor`, so an icon is the color of the control it sits in
+  and can never introduce one of its own. It is never amber: amber marks the
+  action, the selection, and the focus, and a mark inside a control is none of
+  those. Set in Ember Ink on the lamp it stays legible without becoming a second
+  lamp.
+- **Naming:** an icon never carries meaning alone. Where it is the whole control,
+  the control is named for what it acts on, and where it sits beside a word, it
+  is silent to assistive technology so the word is what is read.
+- **Use it for:** the controls of the frame and of the composer, and nothing
+  else. The cards, the conversation, and the notices carry no icons.
+
 ### Navigation
 
 - **Style:** the conversation list is a `nav` of rows, one per conversation, plus
-  the brand mark and the new-conversation button above it.
+  the brand mark and the new-conversation control above it, which carries the
+  plus.
 - **Default / Hover / Active:** Ash Grey text on the panel; hover lifts the text
   to Bone White over a 60% Rail Grey wash; the open conversation takes the Rail
   Grey fill at full strength with Bone White text and `aria-current="page"`.
 - **A row's actions:** renaming and deleting live on the row they belong to, as
-  two text controls in Ash Grey that lift to Bone White when the row is pointed
-  at or holds focus, and named for their conversation so a screen reader hears
-  "Rename Graveyard toolbox" rather than a list of Renames. They are quiet at
-  rest and always in the tab order, and always announced, because opacity is not
-  what assistive technology reads.
+  two marks in Ash Grey that lift to Bone White when the row is pointed at or
+  holds focus, each named for its conversation so a screen reader hears
+  "Rename Graveyard toolbox" rather than a list of marks. The word is what goes,
+  the name is not, because opacity is not what assistive technology reads and
+  neither is a glyph. They are quiet at rest and always in the tab order.
 - **Renaming:** the row becomes a field holding the name it has, with Save and
   Cancel. Opening it moves focus into the field and selects the name, so typing
   replaces it and Enter saves it; Escape, Cancel, or an empty name leaves the
@@ -332,7 +351,7 @@ level deep.
   25% amber wash rather than a rail, because that surface is where the player
   acts.
 - **Focus:** the same 2px Halo Amber outline at 2px offset. There is no inner
-  glow and no border-colour change.
+  glow and no border-color change.
 
 ### Composer
 
@@ -343,8 +362,9 @@ level deep.
   25% amber rather than a rail, Body text in Bone White, Dust Grey placeholder.
   Focus draws the same 2px Halo Amber outline as every other control, and the
   border does not change.
-- **Send:** the primary button, the filled lamp of this surface. It is out of
-  action while a turn runs, and so is the field.
+- **Send:** the primary button, the filled lamp of this surface, carrying the
+  arrow. It is out of action while a turn runs, while the field stays usable so
+  the next request can be written as the answer arrives.
 - **Status:** Body, Ash Grey, sitting beside the Send control as a live region.
   It says the turn is running, and what the search was understood as; it is empty
   when nothing is running.
@@ -368,7 +388,7 @@ level deep.
 
 - **Style:** Body size, Signal Red, sitting beside the control that failed.
 - **Use it for:** the message the server gave, verbatim. Never a rewrite, never a
-  code, and never an amber or neutral colour.
+  code, and never an amber or neutral color.
 
 ## Do's and Don'ts
 
@@ -386,19 +406,24 @@ level deep.
   carries it today and the document body stays transparent.
 - **Do** keep every control reachable by keyboard with a visible 2px Halo Amber
   outline, and keep `aria-current` on the open conversation.
+- **Do** keep an icon at 16px on a 1.5px stroke, the color of the control it
+  sits in, beside the word it belongs to, or named for what it acts on when it is
+  the whole control. The set is hand-drawn, and it does not grow a second weight,
+  a fill, or a second size.
 
 ### Don't:
 
-- **Don't** introduce a second accent, a gradient, or a coloured heading; the
+- **Don't** introduce a second accent, a gradient, or a colored heading; the
   one exception is Signal Red as text about a failure.
 - **Don't** go above 18px anywhere. If something needs more weight, change its
-  colour, its space, or its hairline instead.
+  color, its space, or its hairline instead.
 - **Don't** add shadows, blur, or elevation effects. If a surface needs to
   communicate hierarchy, use a tonal step.
 - **Don't** add motion without deciding the motion question first; the system is
   instant today by design, not by accident.
-- **Don't** introduce a webfont, an icon font, or iconography in the chrome. The
-  system's voice is the platform's, and the app has no icons.
+- **Don't** introduce a webfont, an icon font, or an icon as decoration. The set
+  is hand-drawn, one stroke weight, and it marks controls only: the cards, the
+  conversation, and the notices carry no icons at all.
 - **Don't** crop, round, tilt, or restyle a card image. The card is a record of a
   real object and keeps its printed proportions.
 - **Don't** use a box, a card container, or a nested rectangle where a hairline
