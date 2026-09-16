@@ -239,6 +239,18 @@ describe('OllamaClient', () => {
       expect(error).toBeInstanceOf(OllamaInvalidResponseError);
     });
 
+    it('includes the server message when a request is rejected', async () => {
+      const client = await clientFor(() => ({
+        status: 400,
+        json: { error: 'input length exceeds context length' }
+      }));
+
+      const error = await captureError(client.embed(['a card']));
+
+      expect(error).toBeInstanceOf(OllamaInvalidResponseError);
+      expect(error.message).toContain('input length exceeds context length');
+    });
+
     it('reports a vector count that does not match the inputs as a typed error', async () => {
       const client = await clientFor(() => ({
         json: { embeddings: [[1, 2, 3]] }

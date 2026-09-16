@@ -23,7 +23,15 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@11.20.0",
-  "dependencies": {},
+  "dependencies": {
+    "@lancedb/lancedb": "^0.38.0",
+    "@ygo-assistant/cards": "workspace:*",
+    "@ygo-assistant/logger": "workspace:*",
+    "@ygo-assistant/ollama": "workspace:*",
+    "@ygo-assistant/utils": "workspace:*",
+    "apache-arrow": "18.1.0",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
     "@types/node": "26.5.1",
     "typescript": "^6.0.3"

@@ -22,7 +22,8 @@ module.exports = {
     {
       name: 'layering-web',
       severity: 'error',
-      comment: 'The web app may depend only on the cards and contracts packages.',
+      comment:
+        'The web app may depend only on the cards and contracts packages.',
       from: { path: '^apps/web/' },
       to: {
         path: '^(?:packages|apps)/',
@@ -101,7 +102,8 @@ module.exports = {
     {
       name: 'layering-cards',
       severity: 'error',
-      comment: 'The cards package is a leaf and may not depend on other packages.',
+      comment:
+        'The cards package is a leaf and may not depend on other packages.',
       from: { path: '^packages/cards/' },
       to: {
         path: '^(?:packages|apps)/',
@@ -111,7 +113,8 @@ module.exports = {
     {
       name: 'layering-utils',
       severity: 'error',
-      comment: 'The utils package is a leaf and may not depend on other packages.',
+      comment:
+        'The utils package is a leaf and may not depend on other packages.',
       from: { path: '^packages/utils/' },
       to: {
         path: '^(?:packages|apps)/',

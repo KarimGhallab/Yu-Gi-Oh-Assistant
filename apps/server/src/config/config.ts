@@ -8,8 +8,9 @@ const environmentSchema = z.object({
   HOST: z.string().min(1).default('127.0.0.1'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   DATA_DIR: z.string().min(1).default('./data'),
-  NODE_ENV: z.nativeEnum(NodeEnvironment).default(NodeEnvironment.Development),
-  LOG_LEVEL: z.nativeEnum(LogLevel).default(LogLevel.Info),
+  NODE_ENV: z.enum(NodeEnvironment).default(NodeEnvironment.Development),
+  LOG_LEVEL: z.enum(LogLevel).default(LogLevel.Info),
+  LOG_DIR: z.string().min(1).default('./logs'),
   CORS_ORIGIN: z.string().optional(),
   OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
   OLLAMA_EMBEDDING_BASE_URL: z.url().optional(),
@@ -55,6 +56,7 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     dataDir: parsed.DATA_DIR,
     nodeEnv: parsed.NODE_ENV,
     logLevel: parsed.LOG_LEVEL,
+    logDir: parsed.LOG_DIR,
     corsOrigin:
       parsed.CORS_ORIGIN === undefined
         ? undefined

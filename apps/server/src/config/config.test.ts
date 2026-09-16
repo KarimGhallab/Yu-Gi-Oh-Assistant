@@ -14,6 +14,7 @@ describe('loadConfig', () => {
     expect(config.dataDir).toBe('./data');
     expect(config.nodeEnv).toBe(NodeEnvironment.Development);
     expect(config.logLevel).toBe(LogLevel.Info);
+    expect(config.logDir).toBe('./logs');
     expect(config.ollama.baseUrl).toBe('http://127.0.0.1:11434');
     expect(config.ollama.embeddingBaseUrl).toBe('http://127.0.0.1:11434');
     expect(config.ollama.chatModel).toBe('qwen3:4b');
@@ -31,6 +32,7 @@ describe('loadConfig', () => {
       DATA_DIR: '/tmp/ygo',
       NODE_ENV: 'production',
       LOG_LEVEL: 'warn',
+      LOG_DIR: '/tmp/ygo-logs',
       OLLAMA_BASE_URL: 'http://ollama.local:11434',
       OLLAMA_EMBEDDING_BASE_URL: 'http://embed.local:11434',
       OLLAMA_CHAT_MODEL: 'qwen3:8b',
@@ -46,6 +48,7 @@ describe('loadConfig', () => {
     expect(config.dataDir).toBe('/tmp/ygo');
     expect(config.nodeEnv).toBe(NodeEnvironment.Production);
     expect(config.logLevel).toBe(LogLevel.Warn);
+    expect(config.logDir).toBe('/tmp/ygo-logs');
     expect(config.ollama.baseUrl).toBe('http://ollama.local:11434');
     expect(config.ollama.embeddingBaseUrl).toBe('http://embed.local:11434');
     expect(config.ollama.chatModel).toBe('qwen3:8b');

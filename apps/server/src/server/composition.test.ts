@@ -1,7 +1,9 @@
 import { stat } from 'node:fs/promises';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
 import type { ILogger } from '@ygo-assistant/logger';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
-import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadConfig } from '../config/index.js';
 import { createServer } from './server.js';

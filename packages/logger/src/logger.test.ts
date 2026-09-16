@@ -67,4 +67,30 @@ describe('createLogger', () => {
 
     expect(messages(destination)).toEqual(['warn', 'error']);
   });
+
+  it('lets an injected destination take precedence over the pretty sink', () => {
+    const destination = new CapturingDestination();
+    const logger = createLogger({
+      level: LogLevel.Info,
+      pretty: true,
+      destination
+    });
+
+    logger.info('kept structured');
+
+    expect(destination.records[0].msg).toBe('kept structured');
+  });
+
+  it('lets an injected destination take precedence over the file sink', () => {
+    const destination = new CapturingDestination();
+    const logger = createLogger({
+      level: LogLevel.Info,
+      file: { directory: '/tmp/should-not-be-written', fileName: 'test' },
+      destination
+    });
+
+    logger.info('kept structured');
+
+    expect(destination.records[0].msg).toBe('kept structured');
+  });
 });
