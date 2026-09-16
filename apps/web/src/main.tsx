@@ -3,9 +3,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 
-import App from './app/App.js';
-import { createQueryClient } from './app/queryClient.js';
+import { createQueryClient } from './shared/queryClient.js';
 
+import App from './App.js';
 import './styles.css';
 
 const container = document.getElementById('root');

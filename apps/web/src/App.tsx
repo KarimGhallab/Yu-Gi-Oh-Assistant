@@ -1,8 +1,9 @@
 import { Route, Routes } from 'react-router';
 
-import ChatFrame from './ChatFrame.js';
-import ConversationPage from './ConversationPage.js';
-import EmptyState from './EmptyState.js';
+import ChatFrame from './shared/components/ChatFrame.js';
+
+import ConversationPage from './views/conversation/ConversationPage.js';
+import EmptyState from './views/home/EmptyState.js';
 
 /**
  * The chat's addresses: the conversations themselves, and the empty state for

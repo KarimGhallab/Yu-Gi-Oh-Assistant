@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { ApiError, ApiFailureKind } from '../api/client.js';
+import { ApiError, ApiFailureKind } from './api/client.js';
 
 const UNREACHABLE_ATTEMPTS = 3;
 

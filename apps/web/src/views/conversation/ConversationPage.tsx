@@ -2,13 +2,14 @@ import { Link, useParams } from 'react-router';
 
 import { MessageRole } from '@ygo-assistant/contracts';
 
-import { ApiError, ApiFailureKind } from '../api/client.js';
+import { ApiError, ApiFailureKind } from '../../shared/api/client.js';
+import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
+import { conversationTitle } from '../../shared/conversationTitle.js';
+import { useConversation } from '../../shared/queries.js';
+
 import Composer from './Composer.js';
 import ExamplePrompts from './ExamplePrompts.js';
 import MessageHistory, { type ChatTurn } from './MessageHistory.js';
-import Notice, { ACTION_CLASS } from './Notice.js';
-import { conversationTitle } from './conversationTitle.js';
-import { useConversation } from './queries.js';
 import { failureAnnouncement, runningAnnouncement } from './turnCopy.js';
 import { useTurn } from './useTurn.js';
 

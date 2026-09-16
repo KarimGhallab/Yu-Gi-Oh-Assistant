@@ -1,4 +1,4 @@
-import Notice from './Notice.js';
+import Notice from '../../shared/components/Notice.js';
 
 /**
  * What a player can ask for, shown in a conversation with nothing in it. They

@@ -7,9 +7,10 @@ import {
   type TurnStatus
 } from '@ygo-assistant/contracts';
 
-import { streamTurn } from '../api/turns.js';
+import { streamTurn } from '../../shared/api/turns.js';
+import { refreshConversations } from '../../shared/queries.js';
+
 import type { SuggestedCard } from './CardGrid.js';
-import { refreshConversations } from './queries.js';
 
 /**
  * What the turn says when the connection gave way without the turn saying so

@@ -7,13 +7,13 @@ import {
 } from 'react';
 import { Link, NavLink, useMatch, useNavigate } from 'react-router';
 
-import { conversationTitle } from './conversationTitle.js';
+import { conversationTitle } from '../conversationTitle.js';
 import {
   useConversations,
   useDeleteConversation,
   useRenameConversation,
   useStartConversation
-} from './queries.js';
+} from '../queries.js';
 
 const BRAND_CLASS =
   'min-w-0 truncate rounded text-sm font-semibold tracking-wide text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';

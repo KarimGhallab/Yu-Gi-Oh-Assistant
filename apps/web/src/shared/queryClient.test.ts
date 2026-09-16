@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApiError, ApiFailureKind } from '../api/client.js';
+import { ApiError, ApiFailureKind } from './api/client.js';
 import { createQueryClient, shouldRetryQuery } from './queryClient.js';
 
 describe('the query client', () => {

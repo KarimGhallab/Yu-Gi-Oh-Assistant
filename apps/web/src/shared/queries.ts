@@ -18,7 +18,7 @@ import {
   getConversation,
   listConversations,
   renameConversation
-} from '../api/conversations.js';
+} from './api/conversations.js';
 
 /**
  * The key prefix every conversation query shares, so a write can refresh

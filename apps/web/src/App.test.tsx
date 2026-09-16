@@ -19,8 +19,9 @@ import {
   turnEventSchema
 } from '@ygo-assistant/contracts';
 
+import { createQueryClient } from './shared/queryClient.js';
+
 import App from './App.js';
-import { createQueryClient } from './queryClient.js';
 
 interface ConversationFixture {
   id: number;
