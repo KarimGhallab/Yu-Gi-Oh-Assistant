@@ -24,6 +24,22 @@ const MIGRATIONS: Migration[] = [
         updated_at TEXT NOT NULL
       )`
     ]
+  },
+  {
+    id: 2,
+    name: 'messages',
+    statements: [
+      `CREATE TABLE messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        conversation_id INTEGER NOT NULL REFERENCES conversations (id) ON DELETE CASCADE,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        filters_json TEXT,
+        card_ids_json TEXT,
+        created_at TEXT NOT NULL
+      )`,
+      `CREATE INDEX messages_by_conversation ON messages (conversation_id, id)`
+    ]
   }
 ];
 

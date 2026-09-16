@@ -6,10 +6,22 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { Language } from '@ygo-assistant/cards';
 import {
+  CardAttribute,
+  CardFilterField,
+  FilterOperator
+} from '@ygo-assistant/cards';
+import type { CardFilters } from '@ygo-assistant/cards';
+import {
+  MessageRole,
   conversationListSchema,
-  conversationSchema
+  conversationSchema,
+  conversationWithMessagesSchema
 } from '@ygo-assistant/contracts';
-import { databasePath, openAppStore } from '@ygo-assistant/db';
+import {
+  MessageRole as StoredMessageRole,
+  databasePath,
+  openAppStore
+} from '@ygo-assistant/db';
 import type { IAppStore } from '@ygo-assistant/db';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
@@ -18,6 +30,14 @@ import { loadConfig } from '../config/index.js';
 import { createServer } from './server.js';
 
 const CHAT_MODEL = 'llama3.1:8b';
+
+const FILTERS: CardFilters = [
+  {
+    field: CardFilterField.Attribute,
+    operator: FilterOperator.Eq,
+    value: CardAttribute.Light
+  }
+];
 
 const silentLogger: ILogger = {
   debug: () => {},
@@ -164,5 +184,143 @@ describe('conversation routes', () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: expect.any(String) });
     await expect(store.conversations.list()).resolves.toEqual([]);
+  });
+
+  describe('reopening a conversation', () => {
+    const getConversation = (id: number | string) =>
+      app().request(`/api/conversations/${id}`);
+
+    const startConversation = (title?: string) =>
+      store.conversations.create({
+        title,
+        language: Language.English,
+        model: CHAT_MODEL
+      });
+
+    it('returns the conversation with its messages in the order they were said', async () => {
+      const created = await startConversation('Graveyard toolbox');
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.User,
+        content: 'a light monster that banishes'
+      });
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.Assistant,
+        content: 'Try these'
+      });
+
+      const response = await getConversation(created.id);
+
+      expect(response.status).toBe(200);
+      const reopened = conversationWithMessagesSchema.parse(
+        await response.json()
+      );
+      expect(reopened).toMatchObject({
+        id: created.id,
+        title: 'Graveyard toolbox',
+        language: Language.English,
+        model: CHAT_MODEL
+      });
+      expect(reopened.messages.map(message => message.content)).toEqual([
+        'a light monster that banishes',
+        'Try these'
+      ]);
+      expect(reopened.messages.map(message => message.role)).toEqual([
+        MessageRole.User,
+        MessageRole.Assistant
+      ]);
+    });
+
+    it('carries the filters and card ids a reply suggested', async () => {
+      const created = await startConversation();
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.Assistant,
+        content: 'Try these',
+        filters: FILTERS,
+        cardIds: [46986414]
+      });
+
+      const response = await getConversation(created.id);
+
+      const reopened = conversationWithMessagesSchema.parse(
+        await response.json()
+      );
+      expect(reopened.messages[0].filters).toEqual(FILTERS);
+      expect(reopened.messages[0].cardIds).toEqual([46986414]);
+    });
+
+    it('returns a conversation nothing was said in with no messages', async () => {
+      const created = await startConversation();
+
+      const response = await getConversation(created.id);
+
+      expect(response.status).toBe(200);
+      expect(
+        conversationWithMessagesSchema.parse(await response.json()).messages
+      ).toEqual([]);
+    });
+
+    it('names the conversation after its first user message', async () => {
+      const created = await startConversation();
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.User,
+        content: 'a light monster that banishes'
+      });
+
+      const response = await getConversation(created.id);
+
+      expect(
+        conversationWithMessagesSchema.parse(await response.json()).title
+      ).toBe('a light monster that banishes');
+    });
+
+    it('answers an unknown conversation with not found', async () => {
+      const response = await getConversation(404);
+
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: expect.any(String) });
+    });
+
+    it('answers an id that is not a number with not found', async () => {
+      const response = await getConversation('lately');
+
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: expect.any(String) });
+    });
+
+    it('answers an id that only spells a number with not found', async () => {
+      await startConversation();
+
+      const responses = await Promise.all(
+        ['+1', '1e0', '1.0', '0x1', '1abc'].map(form => getConversation(form))
+      );
+
+      expect(responses.map(response => response.status)).toEqual([
+        404, 404, 404, 404, 404
+      ]);
+    });
+
+    it('shows a message that outlived the previous server', async () => {
+      const created = await startConversation();
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.User,
+        content: 'a light monster that banishes'
+      });
+      await store.close();
+      store = await openAppStore(databasePath(dataDir));
+
+      const response = await getConversation(created.id);
+
+      const reopened = conversationWithMessagesSchema.parse(
+        await response.json()
+      );
+      expect(reopened.messages.map(message => message.content)).toEqual([
+        'a light monster that banishes'
+      ]);
+    });
   });
 });

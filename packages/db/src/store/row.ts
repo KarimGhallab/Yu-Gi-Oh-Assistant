@@ -1,9 +1,15 @@
 import { Language } from '@ygo-assistant/cards';
 
+import { MessageRole } from './types.js';
+
 const LANGUAGES = new Set<string>(Object.values(Language));
+const MESSAGE_ROLES = new Set<string>(Object.values(MessageRole));
 
 const isLanguage = (value: unknown): value is Language =>
   typeof value === 'string' && LANGUAGES.has(value);
+
+const isMessageRole = (value: unknown): value is MessageRole =>
+  typeof value === 'string' && MESSAGE_ROLES.has(value);
 
 /**
  * Reads an integer from a stored row. SQLite hands back loose values, and a
@@ -41,8 +47,15 @@ export function toLanguage(value: unknown): Language {
   throw unexpected('language', value);
 }
 
+export function toMessageRole(value: unknown): MessageRole {
+  if (isMessageRole(value)) {
+    return value;
+  }
+  throw unexpected('role', value);
+}
+
 function unexpected(field: string, value: unknown): Error {
   return new Error(
-    `Unexpected value for "${field}" in the conversation store: ${String(value)}`
+    `Unexpected value for "${field}" in the application store: ${String(value)}`
   );
 }

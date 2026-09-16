@@ -36,6 +36,14 @@ export class ConversationRepository implements IConversationRepository {
     };
   }
 
+  async find(id: number): Promise<Conversation | undefined> {
+    const row = this._database
+      .prepare(`SELECT ${COLUMNS} FROM conversations WHERE id = ?`)
+      .get(id);
+
+    return row === undefined ? undefined : toConversation(row);
+  }
+
   async list(): Promise<Conversation[]> {
     const rows = this._database
       .prepare(

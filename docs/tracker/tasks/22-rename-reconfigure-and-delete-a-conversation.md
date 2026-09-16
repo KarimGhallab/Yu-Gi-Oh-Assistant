@@ -34,4 +34,7 @@ conversation reopens with its messages.
 and its read path have to exist before the deletion's effect on them can be
 demonstrated. Since the client's requests go through the same routes as feature
 08 will use, the patch and delete semantics settled here are the ones the
-conversation UI will rely on.
+conversation UI will rely on. Ticket 21 already declared `messages` with a
+reference to `conversations` that deletes its messages, and `node:sqlite` enables
+foreign keys by default, but this ticket owns proving the cascade in a test and
+should turn the pragma on explicitly rather than rest on the default.

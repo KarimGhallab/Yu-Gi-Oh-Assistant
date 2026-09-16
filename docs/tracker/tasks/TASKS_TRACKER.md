@@ -28,14 +28,14 @@ numbering across specs, so blocking edges stay legible across features.
 | 18  | [Ranked semantic retrieval over the card index](./18-ranked-semantic-retrieval.md)                               | Resolved (2026-09-16) | -          | [04](../specs/04-retrieval-engine.md)                                                 |
 | 19  | [Structured pre-filters and the combined query](./19-structured-filters-and-combined-query.md)                   | Resolved (2026-09-16) | 17, 18     | [04](../specs/04-retrieval-engine.md)                                                 |
 | 20  | [SQLite store and conversation create/list](./20-sqlite-store-and-conversation-create-list.md)                   | Resolved (2026-09-16) | -          | [05](../specs/05-conversation-store-and-crud.md)                                      |
-| 21  | [A conversation reopens with its messages](./21-conversation-reopens-with-messages.md)                           | `ready-for-agent`     | 20         | [05](../specs/05-conversation-store-and-crud.md)                                      |
+| 21  | [A conversation reopens with its messages](./21-conversation-reopens-with-messages.md)                           | Resolved (2026-09-16) | 20         | [05](../specs/05-conversation-store-and-crud.md)                                      |
 | 22  | [Rename, reconfigure, and delete a conversation](./22-rename-reconfigure-and-delete-a-conversation.md)           | `ready-for-agent`     | 20, 21     | [05](../specs/05-conversation-store-and-crud.md)                                      |
 
 ## Frontier
 
 Spec 04 (Retrieval engine) is fully landed: 17, 18, and 19 are resolved. Spec 05
-(Conversation store and CRUD) is ticketed as 20, 21, and 22 and is partway
-landed: 20 resolved, and ticket 21 is the frontier with 22 behind it. Spec 06
+(Conversation store and CRUD) is ticketed as 20, 21, and 22 and is nearly
+landed: 20 and 21 are resolved, and ticket 22 is the frontier. Spec 06
 (Prompt-to-filter parsing) is still unblocked and not yet broken into tickets;
 spec 07 joins 04, 05, and 06. Ticket 11 supersedes the single-origin setup in
 ticket 06 and spec 01.

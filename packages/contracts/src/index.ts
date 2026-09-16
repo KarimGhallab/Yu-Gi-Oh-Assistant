@@ -13,3 +13,9 @@ export type {
   Conversation,
   CreateConversationRequest
 } from './conversations.js';
+export {
+  MessageRole,
+  conversationWithMessagesSchema,
+  messageSchema
+} from './messages.js';
+export type { ConversationWithMessages, Message } from './messages.js';

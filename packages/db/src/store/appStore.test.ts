@@ -69,6 +69,24 @@ describe('app store conversations', () => {
     await expect(store.conversations.list()).resolves.toEqual([]);
   });
 
+  it('finds a conversation by its id', async () => {
+    store = await openAppStore(databasePath(dataDir));
+    const created = await store.conversations.create({
+      language: Language.French,
+      model: MODEL
+    });
+
+    await expect(store.conversations.find(created.id)).resolves.toEqual(
+      created
+    );
+  });
+
+  it('has no conversation for an id that was never used', async () => {
+    store = await openAppStore(databasePath(dataDir));
+
+    await expect(store.conversations.find(404)).resolves.toBeUndefined();
+  });
+
   it('lists conversations newest first', async () => {
     store = await openAppStore(databasePath(dataDir));
     const input = { language: Language.English, model: MODEL };

@@ -31,10 +31,14 @@ export type {
   PopulateCardIndexSummary
 } from './populate.js';
 export type {
+  AppendMessageInput,
   Conversation,
   CreateConversationInput,
   IAppStore,
-  IConversationRepository
+  IConversationRepository,
+  IMessageRepository,
+  Message
 } from './store/types.js';
+export { MessageRole } from './store/types.js';
 export type { FetchCardDumpOptions } from './ygoprodeck/fetchCardDump.js';
 export type { YgoProdeckCard } from './ygoprodeck/schemas.js';

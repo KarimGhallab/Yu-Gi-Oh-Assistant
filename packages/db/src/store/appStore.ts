@@ -3,14 +3,21 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 import { ConversationRepository } from './conversations.js';
+import { MessageRepository } from './messages.js';
 import { migrate } from './migrations.js';
-import type { IAppStore, IConversationRepository } from './types.js';
+import type {
+  IAppStore,
+  IConversationRepository,
+  IMessageRepository
+} from './types.js';
 
 class SqliteAppStore implements IAppStore {
   public readonly conversations: IConversationRepository;
+  public readonly messages: IMessageRepository;
 
   constructor(private readonly _database: DatabaseSync) {
     this.conversations = new ConversationRepository(_database);
+    this.messages = new MessageRepository(_database);
   }
 
   async close(): Promise<void> {
