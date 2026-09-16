@@ -205,6 +205,16 @@ importers:
         version: 6.0.3
 
   packages/rag:
+    dependencies:
+      '@ygo-assistant/cards':
+        specifier: workspace:*
+        version: link:../cards
+      '@ygo-assistant/db':
+        specifier: workspace:*
+        version: link:../db
+      '@ygo-assistant/ollama':
+        specifier: workspace:*
+        version: link:../ollama
     devDependencies:
       '@types/node':
         specifier: 26.5.1

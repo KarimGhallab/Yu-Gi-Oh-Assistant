@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises';
 
 import { connect } from '@lancedb/lancedb';
 
-import type { Card } from '@ygo-assistant/cards';
+import { type Card, Language } from '@ygo-assistant/cards';
 import {
   type IOllamaClient,
   OllamaInvalidResponseError,
@@ -13,18 +13,27 @@ import { delay } from '@ygo-assistant/utils';
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
 import { indexDirectory } from './paths.js';
-import { normalizeCardRow } from './row.js';
+import { normalizeCard, normalizeCardRow } from './row.js';
 import { createCardArrowSchema } from './schema.js';
 import type {
   BuildCardIndexOptions,
   CardIndexContents,
-  IndexMetadata
+  IndexMetadata,
+  ScoredCard,
+  SearchCardIndexOptions
 } from './types.js';
 
 const CARDS_TABLE = 'cards';
 const DEFAULT_EMBEDDING_BATCH_SIZE = 256;
 const EMBEDDING_ATTEMPTS = 3;
 const EMBEDDING_RETRY_DELAY_MS = 500;
+const COSINE_DISTANCE_TYPE = 'cosine';
+const DISTANCE_COLUMN = '_distance';
+
+const LANGUAGE_PREDICATES: Record<Language, string> = {
+  [Language.English]: "language = 'en'",
+  [Language.French]: "language = 'fr'"
+};
 
 /**
  * Builds the card index for a data directory. It composes the card documents,
@@ -91,6 +100,45 @@ export async function readCardIndex(
     count,
     metadata
   };
+}
+
+/**
+ * Searches one language partition by a query vector, returning the nearest
+ * cards with their cosine similarity to it, closest first.
+ */
+export async function searchCardIndex(
+  dataDir: string,
+  options: SearchCardIndexOptions
+): Promise<ScoredCard[]> {
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table
+    .query()
+    .nearestTo(options.vector)
+    .distanceType(COSINE_DISTANCE_TYPE)
+    .where(LANGUAGE_PREDICATES[options.language])
+    .limit(options.limit)
+    .toArray();
+
+  return rows.map(row => ({
+    card: normalizeCard(row),
+    score: cosineSimilarity(row)
+  }));
+}
+
+/**
+ * LanceDB reports a cosine distance, which runs from 0 for identical vectors to
+ * 2 for opposite ones; the application reasons in similarity instead.
+ */
+function cosineSimilarity(row: Record<string, unknown>): number {
+  const distance = row[DISTANCE_COLUMN];
+  if (typeof distance !== 'number') {
+    throw new Error(
+      `The index search did not return a numeric distance: ${String(distance)}`
+    );
+  }
+  return 1 - distance;
 }
 
 /**

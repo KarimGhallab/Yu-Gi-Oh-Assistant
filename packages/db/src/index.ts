@@ -1,7 +1,8 @@
 export {
   buildCardIndex,
   readCardIndex,
-  readCardIndexMetadata
+  readCardIndexMetadata,
+  searchCardIndex
 } from './catalog/cardIndex.js';
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
 export { indexDirectory } from './catalog/paths.js';
@@ -17,7 +18,9 @@ export type {
   BuildCardIndexOptions,
   CardIndexContents,
   IndexedCardRow,
-  IndexMetadata
+  IndexMetadata,
+  ScoredCard,
+  SearchCardIndexOptions
 } from './catalog/types.js';
 export type {
   PopulateCardIndexOptions,

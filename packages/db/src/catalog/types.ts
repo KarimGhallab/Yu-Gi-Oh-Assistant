@@ -1,4 +1,4 @@
-import type { Card } from '@ygo-assistant/cards';
+import type { Card, Language } from '@ygo-assistant/cards';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 /**
@@ -43,4 +43,23 @@ export interface CardIndexContents {
   rows: IndexedCardRow[];
   count: number;
   metadata: IndexMetadata;
+}
+
+/**
+ * Everything a vector search over the index needs: the query vector, the
+ * language partition to stay inside, and how many rows to return.
+ */
+export interface SearchCardIndexOptions {
+  vector: number[];
+  language: Language;
+  limit: number;
+}
+
+/**
+ * A card found by a vector search, with its cosine similarity to the query
+ * vector. Higher is closer.
+ */
+export interface ScoredCard {
+  card: Card;
+  score: number;
 }

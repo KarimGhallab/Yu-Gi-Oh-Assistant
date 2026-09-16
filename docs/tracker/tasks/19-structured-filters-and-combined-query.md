@@ -30,4 +30,8 @@ semantic retrieval over the card index.
 reproduce them exactly: text fields compare case-insensitively, enumerated
 fields compare exactly, and a filter on a field the card does not carry never
 holds, including `ne`, whose clause must therefore also exclude absent values.
-`cardMatchesFilters` from ticket 17 is the normative rule.
+`cardMatchesFilters` from ticket 17 is the normative rule. The filter-only lane
+carries no query vector, so the search needs a vector-free path with a
+deterministic order and a defined score; and because LanceDB takes a raw SQL
+predicate with no parameter binding, text values must be escaped by a helper
+rather than concatenated straight into the clause.

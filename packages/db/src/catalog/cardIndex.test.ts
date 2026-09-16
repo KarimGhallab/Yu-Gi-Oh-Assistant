@@ -17,7 +17,7 @@ import {
 } from '@ygo-assistant/ollama';
 
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
-import { buildCardIndex, readCardIndex } from './cardIndex.js';
+import { buildCardIndex, readCardIndex, searchCardIndex } from './cardIndex.js';
 
 const DIMENSIONS = 3;
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
@@ -37,6 +37,21 @@ const createEmbedder = (
     throw new Error('The card index never streams chat completions');
   }
 });
+
+const createScriptedEmbedder = (vectors: number[][]): IOllamaClient => {
+  let cursor = 0;
+  return {
+    listModels: async () => [],
+    embed: async inputs => {
+      const batch = vectors.slice(cursor, cursor + inputs.length);
+      cursor += inputs.length;
+      return batch;
+    },
+    chat: () => {
+      throw new Error('The card index never streams chat completions');
+    }
+  };
+};
 
 const createDarkMagician = (overrides: Partial<Card> = {}): Card => ({
   id: 46986414,
@@ -268,5 +283,129 @@ describe('card index', () => {
     expect(count).toBe(1);
     expect(rows.map(row => row.name)).toEqual(['Pot of Greed']);
     expect(metadata.datasetVersion).toBe('ygoprodeck-2026-09-16');
+  });
+
+  describe('searchCardIndex', () => {
+    const QUERY = [1, 0, 0];
+    const SEARCH_DIMENSIONS = 3;
+
+    const buildIndex = async (
+      directory: string,
+      cards: Card[],
+      vectors: number[][]
+    ): Promise<void> => {
+      await buildCardIndex({
+        dataDir: directory,
+        cards,
+        embedder: createScriptedEmbedder(vectors),
+        embeddingModel: EMBEDDING_MODEL,
+        dimensions: SEARCH_DIMENSIONS,
+        datasetVersion: 'ygoprodeck-2026-09-16'
+      });
+    };
+
+    const createBlueEyes = (): Card =>
+      createDarkMagician({ id: 89631139, name: 'Blue-Eyes White Dragon' });
+
+    const createMagicienSombre = (): Card =>
+      createDarkMagician({
+        language: Language.French,
+        name: 'Magicien Sombre'
+      });
+
+    it('returns the nearest cards ordered by similarity, with their score', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createPotOfGreed(), createBlueEyes()],
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ]
+      );
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 10
+      });
+
+      expect(results.map(result => result.card.name)).toEqual([
+        'Dark Magician',
+        'Pot of Greed',
+        'Blue-Eyes White Dragon'
+      ]);
+      expect(results[0].score).toBeCloseTo(1, 5);
+      expect(results[1].score).toBeCloseTo(Math.SQRT1_2, 5);
+      expect(results[2].score).toBeCloseTo(0, 5);
+    });
+
+    it('limits the number of rows it returns', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createPotOfGreed(), createBlueEyes()],
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ]
+      );
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 2
+      });
+
+      expect(results.map(result => result.card.name)).toEqual([
+        'Dark Magician',
+        'Pot of Greed'
+      ]);
+    });
+
+    it('scopes the search to the requested language', async () => {
+      const directory = await createDataDir();
+      await buildIndex(
+        directory,
+        [createDarkMagician(), createMagicienSombre()],
+        [
+          [0, 1, 0],
+          [1, 0, 0]
+        ]
+      );
+
+      const english = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.English,
+        limit: 1
+      });
+      const french = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.French,
+        limit: 1
+      });
+
+      expect(english.map(result => result.card.name)).toEqual([
+        'Dark Magician'
+      ]);
+      expect(french.map(result => result.card.name)).toEqual([
+        'Magicien Sombre'
+      ]);
+    });
+
+    it('returns nothing when the language has no cards', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()], [[1, 0, 0]]);
+
+      const results = await searchCardIndex(directory, {
+        vector: QUERY,
+        language: Language.French,
+        limit: 10
+      });
+
+      expect(results).toEqual([]);
+    });
   });
 });
