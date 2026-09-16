@@ -1,4 +1,5 @@
 import { stat } from 'node:fs/promises';
+
 import { describe, expect, it } from 'vitest';
 
 import { TempDataDir } from './TempDataDir.js';

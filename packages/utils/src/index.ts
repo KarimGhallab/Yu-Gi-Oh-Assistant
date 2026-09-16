@@ -37,6 +37,7 @@ export {
 } from './utils/collectionsUtils.js';
 
 // Other exports
+export { delay } from './utils/other/delay.js';
 export { exhaust } from './utils/other/exhaust.js';
 export { hasErrorMessage } from './utils/other/hasErrorMessage.js';
 

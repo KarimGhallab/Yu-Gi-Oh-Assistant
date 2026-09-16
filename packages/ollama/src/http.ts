@@ -147,7 +147,7 @@ export class OllamaHttp {
     if (!response.ok) {
       throw new OllamaInvalidResponseError(
         context.operation,
-        `unexpected status ${response.status}`
+        await describeFailure(response)
       );
     }
 
@@ -184,4 +184,19 @@ export class OllamaHttp {
 
     return parsed.data;
   }
+}
+
+const MAX_ERROR_BODY_LENGTH = 500;
+
+/**
+ * Builds the detail for an unexpected status, including the server's message so
+ * the cause is visible instead of a bare status code.
+ */
+async function describeFailure(response: Response): Promise<string> {
+  const body = await response.text().catch(() => '');
+  const message = body.trim();
+  if (message.length === 0) {
+    return `unexpected status ${response.status}`;
+  }
+  return `unexpected status ${response.status}: ${message.slice(0, MAX_ERROR_BODY_LENGTH)}`;
 }

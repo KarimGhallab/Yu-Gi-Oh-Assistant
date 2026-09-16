@@ -3,7 +3,12 @@ import { mkdir } from 'node:fs/promises';
 import { connect } from '@lancedb/lancedb';
 
 import type { Card } from '@ygo-assistant/cards';
-import type { IOllamaClient } from '@ygo-assistant/ollama';
+import {
+  type IOllamaClient,
+  OllamaInvalidResponseError,
+  OllamaUnreachableError
+} from '@ygo-assistant/ollama';
+import { delay } from '@ygo-assistant/utils';
 
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
@@ -18,6 +23,8 @@ import type {
 
 const CARDS_TABLE = 'cards';
 const DEFAULT_EMBEDDING_BATCH_SIZE = 256;
+const EMBEDDING_ATTEMPTS = 3;
+const EMBEDDING_RETRY_DELAY_MS = 500;
 
 /**
  * Builds the card index for a data directory. It composes the card documents,
@@ -98,9 +105,44 @@ async function embedDocuments(
   const vectors: number[][] = [];
   for (let start = 0; start < documents.length; start += batchSize) {
     const batch = documents.slice(start, start + batchSize);
-    vectors.push(...(await embedder.embed(batch)));
+    vectors.push(...(await embedBatch(embedder, batch)));
   }
   return vectors;
+}
+
+/**
+ * Embeds one batch, retrying transient Ollama faults so a single hiccup does
+ * not abort a long ingestion. A missing model or a genuinely bad request still
+ * fails fast.
+ */
+async function embedBatch(
+  embedder: IOllamaClient,
+  batch: string[]
+): Promise<number[][]> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= EMBEDDING_ATTEMPTS; attempt++) {
+    try {
+      return await embedder.embed(batch);
+    } catch (error) {
+      lastError = error;
+      if (!isRetryable(error)) {
+        throw error;
+      }
+      if (attempt < EMBEDDING_ATTEMPTS) {
+        await delay(EMBEDDING_RETRY_DELAY_MS * attempt);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+function isRetryable(error: unknown): boolean {
+  return (
+    error instanceof OllamaUnreachableError ||
+    error instanceof OllamaInvalidResponseError
+  );
 }
 
 function toStoredRow(card: Card, vector: number[]): Record<string, unknown> {

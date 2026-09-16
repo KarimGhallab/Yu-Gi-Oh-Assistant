@@ -6,11 +6,11 @@ file is both the tracker convention and the issue board.
 
 ## Layout
 
-| Kind            | Location                  | Shape                                                                    |
-| --------------- | ------------------------- | ------------------------------------------------------------------------ |
-| Reviewed issues | `docs/tracker/issues/`    | one file per issue, `NNN-slug.md`, board in this file                     |
-| Specs           | `docs/tracker/specs/`     | one file per spec, `NN-slug.md`, from `/to-spec`, index in `SPECS_TRACKER.md` |
-| Tasks / tickets | `docs/tracker/tasks/`     | one file per ticket, `NN-slug.md`, from `/to-tickets`, index in `TASKS_TRACKER.md` |
+| Kind            | Location               | Shape                                                                              |
+| --------------- | ---------------------- | ---------------------------------------------------------------------------------- |
+| Reviewed issues | `docs/tracker/issues/` | one file per issue, `NNN-slug.md`, board in this file                              |
+| Specs           | `docs/tracker/specs/`  | one file per spec, `NN-slug.md`, from `/to-spec`, index in `SPECS_TRACKER.md`      |
+| Tasks / tickets | `docs/tracker/tasks/`  | one file per ticket, `NN-slug.md`, from `/to-tickets`, index in `TASKS_TRACKER.md` |
 
 ## Conventions
 

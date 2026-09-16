@@ -28,6 +28,7 @@
     "@ygo-assistant/cards": "workspace:*",
     "@ygo-assistant/logger": "workspace:*",
     "@ygo-assistant/ollama": "workspace:*",
+    "@ygo-assistant/utils": "workspace:*",
     "apache-arrow": "18.1.0",
     "zod": "^4.4.3"
   },

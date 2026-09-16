@@ -52,7 +52,9 @@ describe('FakeOllamaClient', () => {
   it('streams a default chunk when none are canned', async () => {
     const client = new FakeOllamaClient();
 
-    const chunks = await collect(client.chat({ model: 'qwen3:4b', messages: [] }));
+    const chunks = await collect(
+      client.chat({ model: 'qwen3:4b', messages: [] })
+    );
 
     expect(chunks).toHaveLength(1);
     expect(chunks[0].done).toBe(true);

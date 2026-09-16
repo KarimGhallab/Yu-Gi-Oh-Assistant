@@ -11,7 +11,10 @@ import {
   FrameType,
   Language
 } from '@ygo-assistant/cards';
-import type { IOllamaClient } from '@ygo-assistant/ollama';
+import {
+  type IOllamaClient,
+  OllamaInvalidResponseError
+} from '@ygo-assistant/ollama';
 
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { buildCardIndex, readCardIndex } from './cardIndex.js';
@@ -175,6 +178,38 @@ describe('card index', () => {
 
     expect(batches.map(batch => batch.length)).toEqual([2, 1]);
     expect(batches.flat()).toEqual(cards.map(composeCardDocument));
+  });
+
+  it('retries a transient embedding failure', async () => {
+    const directory = await createDataDir();
+    let calls = 0;
+    const embedder: IOllamaClient = {
+      listModels: async () => [],
+      embed: async inputs => {
+        calls += 1;
+        if (calls === 1) {
+          throw new OllamaInvalidResponseError(
+            'embed texts',
+            'temporary upstream fault'
+          );
+        }
+        return inputs.map(() => new Array<number>(DIMENSIONS).fill(0));
+      },
+      chat: () => {
+        throw new Error('The card index never streams chat completions');
+      }
+    };
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards: [createDarkMagician()],
+      embedder,
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15'
+    });
+
+    expect(calls).toBe(2);
   });
 
   it('stores one row per card per language', async () => {
