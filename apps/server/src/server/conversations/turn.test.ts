@@ -17,6 +17,7 @@ import {
 import {
   type TurnEvent,
   TurnEventName,
+  TurnStatus,
   conversationWithMessagesSchema,
   turnEventSchema
 } from '@ygo-assistant/contracts';
@@ -152,6 +153,11 @@ const filtersEvents = (frames: Frame[]): TurnEvent[] =>
     .filter(frame => frame.event.type === TurnEventName.Filters)
     .map(frame => frame.event);
 
+const statusEvents = (frames: Frame[]): TurnEvent[] =>
+  frames
+    .filter(frame => frame.event.type === TurnEventName.Status)
+    .map(frame => frame.event);
+
 describe('turn routes', () => {
   let dataDir: string;
   let store: IAppStore;
@@ -186,15 +192,21 @@ describe('turn routes', () => {
   };
 
   const createClient = (
-    parseAnswer: string,
+    parseAnswers: string | string[],
     prose: ChatChunk[] = PROSE,
     models: OllamaModel[] = [CHAT_MODEL_CAPABILITY]
-  ): FakeOllamaClient =>
-    new FakeOllamaClient({
+  ): FakeOllamaClient => {
+    const answers = Array.isArray(parseAnswers) ? parseAnswers : [parseAnswers];
+
+    return new FakeOllamaClient({
       models,
       embeddings: [QUERY_VECTOR],
-      chatResponses: [[{ content: parseAnswer, done: true }], prose]
+      chatResponses: [
+        ...answers.map(answer => [{ content: answer, done: true }]),
+        prose
+      ]
     });
+  };
 
   const app = (client: IOllamaClient) =>
     createServer({
@@ -348,10 +360,71 @@ describe('turn routes', () => {
     );
 
     expect(client.embeddedInputs).toEqual([[REQUEST]]);
+    expect(statusEvents(frames)).toEqual([
+      { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly }
+    ]);
     expect(filtersEvents(frames)).toEqual([
       { type: TurnEventName.Filters, filters: [], query: REQUEST }
     ]);
     expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
+  });
+
+  it('says the search runs on the player own words when the parse gives up', async () => {
+    const client = createClient([
+      'I would suggest Dark Magician.',
+      'Still not JSON, sorry.'
+    ]);
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId);
+
+    expect(eventNames(frames)).toEqual([
+      TurnEventName.TurnStart,
+      TurnEventName.Status,
+      TurnEventName.Filters,
+      TurnEventName.Cards,
+      TurnEventName.AnswerDelta,
+      TurnEventName.AnswerDelta,
+      TurnEventName.AnswerEnd,
+      TurnEventName.TurnEnd
+    ]);
+    expect(statusEvents(frames)).toEqual([
+      { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly }
+    ]);
+    expect(filtersEvents(frames)).toEqual([
+      { type: TurnEventName.Filters, filters: [], query: REQUEST }
+    ]);
+    expect(client.embeddedInputs).toEqual([[REQUEST]]);
+    expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
+    expect(answerText(frames)).toBe('Blue-Eyes fits.');
+    // The two parse attempts, then the answer: a parse that degrades costs one
+    // extra call and never the turn.
+    expect(client.chatRequests).toHaveLength(3);
+  });
+  it('stores what it searched when the parse gave up', async () => {
+    const client = createClient(['not JSON', 'still not JSON']);
+    const conversationId = await startConversation();
+
+    await runTurn(client, conversationId);
+
+    const response = await app(client).request(
+      `/api/conversations/${conversationId}`
+    );
+    const conversation = conversationWithMessagesSchema.parse(
+      await response.json()
+    );
+
+    expect(conversation.messages).toHaveLength(2);
+    expect(conversation.messages[0]).toMatchObject({
+      role: 'user',
+      content: REQUEST
+    });
+    expect(conversation.messages[1]).toMatchObject({
+      role: 'assistant',
+      content: 'Blue-Eyes fits.',
+      filters: [],
+      cardIds: [CREATED_IDS[0]?.id]
+    });
   });
 
   it('searches the language the conversation is in', async () => {
@@ -403,12 +476,29 @@ describe('turn routes', () => {
         ]
       })
     );
+    const conversationId = await startConversation();
 
-    const frames = await runTurn(client, await startConversation());
+    const frames = await runTurn(client, conversationId);
+    const answer = answerText(frames);
 
-    expect(shownCardNames(frames)).toEqual([]);
     expect(client.chatRequests).toHaveLength(1);
-    expect(answerText(frames).length).toBeGreaterThan(0);
+    expect(answer).toContain('could not find a card');
+    expect(
+      frames.find(frame => frame.event.type === TurnEventName.Cards)?.event
+    ).toEqual({ type: TurnEventName.Cards, cards: [] });
+
+    const response = await app(client).request(
+      `/api/conversations/${conversationId}`
+    );
+    const conversation = conversationWithMessagesSchema.parse(
+      await response.json()
+    );
+
+    expect(conversation.messages[1]).toMatchObject({
+      role: 'assistant',
+      content: answer,
+      cardIds: []
+    });
   });
 
   it('refuses a conversation that does not exist before it streams', async () => {

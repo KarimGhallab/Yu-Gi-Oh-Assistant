@@ -8,11 +8,20 @@ import { cardFiltersSchema, cardSchema } from '@ygo-assistant/cards';
  */
 export enum TurnEventName {
   TurnStart = 'turn.start',
+  Status = 'status',
   Filters = 'filters',
   Cards = 'cards',
   AnswerDelta = 'answer.delta',
   AnswerEnd = 'answer.end',
   TurnEnd = 'turn.end'
+}
+
+/**
+ * What the turn is telling the player about itself. A code rather than a
+ * sentence, because what the status line says is the client's copy to write.
+ */
+export enum TurnStatus {
+  FreeTextOnly = 'free-text-only'
 }
 
 /**
@@ -33,10 +42,23 @@ const turnStartEventSchema = z.object({
 });
 
 /**
+ * Something the turn wants the player to know before it goes on: that the search
+ * is running on the player's own words with no structured constraints. That
+ * happens when the parse gave up on the request and when it came back with
+ * nothing usable, and either way the empty filters that follow say nothing about
+ * why, so the status is what tells the player the request was not understood.
+ */
+const statusEventSchema = z.object({
+  type: z.literal(TurnEventName.Status),
+  status: z.enum(TurnStatus)
+});
+
+/**
  * The search the turn is about to run: the filters that were understood and the
- * free text that will be ranked. Both parts being empty means the turn searches
- * on nothing but the language partition, which is what a request that named
- * nothing at all leaves behind.
+ * free text that will be ranked. A request the parse could not turn into either
+ * is searched as its own words, which is what the status event announces, so the
+ * free text is only ever absent when the request named constraints and no
+ * intent.
  */
 const filtersEventSchema = z.object({
   type: z.literal(TurnEventName.Filters),
@@ -83,6 +105,7 @@ const turnEndEventSchema = z.object({
  */
 export const turnEventSchema = z.discriminatedUnion('type', [
   turnStartEventSchema,
+  statusEventSchema,
   filtersEventSchema,
   cardsEventSchema,
   answerDeltaEventSchema,

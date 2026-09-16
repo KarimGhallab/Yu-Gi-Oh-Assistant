@@ -46,4 +46,7 @@ delegated to the helper. And on Node a client that disconnects does not abort th
 turn: the model call runs to completion and the answer is still stored. Both are
 harmless for a local single-user app, but each is a decision worth recording.
 `dependencies.logger` is also untouched by the turn so far, so the stage and
-conversation context this ticket's criterion asks for is new work.
+conversation context this ticket's criterion asks for is new work. The error event
+joins the same discriminated union the status now belongs to, and an error can
+arrive after a status, so the union is what a client narrows on rather than the
+order it received frames in.

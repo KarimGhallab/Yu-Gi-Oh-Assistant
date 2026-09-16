@@ -1,5 +1,9 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
-import { type TurnEvent, TurnEventName } from '@ygo-assistant/contracts';
+import {
+  type TurnEvent,
+  TurnEventName,
+  TurnStatus
+} from '@ygo-assistant/contracts';
 import { type Conversation, MessageRole } from '@ygo-assistant/db';
 import {
   ParseOutcome,
@@ -66,6 +70,10 @@ export async function* runTurn(
     language: conversation.language
   };
 
+  if (leftNothingToSearch(parse)) {
+    yield { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly };
+  }
+
   // The event reports the search that is actually about to run, so a client
   // rendering the chips shows what retrieval was asked for, even when the parse
   // kept no free text of its own and the request was searched instead.
@@ -115,6 +123,21 @@ export async function* runTurn(
   });
 
   yield { type: TurnEventName.TurnEnd, messageId: message.id };
+}
+
+/**
+ * Whether the parse left the turn with nothing of its own: no constraints and
+ * no free text either, so the search runs on the request as the player wrote it.
+ * That is the state worth announcing, because an empty filter list on its own
+ * does not say whether the request named nothing or the parse found nothing. A
+ * parse that kept a query of its own is not this case, even when that query is
+ * the request word for word: the model did read something into it.
+ */
+function leftNothingToSearch(parse: ParseResult): boolean {
+  return (
+    parse.outcome !== ParseOutcome.Parsed ||
+    (parse.filters.length === 0 && parse.query === undefined)
+  );
 }
 
 /**
