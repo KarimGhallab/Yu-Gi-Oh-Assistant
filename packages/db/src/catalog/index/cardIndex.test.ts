@@ -21,7 +21,7 @@ import {
   OllamaInvalidResponseError
 } from '@ygo-assistant/ollama';
 
-import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
+import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
 import {
   buildCardIndex,
   readCardIndex,

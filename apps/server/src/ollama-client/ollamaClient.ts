@@ -1,6 +1,6 @@
 import { type IOllamaClient, OllamaClient } from '@ygo-assistant/ollama';
 
-import type { OllamaConfig } from './config/index.js';
+import type { OllamaConfig } from '../config/index.js';
 
 /**
  * Builds the Ollama client the server runs on, from the validated

@@ -1,17 +1,17 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { OllamaClient } from './OllamaClient.js';
 import {
   OllamaInvalidResponseError,
   OllamaModelNotFoundError,
   OllamaUnreachableError
-} from './errors.js';
+} from '../errors.js';
 import {
   type FakeOllamaHandler,
   type FakeOllamaRequest,
   FakeOllamaServer
-} from './testing/FakeOllamaServer.js';
-import { ChatRole } from './types.js';
+} from '../testing/FakeOllamaServer.js';
+import { ChatRole } from '../types.js';
+import { OllamaClient } from './OllamaClient.js';
 
 const CHAT_MODEL = 'qwen3:4b';
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';

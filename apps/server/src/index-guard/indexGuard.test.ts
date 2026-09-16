@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { buildCardIndex } from '@ygo-assistant/db';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
 
-import { loadConfig } from './config/index.js';
+import { loadConfig } from '../config/index.js';
 import { StaleIndexError, ensureIndexMatchesConfig } from './indexGuard.js';
 
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';

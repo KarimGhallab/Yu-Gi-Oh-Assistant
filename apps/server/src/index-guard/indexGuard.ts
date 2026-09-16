@@ -1,6 +1,6 @@
 import { readCardIndexMetadata } from '@ygo-assistant/db';
 
-import type { AppConfig } from './config/index.js';
+import type { AppConfig } from '../config/index.js';
 
 const REPOPULATE_COMMAND = 'pnpm -F @ygo-assistant/server db:populate';
 

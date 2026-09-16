@@ -10,12 +10,12 @@ import {
 } from '@ygo-assistant/ollama';
 import { delay } from '@ygo-assistant/utils';
 
-import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
-import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
-import { indexDirectory } from './paths.js';
-import { buildWhereClause } from './predicate.js';
-import { normalizeCard, normalizeCardRow } from './row.js';
-import { createCardArrowSchema } from './schema.js';
+import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
+import { readIndexMetadata, writeIndexMetadata } from '../metadata.js';
+import { indexDirectory } from '../paths.js';
+import { buildWhereClause } from '../predicate.js';
+import { normalizeCard, normalizeCardRow } from '../row.js';
+import { createCardArrowSchema } from '../schema.js';
 import type {
   BuildCardIndexOptions,
   CardIndexContents,
@@ -23,7 +23,7 @@ import type {
   IndexMetadata,
   ScoredCard,
   SearchCardIndexOptions
-} from './types.js';
+} from '../types.js';
 
 const CARDS_TABLE = 'cards';
 const DEFAULT_EMBEDDING_BATCH_SIZE = 256;

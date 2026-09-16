@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CardAttribute,
-  CardFilterField,
   CardType,
-  FilterOperator,
   FrameType,
   Language,
   LinkMarker
-} from './enums.js';
+} from '../enums.js';
+import type { Card } from '../types.js';
 import {
+  CardFilterField,
+  FilterOperator,
   cardFilterSchema,
   cardFiltersSchema,
   cardMatchesFilters
 } from './filters.js';
-import type { Card } from './types.js';
 
 const createDarkMagician = (overrides: Partial<Card> = {}): Card => ({
   id: 46986414,

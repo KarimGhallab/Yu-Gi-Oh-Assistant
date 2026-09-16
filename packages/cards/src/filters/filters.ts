@@ -1,14 +1,41 @@
 import { z } from 'zod';
 
-import {
-  CardAttribute,
-  CardFilterField,
-  CardType,
-  FilterOperator,
-  FrameType,
-  LinkMarker
-} from './enums.js';
-import type { Card } from './types.js';
+import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
+import type { Card } from '../types.js';
+
+/**
+ * Card fields a structured filter can constrain. The set is the vocabulary
+ * shared by parsing, retrieval, and the UI, so nothing may filter on a field
+ * the index does not carry.
+ */
+export enum CardFilterField {
+  Type = 'type',
+  FrameType = 'frameType',
+  Race = 'race',
+  Attribute = 'attribute',
+  Level = 'level',
+  Atk = 'atk',
+  Def = 'def',
+  LinkVal = 'linkVal',
+  LinkMarkers = 'linkMarkers',
+  Archetype = 'archetype'
+}
+
+/**
+ * Comparison a structured filter applies to a card field. Which operators fit a
+ * field depends on whether the field is numeric, textual, or enumerated.
+ */
+export enum FilterOperator {
+  Eq = 'eq',
+  Ne = 'ne',
+  Gt = 'gt',
+  Gte = 'gte',
+  Lt = 'lt',
+  Lte = 'lte',
+  Contains = 'contains',
+  StartsWith = 'startsWith',
+  EndsWith = 'endsWith'
+}
 
 const COMPARISON_OPERATORS = [
   FilterOperator.Eq,

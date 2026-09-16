@@ -1,3 +1,4 @@
+import type { IAppStore } from '@ygo-assistant/db';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -11,4 +12,5 @@ export interface ServerDependencies {
   config: AppConfig;
   logger: ILogger;
   ollama: IOllamaClient;
+  store: IAppStore;
 }

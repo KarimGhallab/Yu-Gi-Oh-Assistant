@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ChatChunk } from '@ygo-assistant/ollama';
 
-import { loadConfig } from './config/index.js';
+import { loadConfig } from '../config/index.js';
 import { createOllamaClient } from './ollamaClient.js';
 
 interface FakeOllama {

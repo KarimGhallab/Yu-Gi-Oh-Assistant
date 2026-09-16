@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { IAppStore } from '@ygo-assistant/db';
 import { LogLevel } from '@ygo-assistant/logger';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
@@ -41,10 +42,34 @@ const ollamaStub: IOllamaClient = {
   chat: async function* () {}
 };
 
+const storeStub: IAppStore = {
+  conversations: {
+    create: async () => {
+      throw new Error('These tests never store a conversation');
+    },
+    find: async () => undefined,
+    list: async () => [],
+    update: async () => {
+      throw new Error('These tests never update a conversation');
+    },
+    delete: async () => {
+      throw new Error('These tests never delete a conversation');
+    }
+  },
+  messages: {
+    append: async () => {
+      throw new Error('These tests never store a message');
+    },
+    list: async () => []
+  },
+  close: async () => {}
+};
+
 const createDependencies = (env: Record<string, string | undefined> = {}) => ({
   config: loadConfig(env),
   logger: new RecordingLogger(),
-  ollama: ollamaStub
+  ollama: ollamaStub,
+  store: storeStub
 });
 
 describe('createServer', () => {

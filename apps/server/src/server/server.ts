@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
-import { DomainError } from '@ygo-assistant/utils';
+import { apiErrorSchema } from '@ygo-assistant/contracts';
+import { DomainError, HttpStatus } from '@ygo-assistant/utils';
 
+import { createConversationRoutes } from './conversations/conversations.js';
 import type { ServerDependencies } from './types.js';
 
 /**
@@ -20,17 +22,25 @@ export function createServer(dependencies: ServerDependencies): Hono {
 
   app.get('/health', c => c.json({ status: 'ok' }));
 
+  app.route('/api/conversations', createConversationRoutes(dependencies));
+
   app.onError((error, c) => {
     if (error instanceof DomainError) {
       dependencies.logger.warn('Request failed', {
         status: error.statusCode,
         message: error.message
       });
-      return c.json({ error: error.message }, { status: error.statusCode });
+      return c.json(
+        apiErrorSchema.parse({ error: error.message }),
+        error.statusCode
+      );
     }
 
     dependencies.logger.error('Unhandled error', { message: error.message });
-    return c.json({ error: 'Internal Server Error' }, { status: 500 });
+    return c.json(
+      apiErrorSchema.parse({ error: 'Internal Server Error' }),
+      HttpStatus.InternalServerError
+    );
   });
 
   return app;

@@ -56,6 +56,12 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.1
         version: 2.1.1(hono@4.13.7)
+      '@ygo-assistant/cards':
+        specifier: workspace:*
+        version: link:../../packages/cards
+      '@ygo-assistant/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@ygo-assistant/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -130,6 +136,13 @@ importers:
         version: 6.0.3
 
   packages/contracts:
+    dependencies:
+      '@ygo-assistant/cards':
+        specifier: workspace:*
+        version: link:../cards
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: 26.5.1
