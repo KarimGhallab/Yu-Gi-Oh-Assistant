@@ -26,13 +26,11 @@ numbering across specs, so blocking edges stay legible across features.
 | 16  | [Colorized dev logs and rotating production log files](./16-colorized-dev-logs-and-rotating-production-files.md) | Resolved (2026-09-15) | -          | [01](../specs/01-workspace-foundation.md), [10](../specs/10-local-run-ci-and-docs.md) |
 | 17  | [Shared card filter vocabulary and schema](./17-card-filter-vocabulary-and-schema.md)                            | Resolved (2026-09-16) | -          | [04](../specs/04-retrieval-engine.md)                                                 |
 | 18  | [Ranked semantic retrieval over the card index](./18-ranked-semantic-retrieval.md)                               | Resolved (2026-09-16) | -          | [04](../specs/04-retrieval-engine.md)                                                 |
-| 19  | [Structured pre-filters and the combined query](./19-structured-filters-and-combined-query.md)                   | `ready-for-agent`     | 17, 18     | [04](../specs/04-retrieval-engine.md)                                                 |
+| 19  | [Structured pre-filters and the combined query](./19-structured-filters-and-combined-query.md)                   | Resolved (2026-09-16) | 17, 18     | [04](../specs/04-retrieval-engine.md)                                                 |
 
 ## Frontier
 
-Ticket 19 is the frontier: the shared filter vocabulary (17) and the ranked
-semantic lane (18) are resolved, so 19 can add the structured pre-filters that
-join them. Spec 04 (Retrieval engine) is nearly ticketed out; specs 05
-(Conversation store and CRUD) and 06 (Prompt-to-filter parsing) are unblocked and
-not yet broken into tickets. Ticket 11 supersedes the single-origin setup in
-ticket 06 and spec 01.
+Spec 04 (Retrieval engine) is fully landed: 17, 18, and 19 are resolved. The
+next work is spec 05 (Conversation store and CRUD) and spec 06 (Prompt-to-filter
+parsing), both unblocked and not yet broken into tickets; spec 07 joins 04, 05,
+and 06. Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.

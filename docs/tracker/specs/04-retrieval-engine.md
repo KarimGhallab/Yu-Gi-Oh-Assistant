@@ -1,6 +1,6 @@
 # 04 - Retrieval engine
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-16)
 - **Kind:** spec
 - **Blocked by:** 03
 - **Source:** architecture grilling, 2026-09-15

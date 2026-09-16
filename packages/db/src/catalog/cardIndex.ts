@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises';
 
 import { connect } from '@lancedb/lancedb';
 
-import { type Card, Language } from '@ygo-assistant/cards';
+import type { Card } from '@ygo-assistant/cards';
 import {
   type IOllamaClient,
   OllamaInvalidResponseError,
@@ -13,11 +13,13 @@ import { delay } from '@ygo-assistant/utils';
 import { composeCardDocument } from '../ygoprodeck/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from './metadata.js';
 import { indexDirectory } from './paths.js';
+import { buildWhereClause } from './predicate.js';
 import { normalizeCard, normalizeCardRow } from './row.js';
 import { createCardArrowSchema } from './schema.js';
 import type {
   BuildCardIndexOptions,
   CardIndexContents,
+  CardQueryOptions,
   IndexMetadata,
   ScoredCard,
   SearchCardIndexOptions
@@ -29,11 +31,10 @@ const EMBEDDING_ATTEMPTS = 3;
 const EMBEDDING_RETRY_DELAY_MS = 500;
 const COSINE_DISTANCE_TYPE = 'cosine';
 const DISTANCE_COLUMN = '_distance';
-
-const LANGUAGE_PREDICATES: Record<Language, string> = {
-  [Language.English]: "language = 'en'",
-  [Language.French]: "language = 'fr'"
-};
+const IDENTITY_ORDER = [
+  { columnName: 'id', ascending: true },
+  { columnName: 'name', ascending: true }
+];
 
 /**
  * Builds the card index for a data directory. It composes the card documents,
@@ -104,7 +105,8 @@ export async function readCardIndex(
 
 /**
  * Searches one language partition by a query vector, returning the nearest
- * cards with their cosine similarity to it, closest first.
+ * cards with their cosine similarity to it, closest first. Structured filters
+ * narrow the partition before the vector search runs.
  */
 export async function searchCardIndex(
   dataDir: string,
@@ -117,7 +119,7 @@ export async function searchCardIndex(
     .query()
     .nearestTo(options.vector)
     .distanceType(COSINE_DISTANCE_TYPE)
-    .where(LANGUAGE_PREDICATES[options.language])
+    .where(buildWhereClause(options.language, options.filters ?? []))
     .limit(options.limit)
     .toArray();
 
@@ -125,6 +127,28 @@ export async function searchCardIndex(
     card: normalizeCard(row),
     score: cosineSimilarity(row)
   }));
+}
+
+/**
+ * Reads the cards of one language partition that match the structured filters,
+ * with no vector involved. The rows come back in a stable identity order so a
+ * filter-only request is reproducible.
+ */
+export async function scanCardIndex(
+  dataDir: string,
+  options: CardQueryOptions
+): Promise<Card[]> {
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table
+    .query()
+    .where(buildWhereClause(options.language, options.filters ?? []))
+    .orderBy(IDENTITY_ORDER)
+    .limit(options.limit)
+    .toArray();
+
+  return rows.map(row => normalizeCard(row));
 }
 
 /**

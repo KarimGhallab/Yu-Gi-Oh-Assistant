@@ -7,7 +7,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   type Card,
   CardAttribute,
+  CardFilterField,
+  type CardFilters,
   CardType,
+  FilterOperator,
   FrameType,
   Language
 } from '@ygo-assistant/cards';
@@ -15,6 +18,7 @@ import { buildCardIndex } from '@ygo-assistant/db';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 import { retrieveCards } from './retrieval.js';
+import type { RetrievalQuery, RetrievalRanking } from './types.js';
 
 const DIMENSIONS = 3;
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
@@ -59,7 +63,16 @@ const createPotOfGreed = (): Card =>
   });
 
 const createBlueEyes = (): Card =>
-  createCard({ id: 89631139, name: 'Blue-Eyes White Dragon' });
+  createCard({
+    id: 89631139,
+    name: 'Blue-Eyes White Dragon',
+    attribute: CardAttribute.Light,
+    race: 'Dragon',
+    level: 8,
+    atk: 3000,
+    def: 2500,
+    archetype: 'Blue-Eyes'
+  });
 
 const createMagicienSombre = (): Card =>
   createCard({ language: Language.French, name: 'Magicien Sombre' });
@@ -144,6 +157,27 @@ describe('retrieveCards', () => {
       query: { text: 'cards that banish monsters', language },
       ranking: { topK, minScore }
     });
+
+  const retrieveWith = (
+    directory: string,
+    embedder: IOllamaClient,
+    query: Partial<RetrievalQuery>,
+    ranking: Partial<RetrievalRanking> = {}
+  ) =>
+    retrieveCards({
+      dataDir: directory,
+      embedder,
+      query: { language: Language.English, ...query },
+      ranking: { topK: 25, minScore: 0, ...ranking }
+    });
+
+  const levelAtLeast = (level: number): CardFilters => [
+    {
+      field: CardFilterField.Level,
+      operator: FilterOperator.Gte,
+      value: level
+    }
+  ];
 
   it('returns the nearest cards ordered by score', async () => {
     const directory = await createDataDir();
@@ -295,5 +329,132 @@ describe('retrieveCards', () => {
     expect(results).toHaveLength(1);
     expect(results[0].card.name).toBe('Dark Magician (alternate)');
     expect(results[0].score).toBeCloseTo(1, 5);
+  });
+
+  it('pre-filters on the structured fields before ranking semantically', async () => {
+    const directory = await createDataDir();
+    await seed(
+      directory,
+      [createCard(), createPotOfGreed(), createBlueEyes()],
+      [
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0]
+      ]
+    );
+    const { embedder } = createQueryEmbedder(QUERY_VECTOR);
+
+    const results = await retrieveWith(directory, embedder, {
+      text: 'draw cards',
+      filters: [
+        {
+          field: CardFilterField.Type,
+          operator: FilterOperator.Eq,
+          value: CardType.SpellCard
+        }
+      ]
+    });
+
+    expect(results.map(result => result.card.name)).toEqual(['Pot of Greed']);
+    expect(results[0].score).toBeCloseTo(Math.SQRT1_2, 5);
+  });
+
+  it('returns every match of a filter-only request in a stable order', async () => {
+    const directory = await createDataDir();
+    await seed(
+      directory,
+      [createCard(), createPotOfGreed(), createBlueEyes()],
+      [
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0]
+      ]
+    );
+    const { embedder, texts } = createQueryEmbedder(QUERY_VECTOR);
+
+    const results = await retrieveWith(directory, embedder, {
+      filters: levelAtLeast(7)
+    });
+
+    expect(results.map(result => result.card.name)).toEqual([
+      'Dark Magician',
+      'Blue-Eyes White Dragon'
+    ]);
+    expect(results.map(result => result.score)).toEqual([1, 1]);
+    expect(texts).toEqual([]);
+  });
+
+  it('AND-combines several filters while ranking by intent', async () => {
+    const directory = await createDataDir();
+    await seed(
+      directory,
+      [createCard(), createPotOfGreed(), createBlueEyes()],
+      [
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0]
+      ]
+    );
+    const { embedder } = createQueryEmbedder(QUERY_VECTOR);
+
+    const results = await retrieveWith(directory, embedder, {
+      text: 'a powerful monster',
+      filters: [
+        {
+          field: CardFilterField.Level,
+          operator: FilterOperator.Gte,
+          value: 7
+        },
+        {
+          field: CardFilterField.Attribute,
+          operator: FilterOperator.Eq,
+          value: CardAttribute.Light
+        }
+      ]
+    });
+
+    expect(results.map(result => result.card.name)).toEqual([
+      'Blue-Eyes White Dragon'
+    ]);
+  });
+
+  it('scopes a filter-only request to the active language', async () => {
+    const directory = await createDataDir();
+    await seed(
+      directory,
+      [createCard(), createMagicienSombre()],
+      [
+        [1, 0, 0],
+        [1, 0, 0]
+      ]
+    );
+    const { embedder } = createQueryEmbedder(QUERY_VECTOR);
+
+    const french = await retrieveWith(directory, embedder, {
+      language: Language.French,
+      filters: levelAtLeast(7)
+    });
+
+    expect(french.map(result => result.card.name)).toEqual(['Magicien Sombre']);
+  });
+
+  it('returns nothing when no card matches the filters', async () => {
+    const directory = await createDataDir();
+    await seed(
+      directory,
+      [createCard(), createPotOfGreed(), createBlueEyes()],
+      [
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0]
+      ]
+    );
+    const { embedder } = createQueryEmbedder(QUERY_VECTOR);
+
+    const results = await retrieveWith(directory, embedder, {
+      filters: levelAtLeast(11)
+    });
+
+    expect(results).toEqual([]);
   });
 });

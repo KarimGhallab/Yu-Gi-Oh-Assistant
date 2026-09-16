@@ -103,22 +103,11 @@ export type CardFilter = z.infer<typeof cardFilterSchema>;
 
 export type CardFilters = z.infer<typeof cardFiltersSchema>;
 
-type EqualityOperator = FilterOperator.Eq | FilterOperator.Ne;
+export type EqualityOperator = (typeof EQUALITY_OPERATORS)[number];
 
-type ComparisonOperator =
-  | FilterOperator.Eq
-  | FilterOperator.Ne
-  | FilterOperator.Gt
-  | FilterOperator.Gte
-  | FilterOperator.Lt
-  | FilterOperator.Lte;
+export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number];
 
-type TextOperator =
-  | FilterOperator.Eq
-  | FilterOperator.Ne
-  | FilterOperator.Contains
-  | FilterOperator.StartsWith
-  | FilterOperator.EndsWith;
+export type TextOperator = (typeof TEXT_OPERATORS)[number];
 
 type Comparison<Value> = (value: Value, expected: Value) => boolean;
 
