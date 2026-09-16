@@ -17,7 +17,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 03  | [Card catalog ingestion and index](./03-card-catalog-ingestion.md)         | Resolved (2026-09-15) | 01, 02     |
 | 04  | [Retrieval engine](./04-retrieval-engine.md)                               | Resolved (2026-09-16) | 03         |
 | 05  | [Conversation store and CRUD](./05-conversation-store-and-crud.md)         | Resolved (2026-09-16) | 01         |
-| 06  | [Prompt-to-filter parsing](./06-prompt-to-filter-parsing.md)               | `ready-for-agent`     | 01, 02     |
+| 06  | [Prompt-to-filter parsing](./06-prompt-to-filter-parsing.md)               | Resolved (2026-09-16) | 01, 02     |
 | 07  | [Grounded answer and streamed turn](./07-grounded-answer-streamed-turn.md) | `ready-for-agent`     | 04, 05, 06 |
 | 08  | [Chat client](./08-chat-client.md)                                         | `ready-for-agent`     | 07         |
 | 09  | [Transparent controls](./09-transparent-controls.md)                       | `ready-for-agent`     | 08         |

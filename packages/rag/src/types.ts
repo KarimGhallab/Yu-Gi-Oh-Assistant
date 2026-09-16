@@ -43,3 +43,45 @@ export interface RetrieveCardsOptions {
   query: RetrievalQuery;
   ranking: RetrievalRanking;
 }
+
+/**
+ * How a parse ended: the model produced a usable request, or parsing gave up
+ * and the player's own words became the free-text query.
+ */
+export enum ParseOutcome {
+  Parsed = 'parsed',
+  Degraded = 'degraded'
+}
+
+/**
+ * A request the model parsed: the constraints it found and the intent to search
+ * on. The filters are never absent, an empty set matching every card, and the
+ * query is absent when the request carried no free text.
+ */
+export interface ParsedRequest {
+  outcome: ParseOutcome.Parsed;
+  filters: CardFilters;
+  query?: string;
+}
+
+/**
+ * A request parsing gave up on: the player's words as the free-text query, so
+ * the search still runs degraded rather than erroring.
+ */
+export interface DegradedRequest {
+  outcome: ParseOutcome.Degraded;
+  query: string;
+}
+
+export type ParseResult = ParsedRequest | DegradedRequest;
+
+/**
+ * Everything a parse needs: the model to ask, whether that model can be
+ * constrained by a schema, and the request to parse.
+ */
+export interface ParseCardRequestOptions {
+  client: IOllamaClient;
+  model: string;
+  supportsStructuredOutput: boolean;
+  request: string;
+}

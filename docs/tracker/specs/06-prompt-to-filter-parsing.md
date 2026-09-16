@@ -1,6 +1,6 @@
 # 06 - Prompt-to-filter parsing
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-16)
 - **Kind:** spec
 - **Blocked by:** 01, 02
 - **Source:** architecture grilling, 2026-09-15
