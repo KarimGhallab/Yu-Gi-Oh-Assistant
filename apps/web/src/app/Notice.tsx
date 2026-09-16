@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
  * wherever a surface has to offer one.
  */
 export const ACTION_CLASS =
-  'inline-block rounded bg-amber-500 px-3 py-1.5 text-sm font-medium text-neutral-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
+  'inline-block rounded bg-amber-500 px-3 py-1.5 text-sm font-medium text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 interface NoticeProps {
   title: string;

@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-16T15:40:00.000Z",
+  "title": "Design System: Yu-Gi-Oh Assistant",
+  "extensions": {
+    "colorMeta": {
+      "surface": {
+        "role": "neutral",
+        "displayName": "Room Black",
+        "canonical": "oklch(14.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "surface-panel": {
+        "role": "neutral",
+        "displayName": "Bench Slate",
+        "canonical": "oklch(20.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail Grey",
+        "canonical": "oklch(26.9% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Bone White",
+        "canonical": "oklch(97% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ash Grey",
+        "canonical": "oklch(70.8% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Dust Grey",
+        "canonical": "oklch(55.6% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Lamp Amber",
+        "canonical": "oklch(76.9% 0.188 70.08)",
+        "tonalRamp": [
+          "oklch(20% 0.05 70.08)",
+          "oklch(30% 0.09 70.08)",
+          "oklch(41% 0.12 70.08)",
+          "oklch(52% 0.15 70.08)",
+          "oklch(63% 0.17 70.08)",
+          "oklch(76.9% 0.188 70.08)",
+          "oklch(86% 0.17 70.08)",
+          "oklch(94% 0.1 70.08)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Lampglow",
+        "canonical": "oklch(82.8% 0.189 84.429)",
+        "tonalRamp": [
+          "oklch(20% 0.05 84.429)",
+          "oklch(30% 0.09 84.429)",
+          "oklch(41% 0.12 84.429)",
+          "oklch(52% 0.15 84.429)",
+          "oklch(63% 0.17 84.429)",
+          "oklch(76.9% 0.188 84.429)",
+          "oklch(82.8% 0.189 84.429)",
+          "oklch(94% 0.1 84.429)"
+        ]
+      },
+      "accent-ring": {
+        "role": "primary",
+        "displayName": "Halo Amber",
+        "canonical": "oklch(87.9% 0.169 91.605)",
+        "tonalRamp": [
+          "oklch(20% 0.05 91.605)",
+          "oklch(30% 0.09 91.605)",
+          "oklch(41% 0.12 91.605)",
+          "oklch(52% 0.15 91.605)",
+          "oklch(63% 0.16 91.605)",
+          "oklch(76% 0.17 91.605)",
+          "oklch(87.9% 0.169 91.605)",
+          "oklch(95% 0.09 91.605)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Ember Ink",
+        "canonical": "oklch(27.9% 0.077 45.635)",
+        "tonalRamp": [
+          "oklch(27.9% 0.077 45.635)",
+          "oklch(36% 0.09 45.635)",
+          "oklch(46% 0.11 45.635)",
+          "oklch(56% 0.13 45.635)",
+          "oklch(66% 0.15 45.635)",
+          "oklch(76% 0.15 45.635)",
+          "oklch(86% 0.1 45.635)",
+          "oklch(94% 0.05 45.635)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Signal Red",
+        "canonical": "oklch(70.4% 0.191 22.216)",
+        "tonalRamp": [
+          "oklch(20% 0.06 22.216)",
+          "oklch(31% 0.1 22.216)",
+          "oklch(42% 0.13 22.216)",
+          "oklch(53% 0.16 22.216)",
+          "oklch(62% 0.18 22.216)",
+          "oklch(70.4% 0.191 22.216)",
+          "oklch(82% 0.14 22.216)",
+          "oklch(93% 0.07 22.216)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Title",
+        "purpose": "The conversation header and a notice heading. The system ceiling at 18px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Answers, messages, navigation rows, and controls. Prose is capped near 68 characters per line."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons and the brand mark, at 14px and medium weight."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Machine facts only: the interpretation readout, counts, card stats, identifiers."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [{ "name": "md", "value": "48rem" }]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only filled control in the app. Normally one per screen, for the one action that matters.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">New conversation</button>",
+      "css": ".ds-btn-primary { background: oklch(76.9% 0.188 70.08); color: oklch(27.9% 0.077 45.635); border: 0; border-radius: 4px; padding: 6px 10px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; cursor: default; white-space: nowrap; } .ds-btn-primary:hover { background: oklch(82.8% 0.189 84.429); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; }"
+    },
+    {
+      "name": "Primary Action (link)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The same skin on a link, for the single action a notice offers.",
+      "html": "<a class=\"ds-btn-primary ds-action-link\" href=\"#\">Back to the conversations</a>",
+      "css": ".ds-action-link { display: inline-block; text-decoration: none; padding: 6px 12px; }"
+    },
+    {
+      "name": "Sidebar Row",
+      "kind": "nav",
+      "refersTo": "nav-row",
+      "description": "One conversation in the list. Truncates rather than wrapping, so the list keeps its rhythm.",
+      "html": "<a class=\"ds-nav-row\" href=\"#\">Graveyard toolbox</a>",
+      "css": ".ds-nav-row { display: block; padding: 6px 8px; border-radius: 4px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-nav-row:hover { background: color-mix(in oklab, oklch(26.9% 0 none) 60%, transparent); color: oklch(97% 0 none); } .ds-nav-row:focus-visible { outline: 2px solid oklch(82.8% 0.189 84.429); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sidebar Row (open)",
+      "kind": "nav",
+      "refersTo": "nav-row-active",
+      "description": "The conversation the address names, filled with the rail colour and marked with aria-current.",
+      "html": "<a class=\"ds-nav-row ds-nav-row-active\" href=\"#\" aria-current=\"page\">Graveyard toolbox</a>",
+      "css": ".ds-nav-row-active { background: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-nav-row-active:hover { background: oklch(26.9% 0 none); color: oklch(97% 0 none); }"
+    },
+    {
+      "name": "Brand Mark",
+      "kind": "custom",
+      "refersTo": "brand-mark",
+      "description": "The product name standing in for a logo, and the way back to the empty state.",
+      "html": "<a class=\"ds-brand\" href=\"#\">Yu-Gi-Oh Assistant</a>",
+      "css": ".ds-brand { color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.025em; line-height: 20px; text-decoration: none; } .ds-brand:hover { color: oklch(97% 0 none); } .ds-brand:focus-visible { outline: 2px solid oklch(82.8% 0.189 84.429); outline-offset: 2px; border-radius: 4px; }"
+    },
+    {
+      "name": "Pane Header",
+      "kind": "custom",
+      "refersTo": "pane-header",
+      "description": "The strip above a surface's content: what this pane is, separated from it by one hairline.",
+      "html": "<header class=\"ds-pane-header\"><h1 class=\"ds-pane-title\">Graveyard toolbox</h1></header>",
+      "css": ".ds-pane-header { background: oklch(14.5% 0 none); padding: 16px 24px; border-bottom: 1px solid oklch(26.9% 0 none); } .ds-pane-title { margin: 0; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
+    },
+    {
+      "name": "Notice Panel",
+      "kind": "custom",
+      "refersTo": "notice-panel",
+      "description": "Stands in for content that is not there: the empty state, a conversation that does not exist, a request that failed.",
+      "html": "<div class=\"ds-notice\"><h2 class=\"ds-notice-title\">Start a conversation</h2><p class=\"ds-notice-body\">Your conversations are listed in the sidebar. Start a new one and ask for the cards you are looking for.</p></div>",
+      "css": ".ds-notice { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; background: oklch(14.5% 0 none); } .ds-notice-title { margin: 0; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 28px; } .ds-notice-body { margin: 0; max-width: 28rem; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Alert Line",
+      "kind": "custom",
+      "refersTo": "alert-line",
+      "description": "The server's own message, verbatim, beside the control that failed. The only non-amber colour, and text only.",
+      "html": "<p class=\"ds-alert\" role=\"alert\">The card index is not ready</p>",
+      "css": ".ds-alert { margin: 0; padding: 0 16px 8px; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Duelist's Workbench",
+    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is built next. That is where the tray of framed cards, the amber rail around the active turn, and the model's reading set as marginalia belong.\n\nFlatness is deliberate and the system has no motion yet. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and the only transition in the app is a colour change that happens instantly.",
+    "keyCharacteristics": [
+      "Near-neutral, three-step dark surfaces with no shadows.",
+      "One accent, amber, reserved for action, selection, and focus.",
+      "Density as craft: 14px body text, 12px mono for machine facts, 4px radius.",
+      "Hairline dividers instead of boxes, cards, or shadows.",
+      "The platform's font stack; no webfonts, no imagery in the chrome.",
+      "Keyboard first: every control reachable, focus always visible."
+    ],
+    "rules": [
+      {
+        "name": "The One Lamp Rule",
+        "body": "Amber marks what is actionable, chosen, or focused, and nothing else. No amber headings, no amber decoration, no amber dividers. Its rarity is what makes it read as light.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Second Accent Rule",
+        "body": "There is no secondary or tertiary colour. Failure is the only exception, it is text only, and it never becomes a fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Display Rule",
+        "body": "Nothing shouts. 18px is the ceiling, and there is no display or headline size to reach for. Hierarchy comes from colour, space, and hairlines, not from scale.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do keep amber for the action, the open row, and the focus ring, and count the amber elements on a screen; more than two is usually one too many.",
+      "Do step surfaces by one token (Room Black, Bench Slate, Rail Grey) when something needs to come forward, and keep them square.",
+      "Do use 1px Rail Grey hairlines to separate, and cap prose at about 68 characters and notices at 28rem.",
+      "Do set machine facts (filters, counts, card stats, identifiers) in 12px mono, and everything a person reads in the platform stack.",
+      "Do give a new full-page surface its own Room Black background. The frame carries it today and the document body stays transparent.",
+      "Do keep every control reachable by keyboard with a visible 2px Halo Amber outline, and keep aria-current on the open conversation."
+    ],
+    "donts": [
+      "Don't introduce a second accent, a gradient, or a coloured heading; the one exception is Signal Red as text about a failure.",
+      "Don't go above 18px anywhere. If something needs more weight, change its colour, its space, or its hairline instead.",
+      "Don't add shadows, blur, or elevation effects. If a surface needs to communicate hierarchy, use a tonal step.",
+      "Don't add motion without deciding the motion question first; the system is instant today by design, not by accident.",
+      "Don't introduce a webfont, an icon font, or iconography in the chrome. The system's voice is the platform's, and the app has no icons.",
+      "Don't crop, round, tilt, or restyle a card image. The card is a record of a real object and keeps its printed proportions.",
+      "Don't use a box, a card container, or a nested rectangle where a hairline and a spacing step would do."
+    ]
+  }
+}

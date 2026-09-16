@@ -7,7 +7,7 @@ const BRAND_CLASS =
   'min-w-0 truncate rounded text-sm font-semibold tracking-wide text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400';
 
 const START_CLASS =
-  'shrink-0 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-neutral-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
+  'shrink-0 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
 
 const conversationLinkClass = ({ isActive }: { isActive: boolean }): string =>
   `block truncate rounded px-2 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
