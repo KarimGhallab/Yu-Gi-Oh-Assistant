@@ -171,6 +171,7 @@ module.exports = {
           '(^|/)(?:babel|webpack)[.]config[.](?:js|cjs|mjs|ts|cts|mts|json)$', // other configs
           '^(?:apps|packages)/[^/]+/src/index[.]ts$', // package entry points are roots
           '^(?:apps|packages)/[^/]+/src/main[.]tsx?$', // app entry points are roots
+          '^(?:apps|packages)/[^/]+/src/test-setup[.]ts$', // test runner setup is a root
           '^(?:apps|packages)/[^/]+/vite[.]config[.](?:js|mjs|ts|mts)$' // build config
         ]
       },

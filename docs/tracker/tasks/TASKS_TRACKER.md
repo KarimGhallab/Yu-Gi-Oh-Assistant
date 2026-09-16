@@ -36,7 +36,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 26  | [The turn says so when the search comes up short](./26-the-turn-says-so-when-the-search-comes-up-short.md)       | Resolved (2026-09-16) | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
 | 27  | [The turn fails cleanly](./27-the-turn-fails-cleanly.md)                                                         | Resolved (2026-09-16) | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
 | 28  | [A turn honors the player's overrides](./28-a-turn-honors-the-players-overrides.md)                              | Resolved (2026-09-16) | 25         | [07](../specs/07-grounded-answer-streamed-turn.md)                                    |
-| 29  | [The client's toolchain is ready](./29-the-clients-toolchain-is-ready.md)                                        | `ready-for-agent`     | -          | [08](../specs/08-chat-client.md)                                                      |
+| 29  | [The client's toolchain is ready](./29-the-clients-toolchain-is-ready.md)                                        | Resolved (2026-09-16) | -          | [08](../specs/08-chat-client.md)                                                      |
 | 30  | [A reopened conversation returns its turns' cards](./30-a-reopened-conversation-returns-its-cards.md)            | `ready-for-agent`     | -          | [08](../specs/08-chat-client.md)                                                      |
 | 31  | [The chat frame, the sidebar, and the conversation route](./31-the-chat-frame-the-sidebar-and-the-route.md)      | `ready-for-agent`     | 29         | [08](../specs/08-chat-client.md)                                                      |
 | 32  | [A conversation reopens with its history](./32-a-conversation-reopens-with-its-history.md)                       | `ready-for-agent`     | 30, 31     | [08](../specs/08-chat-client.md)                                                      |
@@ -49,11 +49,10 @@ numbering across specs, so blocking edges stay legible across features.
 Specs 04 (Retrieval engine), 05 (Conversation store and CRUD), 06
 (Prompt-to-filter parsing), and 07 (Grounded answer and streamed turn) are fully
 landed: 17 through 28 are resolved. Spec 08 (Chat client) is ticketed as 29
-through 35. Two tickets have no blockers and are the frontier: 29, the client's
-toolchain, which everything client-side sits on, and 30, the stored turn's cards,
-which is server work and can run in parallel. From there 31 needs 29, 34 needs 31
-and can run beside the rest, 32 needs 30 and 31, 33 needs 32, and 35 closes the
-feature.
+through 35, and 29 is resolved. The frontier is 30, the stored turn's cards,
+which is server work, and 31, the chat frame and route, which 29 unblocked. From
+there 34 needs 31 and can run beside the rest, 32 needs 30 and 31, 33 needs 32,
+and 35 closes the feature.
 
 Spec 09 (Transparent controls) follows 08 and will need the model listing a
 picker reads: there is no models endpoint yet, so that spec should ticket one.
