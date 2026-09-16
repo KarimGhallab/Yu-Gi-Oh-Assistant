@@ -71,6 +71,9 @@ importers:
       '@ygo-assistant/ollama':
         specifier: workspace:*
         version: link:../../packages/ollama
+      '@ygo-assistant/rag':
+        specifier: workspace:*
+        version: link:../../packages/rag
       '@ygo-assistant/utils':
         specifier: workspace:*
         version: link:../../packages/utils

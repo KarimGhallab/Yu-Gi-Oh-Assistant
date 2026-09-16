@@ -45,6 +45,18 @@ export interface RetrieveCardsOptions {
 }
 
 /**
+ * Everything a grounded answer needs: the model to ask, the request to answer,
+ * the language to answer in, and the only cards the answer may mention.
+ */
+export interface StreamGroundedAnswerOptions {
+  client: IOllamaClient;
+  model: string;
+  request: string;
+  language: Language;
+  cards: Card[];
+}
+
+/**
  * How a parse ended: the model produced a usable request, or parsing gave up
  * and the player's own words became the free-text query.
  */

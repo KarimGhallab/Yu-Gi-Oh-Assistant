@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { streamSSE } from 'hono/streaming';
 
 import { Language } from '@ygo-assistant/cards';
 import {
@@ -6,20 +7,28 @@ import {
   conversationSchema,
   conversationWithMessagesSchema,
   createConversationRequestSchema,
+  turnEventSchema,
+  turnRequestSchema,
   updateConversationRequestSchema
 } from '@ygo-assistant/contracts';
+import { MessageRole } from '@ygo-assistant/db';
 import { NotFoundError } from '@ygo-assistant/utils';
 
 import { parseJsonBody } from '../body.js';
 import type { ServerDependencies } from '../types.js';
+import { requireInstalledModel, runTurn } from './turn.js';
 
 /**
  * The conversation surface: starting a conversation, listing the ones that can
- * be reopened, reopening one, renaming or reconfiguring one, and deleting one.
+ * be reopened, reopening one, renaming or reconfiguring one, deleting one, and
+ * running a turn in one.
  *
  * The store speaks the persistence types of the db package and the routes speak
  * the contracts package, so this is where a stored conversation becomes an API
  * response: both sides are validated, and the contract is what the client sees.
+ * A turn is the exception: it answers with a stream of events rather than one
+ * body, each validated before it is written, and the overrides a request carries
+ * are resolved here against the conversation before the turn reads them.
  */
 export function createConversationRoutes(
   dependencies: ServerDependencies
@@ -82,6 +91,47 @@ export function createConversationRoutes(
     await dependencies.store.conversations.delete(id);
 
     return context.body(null, 204);
+  });
+
+  routes.post('/:id/messages', async context => {
+    const id = requireConversationId(context.req.param('id'));
+    const request = await parseJsonBody(context, turnRequestSchema);
+    const conversation = await dependencies.store.conversations.find(id);
+
+    if (conversation === undefined) {
+      throw new NotFoundError(`No conversation has id ${id}`);
+    }
+
+    const model = request.model ?? conversation.model;
+    const language = request.language ?? conversation.language;
+    const selected = await requireInstalledModel(dependencies, model);
+
+    if (model !== conversation.model || language !== conversation.language) {
+      await dependencies.store.conversations.update(id, { model, language });
+    }
+
+    const userMessage = await dependencies.store.messages.append({
+      conversationId: conversation.id,
+      role: MessageRole.User,
+      content: request.text
+    });
+
+    return streamSSE(context, async stream => {
+      for await (const event of runTurn(dependencies, {
+        conversationId: conversation.id,
+        text: request.text,
+        userMessageId: userMessage.id,
+        language,
+        model,
+        supportsStructuredOutput: selected.supportsStructuredOutput,
+        editedFilters: request.filters
+      })) {
+        await stream.writeSSE({
+          event: event.type,
+          data: JSON.stringify(turnEventSchema.parse(event))
+        });
+      }
+    });
   });
 
   return routes;

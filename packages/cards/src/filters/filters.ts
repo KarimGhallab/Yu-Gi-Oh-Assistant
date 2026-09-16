@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
+import type { Card } from '../card/card.js';
 import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
-import type { Card } from '../types.js';
 
 /**
  * Card fields a structured filter can constrain. The set is the vocabulary

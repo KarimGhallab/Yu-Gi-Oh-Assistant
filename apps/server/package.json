@@ -25,6 +25,7 @@
     "@ygo-assistant/db": "workspace:*",
     "@ygo-assistant/logger": "workspace:*",
     "@ygo-assistant/ollama": "workspace:*",
+    "@ygo-assistant/rag": "workspace:*",
     "@ygo-assistant/utils": "workspace:*",
     "hono": "^4.13.7",
     "zod": "^4.4.3"

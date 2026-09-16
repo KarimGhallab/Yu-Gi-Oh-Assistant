@@ -18,7 +18,20 @@ const DEFAULT_CHAT_CHUNKS: ChatChunk[] = [
 export interface FakeOllamaResponses {
   models?: OllamaModel[];
   embeddings?: number[][];
+  /** What every chat call streams, when the calls do not differ. */
   chatChunks?: ChatChunk[];
+  /**
+   * One script per chat call, for the turns that ask a model more than once:
+   * the nth call streams the nth script. A call past the end of the scripts
+   * falls back to `chatChunks`.
+   */
+  chatResponses?: ChatChunk[][];
+  /**
+   * One failure per chat call, by the same index as `chatResponses`: the call
+   * streams whatever its script holds and then throws, which is what a model
+   * that dies partway through an answer looks like.
+   */
+  chatFailures?: (Error | undefined)[];
 }
 
 /**
@@ -47,12 +60,19 @@ export class FakeOllamaClient implements IOllamaClient {
 
   chat(request: ChatRequest): AsyncIterable<ChatChunk> {
     this.chatRequests.push(request);
-    const chunks = this._responses.chatChunks ?? DEFAULT_CHAT_CHUNKS;
+    const call = this.chatRequests.length - 1;
+    const scripted = this._responses.chatResponses?.[call];
+    const chunks =
+      scripted ?? this._responses.chatChunks ?? DEFAULT_CHAT_CHUNKS;
+    const failure = this._responses.chatFailures?.[call];
 
     return {
       [Symbol.asyncIterator]: async function* () {
         for (const chunk of chunks) {
           yield chunk;
+        }
+        if (failure !== undefined) {
+          throw failure;
         }
       }
     };

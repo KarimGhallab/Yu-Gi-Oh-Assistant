@@ -1,6 +1,6 @@
 # 07 - Grounded answer and streamed turn
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-16)
 - **Kind:** spec
 - **Blocked by:** 04, 05, 06
 - **Source:** architecture grilling, 2026-09-15

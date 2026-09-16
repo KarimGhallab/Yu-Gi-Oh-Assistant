@@ -1,3 +1,4 @@
+export { streamGroundedAnswer } from './answer/answer.js';
 export { parseCardRequest } from './parse/parse.js';
 export { retrieveCards } from './retrieval.js';
 export { ParseOutcome } from './types.js';
@@ -9,5 +10,6 @@ export type {
   RankedCard,
   RetrieveCardsOptions,
   RetrievalQuery,
-  RetrievalRanking
+  RetrievalRanking,
+  StreamGroundedAnswerOptions
 } from './types.js';
