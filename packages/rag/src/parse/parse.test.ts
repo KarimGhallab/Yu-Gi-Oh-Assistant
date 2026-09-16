@@ -38,13 +38,18 @@ async function* reply(content: string): AsyncGenerator<ChatChunk> {
   yield { content, done: true };
 }
 
+async function* failingStream(): AsyncGenerator<ChatChunk> {
+  yield { content: '{"query":', done: false };
+  throw new Error('the model server went away');
+}
+
 const json = (value: unknown): string => JSON.stringify(value);
 
-const parse = async (
-  response: string,
+const parseAnswers = async (
+  responses: string[],
   supportsStructuredOutput = true
 ): Promise<{ result: ParseResult; model: StubModel }> => {
-  const model = createStubModel([response]);
+  const model = createStubModel(responses);
   const result = await parseCardRequest({
     client: model.client,
     model: MODEL,
@@ -54,6 +59,12 @@ const parse = async (
 
   return { result, model };
 };
+
+const parse = async (
+  response: string,
+  supportsStructuredOutput = true
+): Promise<{ result: ParseResult; model: StubModel }> =>
+  parseAnswers([response], supportsStructuredOutput);
 
 describe('parseCardRequest', () => {
   it('returns the filters the model found', async () => {
@@ -258,5 +269,130 @@ describe('parseCardRequest', () => {
       filters: [{ field: 'frameType', operator: 'eq', value: FrameType.Spell }],
       query: undefined
     });
+  });
+});
+
+describe('parseCardRequest repair', () => {
+  it('accepts a repaired answer from a model that cannot be constrained', async () => {
+    const { result, model } = await parseAnswers(
+      ['I would suggest Dark Magician.', json({ query: 'banish' })],
+      false
+    );
+
+    expect(result).toEqual({
+      outcome: ParseOutcome.Parsed,
+      filters: [],
+      query: 'banish'
+    });
+    expect(model.requests).toHaveLength(2);
+    expect(model.requests.every(request => request.format === undefined)).toBe(
+      true
+    );
+  });
+
+  it('asks for no repair when the first answer already validates', async () => {
+    const { model } = await parseAnswers([json({ query: 'burn' })], false);
+
+    expect(model.requests).toHaveLength(1);
+  });
+
+  it('reaches the result a model that answered correctly the first time would give', async () => {
+    const answer = json({
+      filters: [{ field: 'level', operator: 'lte', value: 4 }],
+      query: 'dragons'
+    });
+
+    const repaired = await parseAnswers(['not JSON at all', answer]);
+    const direct = await parse(answer);
+
+    expect(repaired.result).toEqual(direct.result);
+  });
+
+  it('shows the repair what the model answered and what was wrong with it', async () => {
+    const rejected = json({
+      filters: [{ field: 'banishes', operator: 'eq', value: 'yes' }]
+    });
+    const { model } = await parseAnswers([rejected, json({ query: 'banish' })]);
+    const repair = model.requests[1]?.messages ?? [];
+
+    expect(repair.at(-2)).toEqual({
+      role: ChatRole.Assistant,
+      content: rejected
+    });
+    // The complaint is the validator's own, so this follows its wording.
+    expect(repair.at(-1)?.content).toContain('filters[0].field');
+  });
+
+  it('names an answer that was not JSON rather than quoting an error it never had', async () => {
+    const { model } = await parseAnswers([
+      'I would suggest Dark Magician.',
+      json({ query: 'banish' })
+    ]);
+
+    expect(model.requests[1]?.messages.at(-1)?.content).toContain('not JSON');
+  });
+
+  it('tells a JSON answer of the wrong kind apart from an answer that was not JSON', async () => {
+    const { model } = await parseAnswers(['null', json({ query: 'banish' })]);
+    const complaint = model.requests[1]?.messages.at(-1)?.content ?? '';
+
+    expect(complaint).not.toContain('was not JSON');
+    expect(complaint).toContain('received null');
+  });
+
+  it('degrades when the repair cannot reach the model at all', async () => {
+    let calls = 0;
+    const client: IOllamaClient = {
+      listModels: async () => [],
+      embed: async () => [],
+      chat: () => {
+        calls += 1;
+
+        return calls === 1 ? reply('not JSON at all') : failingStream();
+      }
+    };
+
+    const result = await parseCardRequest({
+      client,
+      model: MODEL,
+      supportsStructuredOutput: false,
+      request: REQUEST
+    });
+
+    expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: REQUEST });
+    expect(calls).toBe(2);
+  });
+
+  it('repairs a model that supports structured output under the same schema', async () => {
+    const { result, model } = await parseAnswers(
+      ['not JSON at all', json({ query: 'banish' })],
+      true
+    );
+
+    expect(result.outcome).toBe(ParseOutcome.Parsed);
+    expect(model.requests).toHaveLength(2);
+    expect(model.requests.every(request => request.format !== undefined)).toBe(
+      true
+    );
+    expect(model.requests[1]?.temperature).toBe(0);
+  });
+
+  it('degrades after the repair fails too, having asked exactly twice', async () => {
+    const { result, model } = await parseAnswers([
+      'I would suggest Dark Magician.',
+      'Still not JSON, sorry.'
+    ]);
+
+    expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: REQUEST });
+    expect(model.requests).toHaveLength(2);
+  });
+
+  it('degrades after a repair that answers with a shape the domain does not allow', async () => {
+    const { result } = await parseAnswers([
+      'I would suggest Dark Magician.',
+      json({ filters: [{ field: 'banishes', operator: 'eq', value: 'yes' }] })
+    ]);
+
+    expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: REQUEST });
   });
 });

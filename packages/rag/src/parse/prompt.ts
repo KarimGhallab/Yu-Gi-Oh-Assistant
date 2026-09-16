@@ -25,6 +25,21 @@ export function buildParsePrompt(vocabulary: FilterFieldVocabulary[]): string {
   ].join('\n');
 }
 
+/**
+ * The instruction a repair is given: what was wrong with the previous answer,
+ * and that only another JSON answer will do. The rejection is the validator's
+ * own complaint, so the model is shown the offending path and what it may use
+ * instead.
+ */
+export function buildRepairPrompt(rejection: string): string {
+  return [
+    'That answer was rejected because it did not match the shape the search needs:',
+    rejection,
+    '',
+    'Answer again with JSON only, using the fields, operators, and values listed above. Do not explain the mistake and do not repeat it.'
+  ].join('\n');
+}
+
 function describeField(entry: FilterFieldVocabulary): string {
   const operators = entry.operators.join(', ');
   const value =

@@ -31,12 +31,12 @@ numbering across specs, so blocking edges stay legible across features.
 | 21  | [A conversation reopens with its messages](./21-conversation-reopens-with-messages.md)                           | Resolved (2026-09-16) | 20         | [05](../specs/05-conversation-store-and-crud.md)                                      |
 | 22  | [Rename, reconfigure, and delete a conversation](./22-rename-reconfigure-and-delete-a-conversation.md)           | Resolved (2026-09-16) | 20, 21     | [05](../specs/05-conversation-store-and-crud.md)                                      |
 | 23  | [Parse a prompt into filters with structured output](./23-parse-a-prompt-into-filters-with-structured-output.md) | Resolved (2026-09-16) | -          | [06](../specs/06-prompt-to-filter-parsing.md)                                         |
-| 24  | [JSON-mode parsing with a single repair retry](./24-json-mode-parsing-with-a-repair-retry.md)                    | `ready-for-agent`     | 23         | [06](../specs/06-prompt-to-filter-parsing.md)                                         |
+| 24  | [JSON-mode parsing with a single repair retry](./24-json-mode-parsing-with-a-repair-retry.md)                    | Resolved (2026-09-16) | 23         | [06](../specs/06-prompt-to-filter-parsing.md)                                         |
 
 ## Frontier
 
-Specs 04 (Retrieval engine) and 05 (Conversation store and CRUD) are fully
-landed: 17 through 22 are resolved. Spec 06 (Prompt-to-filter parsing) is
-ticketed as 23 and 24: 23 is resolved, so 24 is the frontier and the last ticket
-of that spec. Spec 07 joins 04, 05, and 06, so it is waiting on 24 alone. Ticket
-11 supersedes the single-origin setup in ticket 06 and spec 01.
+Specs 04 (Retrieval engine), 05 (Conversation store and CRUD), and 06
+(Prompt-to-filter parsing) are fully landed: 17 through 24 are resolved. Spec 07
+(Grounded answer and streamed turn) joins 04, 05, and 06, so it is unblocked and
+not yet broken into tickets. Ticket 11 supersedes the single-origin setup in
+ticket 06 and spec 01.
