@@ -109,6 +109,15 @@ function textPredicate(
 }
 
 /**
+ * Builds the predicate a by-id card read filters on. The ids are the only
+ * caller-supplied input and they are rendered as numbers, so nothing needs
+ * quoting.
+ */
+export function buildIdClause(ids: number[]): string {
+  return `id IN (${ids.map(numericLiteral).join(', ')})`;
+}
+
+/**
  * Renders a numeric literal. The value is unquoted, so it is only safe once it
  * is known to be a finite integer rather than a caller-supplied string.
  */

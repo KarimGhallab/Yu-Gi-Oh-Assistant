@@ -64,6 +64,15 @@ export interface SearchCardIndexOptions extends CardQueryOptions {
 }
 
 /**
+ * A read of specific cards: which ids to read, and the language to prefer when a
+ * card exists in more than one, since the language partitions share their ids.
+ */
+export interface ReadCardsByIdsOptions {
+  ids: number[];
+  language: Language;
+}
+
+/**
  * A card found by a vector search, with its cosine similarity to the query
  * vector. Higher is closer.
  */

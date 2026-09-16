@@ -13,7 +13,7 @@ import { delay } from '@ygo-assistant/utils';
 import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
 import { readIndexMetadata, writeIndexMetadata } from '../metadata.js';
 import { indexDirectory } from '../paths.js';
-import { buildWhereClause } from '../predicate.js';
+import { buildIdClause, buildWhereClause } from '../predicate.js';
 import { normalizeCard, normalizeCardRow } from '../row.js';
 import { createCardArrowSchema } from '../schema.js';
 import type {
@@ -21,6 +21,7 @@ import type {
   CardIndexContents,
   CardQueryOptions,
   IndexMetadata,
+  ReadCardsByIdsOptions,
   ScoredCard,
   SearchCardIndexOptions
 } from '../types.js';
@@ -149,6 +150,42 @@ export async function scanCardIndex(
     .toArray();
 
   return rows.map(row => normalizeCard(row));
+}
+
+/**
+ * Reads specific cards by id, in the order they were asked for. A card the
+ * preferred language has comes back in it, and a card it lacks comes back in the
+ * language that has it, so a caller never loses a card to the language it
+ * happened to ask in. An id no language has is left out, which is the only way a
+ * stored card can disappear: the index no longer holds it.
+ */
+export async function readCardsByIds(
+  dataDir: string,
+  options: ReadCardsByIdsOptions
+): Promise<Card[]> {
+  if (options.ids.length === 0) {
+    return [];
+  }
+
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table.query().where(buildIdClause(options.ids)).toArray();
+
+  const preferred = new Map<number, Card>();
+  const fallback = new Map<number, Card>();
+  for (const row of rows) {
+    const card = normalizeCard(row);
+    const language = card.language === options.language ? preferred : fallback;
+    if (!language.has(card.id)) {
+      language.set(card.id, card);
+    }
+  }
+
+  return options.ids.flatMap(id => {
+    const card = preferred.get(id) ?? fallback.get(id);
+    return card === undefined ? [] : [card];
+  });
 }
 
 /**

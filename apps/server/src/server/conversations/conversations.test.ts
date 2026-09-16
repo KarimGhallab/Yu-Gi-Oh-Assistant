@@ -4,11 +4,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { CardFilters } from '@ygo-assistant/cards';
+import type { Card, CardFilters } from '@ygo-assistant/cards';
 import {
   CardAttribute,
   CardFilterField,
+  CardType,
   FilterOperator,
+  FrameType,
   Language
 } from '@ygo-assistant/cards';
 import {
@@ -20,6 +22,7 @@ import {
 import type { IAppStore } from '@ygo-assistant/db';
 import {
   MessageRole as StoredMessageRole,
+  buildCardIndex,
   databasePath,
   openAppStore
 } from '@ygo-assistant/db';
@@ -32,6 +35,11 @@ import { createServer } from '../server.js';
 
 const CHAT_MODEL = 'llama3.1:8b';
 
+const DIMENSIONS = 3;
+const EMBEDDING_MODEL = 'nomic-embed-text:latest';
+const MAGICIAN_ID = 46986414;
+const GREED_ID = 55144522;
+
 const FILTERS: CardFilters = [
   {
     field: CardFilterField.Attribute,
@@ -39,6 +47,47 @@ const FILTERS: CardFilters = [
     value: CardAttribute.Light
   }
 ];
+
+const createCard = (id: number, overrides: Partial<Card> = {}): Card => ({
+  id,
+  name: 'Dark Magician',
+  language: Language.English,
+  type: CardType.NormalMonster,
+  frameType: FrameType.Normal,
+  typeLine: ['Spellcaster', 'Normal'],
+  race: 'Spellcaster',
+  attribute: CardAttribute.Dark,
+  level: 7,
+  atk: 2500,
+  def: 2100,
+  linkMarkers: [],
+  effect: 'The ultimate wizard in terms of attack and defense.',
+  imageUrl: 'https://images.ygoprodeck.com/images/cards/46986414.jpg',
+  sourceUrl: 'https://ygoprodeck.com/card/dark-magician-4698',
+  ...overrides
+});
+
+/**
+ * One card the index holds in both languages, and one it holds in English only,
+ * so a read can be told to prefer a language and still fall back.
+ */
+const ENGLISH_MAGICIAN = createCard(MAGICIAN_ID);
+const FRENCH_MAGICIAN = createCard(MAGICIAN_ID, {
+  language: Language.French,
+  name: 'Magicien Sombre'
+});
+const ENGLISH_GREED = createCard(GREED_ID, {
+  name: 'Pot of Greed',
+  type: CardType.SpellCard,
+  frameType: FrameType.Spell,
+  typeLine: ['Spell'],
+  race: 'Normal',
+  attribute: undefined,
+  level: undefined,
+  atk: undefined,
+  def: undefined,
+  effect: 'Draw 2 cards.'
+});
 
 const silentLogger: ILogger = {
   debug: () => {},
@@ -69,11 +118,33 @@ describe('conversation routes', () => {
 
   const app = () =>
     createServer({
-      config: loadConfig({ OLLAMA_CHAT_MODEL: CHAT_MODEL }),
+      config: loadConfig({
+        DATA_DIR: dataDir,
+        OLLAMA_CHAT_MODEL: CHAT_MODEL
+      }),
       logger: silentLogger,
       ollama: ollamaStub,
       store
     });
+
+  const seedIndex = async (cards: Card[]): Promise<void> => {
+    const embedder: IOllamaClient = {
+      listModels: async () => [],
+      embed: async inputs => inputs.map((_, index) => [index + 1, 0, 0]),
+      chat: () => {
+        throw new Error('Building the index never streams chat completions');
+      }
+    };
+
+    await buildCardIndex({
+      dataDir,
+      cards,
+      embedder,
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-16'
+    });
+  };
 
   const postConversation = (body: string) =>
     app().request('/api/conversations', {
@@ -231,16 +302,21 @@ describe('conversation routes', () => {
         MessageRole.User,
         MessageRole.Assistant
       ]);
+      expect(reopened.messages.map(message => message.cards)).toEqual([
+        undefined,
+        undefined
+      ]);
     });
 
-    it('carries the filters and card ids a reply suggested', async () => {
+    it('carries the filters and the cards a reply suggested', async () => {
       const created = await startConversation();
+      await seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN]);
       await store.messages.append({
         conversationId: created.id,
         role: StoredMessageRole.Assistant,
         content: 'Try these',
         filters: FILTERS,
-        cardIds: [46986414]
+        cardIds: [MAGICIAN_ID]
       });
 
       const response = await getConversation(created.id);
@@ -249,7 +325,38 @@ describe('conversation routes', () => {
         await response.json()
       );
       expect(reopened.messages[0].filters).toEqual(FILTERS);
-      expect(reopened.messages[0].cardIds).toEqual([46986414]);
+      expect(reopened.messages[0].cards).toEqual([ENGLISH_MAGICIAN]);
+    });
+
+    it('reads a stored turn in the conversation language, falling back for a card that only exists in the other one', async () => {
+      const created = await store.conversations.create({
+        language: Language.French,
+        model: CHAT_MODEL
+      });
+      await seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN, ENGLISH_GREED]);
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.User,
+        content: 'des cartes pour un deck bannissement'
+      });
+      await store.messages.append({
+        conversationId: created.id,
+        role: StoredMessageRole.Assistant,
+        content: 'Essayez ceux-ci',
+        // Deliberately not in ascending id order, so the answer can only come
+        // back in this order by keeping the order the turn ranked the cards in.
+        cardIds: [GREED_ID, MAGICIAN_ID]
+      });
+
+      const response = await getConversation(created.id);
+
+      const reopened = conversationWithMessagesSchema.parse(
+        await response.json()
+      );
+      expect(reopened.messages.map(message => message.cards)).toEqual([
+        undefined,
+        [ENGLISH_GREED, FRENCH_MAGICIAN]
+      ]);
     });
 
     it('returns a conversation nothing was said in with no messages', async () => {

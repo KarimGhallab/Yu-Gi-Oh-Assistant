@@ -373,11 +373,19 @@ describe('turn routes', () => {
       role: 'user',
       content: REQUEST
     });
+    expect(conversation.messages[0]?.cards).toBeUndefined();
     expect(conversation.messages[1]).toMatchObject({
       role: 'assistant',
       content: 'Blue-Eyes fits.',
       filters: LIGHT_FILTERS,
-      cardIds: [CREATED_IDS[0]?.id]
+      cards: [
+        {
+          id: CREATED_IDS[0]?.id,
+          name: 'Blue-Eyes White Dragon',
+          imageUrl: 'https://images.ygoprodeck.com/images/cards/89631139.jpg',
+          sourceUrl: 'https://ygoprodeck.com/card/blue-eyes-white-dragon-4002'
+        }
+      ]
     });
   });
 
@@ -461,7 +469,7 @@ describe('turn routes', () => {
       role: 'assistant',
       content: 'Blue-Eyes fits.',
       filters: [],
-      cardIds: [CREATED_IDS[0]?.id]
+      cards: [{ id: CREATED_IDS[0]?.id, name: 'Blue-Eyes White Dragon' }]
     });
   });
 
@@ -679,7 +687,7 @@ describe('turn routes', () => {
     expect(conversation.messages[1]).toMatchObject({
       role: 'assistant',
       content: answer,
-      cardIds: []
+      cards: []
     });
   });
 

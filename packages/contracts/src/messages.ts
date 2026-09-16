@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { cardFiltersSchema } from '@ygo-assistant/cards';
+import { cardFiltersSchema, cardSchema } from '@ygo-assistant/cards';
 
 import { conversationSchema } from './conversations.js';
 
@@ -14,8 +14,10 @@ export enum MessageRole {
 }
 
 /**
- * A message as the API represents it. The parsed filters and the suggested card
- * ids are absent on a message that carried neither, such as the player's own.
+ * A message as the API represents it. The filters a reply was searched with and
+ * the cards it suggested are absent on a message that carried neither, such as
+ * the player's own. The cards are resolved from the ids the turn stored, so a
+ * client renders a stored turn without knowing an id was ever involved.
  */
 export const messageSchema = z.object({
   id: z.number().int().positive(),
@@ -23,7 +25,7 @@ export const messageSchema = z.object({
   role: z.enum(MessageRole),
   content: z.string().min(1),
   filters: cardFiltersSchema.optional(),
-  cardIds: z.array(z.number().int().positive()).optional(),
+  cards: z.array(cardSchema).optional(),
   createdAt: z.iso.datetime()
 });
 

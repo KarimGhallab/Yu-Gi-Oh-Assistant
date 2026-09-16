@@ -3,6 +3,7 @@ export {
   buildCardIndex,
   readCardIndex,
   readCardIndexMetadata,
+  readCardsByIds,
   scanCardIndex,
   searchCardIndex
 } from './catalog/index/cardIndex.js';
@@ -13,6 +14,7 @@ export type {
   CardQueryOptions,
   IndexedCardRow,
   IndexMetadata,
+  ReadCardsByIdsOptions,
   ScoredCard,
   SearchCardIndexOptions
 } from './catalog/types.js';

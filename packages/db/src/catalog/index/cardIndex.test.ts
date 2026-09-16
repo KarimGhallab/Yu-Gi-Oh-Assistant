@@ -25,6 +25,7 @@ import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocumen
 import {
   buildCardIndex,
   readCardIndex,
+  readCardsByIds,
   scanCardIndex,
   searchCardIndex
 } from './cardIndex.js';
@@ -293,6 +294,94 @@ describe('card index', () => {
     expect(count).toBe(1);
     expect(rows.map(row => row.name)).toEqual(['Pot of Greed']);
     expect(metadata.datasetVersion).toBe('ygoprodeck-2026-09-16');
+  });
+
+  describe('readCardsByIds', () => {
+    const buildIndex = async (
+      directory: string,
+      cards: Card[]
+    ): Promise<void> => {
+      await buildCardIndex({
+        dataDir: directory,
+        cards,
+        embedder: createEmbedder([]),
+        embeddingModel: EMBEDDING_MODEL,
+        dimensions: DIMENSIONS,
+        datasetVersion: 'ygoprodeck-2026-09-16'
+      });
+    };
+
+    const DARK_MAGICIAN_ID = 46986414;
+
+    it('reads the cards it was asked for, in the order it was asked', async () => {
+      const directory = await createDataDir();
+      const magician = createDarkMagician();
+      const greed = createPotOfGreed();
+      await buildIndex(directory, [magician, greed]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [greed.id, magician.id],
+        language: Language.English
+      });
+
+      expect(cards.map(card => card.name)).toEqual([
+        'Pot of Greed',
+        'Dark Magician'
+      ]);
+    });
+
+    it('reads a card in the language it was asked for when both have it', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [
+        createDarkMagician(),
+        createDarkMagician({
+          language: Language.French,
+          name: 'Magicien Sombre'
+        })
+      ]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID],
+        language: Language.French
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Magicien Sombre']);
+    });
+
+    it('falls back to the language that has a card alone', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID],
+        language: Language.French
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Dark Magician']);
+    });
+
+    it('leaves out an id no language has', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID, 999999999],
+        language: Language.English
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Dark Magician']);
+    });
+
+    it('reads nothing, and opens nothing, when it was asked for nothing', async () => {
+      const directory = await createDataDir();
+
+      const cards = await readCardsByIds(directory, {
+        ids: [],
+        language: Language.English
+      });
+
+      expect(cards).toEqual([]);
+    });
   });
 
   describe('searchCardIndex', () => {
