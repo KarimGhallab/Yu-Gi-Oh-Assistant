@@ -8,19 +8,20 @@ and state the AND-composition semantics once.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** Resolved (2026-09-16)
 
-- [ ] The filterable fields are `type`, `frameType`, `race`, `attribute`,
+- [x] The filterable fields are `type`, `frameType`, `race`, `attribute`,
       `level`, `atk`, `def`, `linkVal`, `linkMarkers`, `archetype`.
-- [ ] The operators are `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `contains`,
+- [x] The operators are `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `contains`,
       `startsWith`, `endsWith`.
-- [ ] Each field accepts only the operators that fit it: numeric fields the
-      comparisons, text fields the string operators, enumerated fields equality,
-      and link markers containment.
-- [ ] A filter set is validated at the boundary; unknown fields, unknown
+- [x] Each field accepts only the operators that fit it: numeric fields the
+      comparisons, text fields the string operators, enumerated fields equality
+      (equality and its negation), and link markers containment.
+- [x] A filter set is validated at the boundary; unknown fields, unknown
       operators, and values that do not fit the field are rejected.
-- [ ] The AND-composition semantics are stated once and testable: every filter
+- [x] The AND-composition semantics are stated once and testable: every filter
       in a set must hold, and an empty set matches everything.
-- [ ] Tests assert acceptance and rejection at the schema boundary, and the
-      composition rule directly.
-- [ ] Build and lint pass.
+- [x] Tests assert acceptance and rejection at the schema boundary, including
+      the full field-by-operator vocabulary matrix, and the composition rule
+      directly.
+- [x] Build and lint pass.

@@ -24,15 +24,15 @@ numbering across specs, so blocking edges stay legible across features.
 | 14  | [Fetch the card dump and wire the populate command](./14-fetch-dump-and-populate-command.md)                     | Resolved (2026-09-15) | 12, 13     | [03](../specs/03-card-catalog-ingestion.md)                                           |
 | 15  | [Guard server boot against a stale index](./15-guard-boot-against-stale-index.md)                                | Resolved (2026-09-15) | 13         | [03](../specs/03-card-catalog-ingestion.md)                                           |
 | 16  | [Colorized dev logs and rotating production log files](./16-colorized-dev-logs-and-rotating-production-files.md) | Resolved (2026-09-15) | -          | [01](../specs/01-workspace-foundation.md), [10](../specs/10-local-run-ci-and-docs.md) |
-| 17  | [Shared card filter vocabulary and schema](./17-card-filter-vocabulary-and-schema.md)                           | `ready-for-agent`     | -          | [04](../specs/04-retrieval-engine.md)                                                 |
+| 17  | [Shared card filter vocabulary and schema](./17-card-filter-vocabulary-and-schema.md)                            | Resolved (2026-09-16) | -          | [04](../specs/04-retrieval-engine.md)                                                 |
 | 18  | [Ranked semantic retrieval over the card index](./18-ranked-semantic-retrieval.md)                               | `ready-for-agent`     | -          | [04](../specs/04-retrieval-engine.md)                                                 |
 | 19  | [Structured pre-filters and the combined query](./19-structured-filters-and-combined-query.md)                   | `ready-for-agent`     | 17, 18     | [04](../specs/04-retrieval-engine.md)                                                 |
 
 ## Frontier
 
-Tickets 17 and 18 can start immediately: 17 is the shared filter vocabulary, 18
-is the ranked semantic lane plus the index search it needs. Ticket 19 joins them
-with the structured pre-filters. Spec 04 (Retrieval engine) is now broken into
-tickets; specs 05 (Conversation store and CRUD) and 06 (Prompt-to-filter parsing)
-are unblocked and not yet broken into tickets. Ticket 11 supersedes the
-single-origin setup in ticket 06 and spec 01.
+Ticket 18 can start immediately: the shared filter vocabulary (17) is resolved
+in `packages/cards`, and 18 adds the ranked semantic lane plus the index search
+it needs. Ticket 19 joins 18 with the structured pre-filters. Spec 04 (Retrieval
+engine) is broken into tickets; specs 05 (Conversation store and CRUD) and 06
+(Prompt-to-filter parsing) are unblocked and not yet broken into tickets.
+Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.

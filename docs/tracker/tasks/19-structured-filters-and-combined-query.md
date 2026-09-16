@@ -25,3 +25,9 @@ semantic retrieval over the card index.
       language-scoped, and empty cases over a seeded index; no Ollama is
       involved.
 - [ ] Build and lint pass.
+
+**Notes:** `packages/cards` owns the filter semantics and the index query must
+reproduce them exactly: text fields compare case-insensitively, enumerated
+fields compare exactly, and a filter on a field the card does not carry never
+holds, including `ne`, whose clause must therefore also exclude absent values.
+`cardMatchesFilters` from ticket 17 is the normative rule.
