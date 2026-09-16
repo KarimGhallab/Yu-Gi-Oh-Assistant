@@ -5,11 +5,14 @@ import {
   TurnStage,
   TurnStatus
 } from '@ygo-assistant/contracts';
-import { type Conversation, MessageRole } from '@ygo-assistant/db';
+import { MessageRole } from '@ygo-assistant/db';
+import {
+  type OllamaModel,
+  OllamaModelNotFoundError
+} from '@ygo-assistant/ollama';
 import {
   ParseOutcome,
   type ParseResult,
-  type RetrievalQuery,
   parseCardRequest,
   retrieveCards,
   streamGroundedAnswer
@@ -20,13 +23,22 @@ import type { ServerDependencies } from '../types.js';
 
 /**
  * What the turn runs on: the conversation it happens in, what the player asked
- * for, and the message that was already stored for them. The stored id is what
- * lets the client reconcile the message it rendered optimistically.
+ * for, the settings the turn settled on, and the message that was already
+ * stored for them. The stored id is what lets the client reconcile the message
+ * it rendered optimistically.
+ *
+ * The settings are the ones in force, not the conversation's own: whoever
+ * starts the turn has already resolved the player's overrides against the
+ * conversation, so the pipeline never has to know which one won.
  */
 export interface TurnInput {
-  conversation: Conversation;
+  conversationId: number;
   text: string;
   userMessageId: number;
+  language: Language;
+  model: string;
+  supportsStructuredOutput: boolean;
+  editedFilters?: CardFilters;
 }
 
 /**
@@ -57,46 +69,32 @@ export async function* runTurn(
   dependencies: ServerDependencies,
   input: TurnInput
 ): AsyncGenerator<TurnEvent> {
-  const { conversation, text } = input;
-  const model = conversation.model;
+  const { text, language, model } = input;
 
   yield { type: TurnEventName.TurnStart, userMessageId: input.userMessageId };
 
   let stage = TurnStage.Parse;
   try {
-    const parse = await parseCardRequest({
-      client: dependencies.ollama,
-      model,
-      // Reading the model's capability belongs to understanding the request, so
-      // it fails and is reported as part of the parse stage rather than a stage
-      // of its own.
-      supportsStructuredOutput: await supportsStructuredOutput(
-        dependencies,
-        model
-      ),
-      request: text
-    });
-    const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
-    const query: RetrievalQuery = {
-      text: searchText(parse, filters, text),
-      filters,
-      language: conversation.language
-    };
+    const search = await resolveSearch(dependencies, input);
 
-    if (leftNothingToSearch(parse)) {
-      yield { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly };
+    if (search.status !== undefined) {
+      yield { type: TurnEventName.Status, status: search.status };
     }
 
     // The event reports the search that is actually about to run, so a client
     // rendering the chips shows what retrieval was asked for, even when the
     // parse kept no free text of its own and the request was searched instead.
-    yield { type: TurnEventName.Filters, filters, query: query.text };
+    yield {
+      type: TurnEventName.Filters,
+      filters: search.filters,
+      query: search.text
+    };
 
     stage = TurnStage.Search;
     const ranked = await retrieveCards({
       dataDir: dependencies.config.dataDir,
       embedder: dependencies.ollama,
-      query,
+      query: { text: search.text, filters: search.filters, language },
       ranking: {
         topK: dependencies.config.retrieval.topK,
         minScore: dependencies.config.retrieval.minScore
@@ -114,7 +112,7 @@ export async function* runTurn(
       dependencies,
       model,
       text,
-      conversation.language,
+      language,
       cards
     )) {
       answer += delta;
@@ -130,10 +128,10 @@ export async function* runTurn(
     yield { type: TurnEventName.AnswerEnd };
 
     const message = await dependencies.store.messages.append({
-      conversationId: conversation.id,
+      conversationId: input.conversationId,
       role: MessageRole.Assistant,
       content: answer,
-      filters,
+      filters: search.filters,
       cardIds: cards.map(card => card.id)
     });
 
@@ -146,6 +144,51 @@ export async function* runTurn(
       message: failureMessage(error)
     };
   }
+}
+
+/**
+ * The search a turn runs: the constraints and the free text, each of which the
+ * turn always has an answer for, unlike a retrieval query where either may be
+ * absent, and the status the player is owed about how it was arrived at.
+ */
+interface TurnSearch {
+  text?: string;
+  filters: CardFilters;
+  status?: TurnStatus;
+}
+
+/**
+ * The search a turn runs. A request the player edited the filters of is taken
+ * at their word: the filters are used as they stand and the text becomes the
+ * free text, because parsing it again would overwrite the correction. Anything
+ * else is parsed, and a parse that left the turn nothing of its own hands the
+ * request over as the free text with a status saying so.
+ */
+async function resolveSearch(
+  dependencies: ServerDependencies,
+  input: TurnInput
+): Promise<TurnSearch> {
+  if (input.editedFilters !== undefined) {
+    return { text: input.text, filters: input.editedFilters };
+  }
+
+  const parse = await parseCardRequest({
+    client: dependencies.ollama,
+    model: input.model,
+    supportsStructuredOutput: input.supportsStructuredOutput,
+    request: input.text
+  });
+  const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
+  const search: TurnSearch = {
+    text: searchText(parse, filters, input.text),
+    filters
+  };
+
+  if (leftNothingToSearch(parse)) {
+    search.status = TurnStatus.FreeTextOnly;
+  }
+
+  return search;
 }
 
 /**
@@ -170,7 +213,7 @@ function logFailure(
   error: unknown
 ): void {
   const context = {
-    conversationId: input.conversation.id,
+    conversationId: input.conversationId,
     stage,
     message: describeError(error)
   };
@@ -221,19 +264,23 @@ function searchText(
 }
 
 /**
- * Whether the selected model can be constrained by a schema, read from what the
- * server has installed. A model that is not installed is treated as
- * unconstrained; refusing one outright belongs to the overrides a request may
- * carry (ticket 28).
+ * The model a turn may answer with. A model the player named is refused before
+ * the turn starts rather than quietly answered by another one, because a player
+ * who chose a model and got a different one has been misled; the same goes for
+ * a conversation whose model is no longer installed.
  */
-async function supportsStructuredOutput(
+export async function requireInstalledModel(
   dependencies: ServerDependencies,
   model: string
-): Promise<boolean> {
+): Promise<OllamaModel> {
   const models = await dependencies.ollama.listModels();
   const selected = models.find(candidate => candidate.name === model);
 
-  return selected?.supportsStructuredOutput ?? false;
+  if (selected === undefined) {
+    throw new OllamaModelNotFoundError(model);
+  }
+
+  return selected;
 }
 
 /**

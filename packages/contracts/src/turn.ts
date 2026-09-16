@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { cardFiltersSchema, cardSchema } from '@ygo-assistant/cards';
+import { Language, cardFiltersSchema, cardSchema } from '@ygo-assistant/cards';
 
 /**
  * The names a turn's streamed events go by, on the wire and in the payload. A
@@ -37,10 +37,16 @@ export enum TurnStage {
 
 /**
  * A request to run a turn in a conversation. The text is what the player asked
- * for; everything else the turn needs it reads from the conversation.
+ * for. A language or a model overrides the conversation's own, and either one
+ * left out leaves the conversation in charge. The filters are the set the player
+ * edited, which is used as it stands instead of being parsed out of the text
+ * again, so leaving them out is what asks for the request to be parsed as usual.
  */
 export const turnRequestSchema = z.object({
-  text: z.string().min(1)
+  text: z.string().trim().min(1),
+  language: z.enum(Language).optional(),
+  model: z.string().min(1).optional(),
+  filters: cardFiltersSchema.optional()
 });
 
 /**

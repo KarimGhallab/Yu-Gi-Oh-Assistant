@@ -100,12 +100,17 @@ const CREATED_IDS: Card[] = [
   createCard(4, { name: 'Magicien Sombre', language: Language.French })
 ];
 
-/** One vector per seeded card, so the first is the best match for a request. */
+/**
+ * One vector per seeded card. The first is the best match for a request, so the
+ * card shown for a search is predictable; the French one is deliberately a worse
+ * match than the English one, so a search that ignored the language and returned
+ * it anyway would be caught rather than passed off as a tie-break.
+ */
 const SEED_VECTORS = [
   [1, 0, 0],
   [0, 1, 0],
   [0, 0, 1],
-  [1, 0, 0]
+  [0, 1, 0]
 ];
 
 const silentLogger: ILogger = {
@@ -489,12 +494,156 @@ describe('turn routes', () => {
     );
   });
 
-  it('parses without a schema when the selected model is not installed', async () => {
+  it('uses the filters the player edited instead of parsing the request', async () => {
+    const dark: CardFilters = [
+      {
+        field: CardFilterField.Attribute,
+        operator: FilterOperator.Eq,
+        value: CardAttribute.Dark
+      }
+    ];
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [PROSE]
+    });
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, {
+      text: REQUEST,
+      filters: dark
+    });
+
+    // Only the answer: an edited filter set is what the parse would have said,
+    // so there is nothing left to parse.
+    expect(client.chatRequests).toHaveLength(1);
+    expect(statusEvents(frames)).toEqual([]);
+    expect(filtersEvents(frames)).toEqual([
+      { type: TurnEventName.Filters, filters: dark, query: REQUEST }
+    ]);
+    expect(client.embeddedInputs).toEqual([[REQUEST]]);
+    // The only dark card of the seeded ones, so this only passes if the search
+    // ran on the filters the player submitted rather than the request's words.
+    expect(shownCardNames(frames)).toEqual(['Red-Eyes Black Dragon']);
+  });
+
+  it('searches the words alone when the player cleared every filter', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [PROSE]
+    });
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, {
+      text: REQUEST,
+      filters: []
+    });
+
+    expect(client.chatRequests).toHaveLength(1);
+    expect(filtersEvents(frames)).toEqual([
+      { type: TurnEventName.Filters, filters: [], query: REQUEST }
+    ]);
+  });
+
+  it('searches the language the player chose and keeps it on the conversation', async () => {
+    const client = createClient(PARSE_ANSWER);
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId, {
+      text: REQUEST,
+      language: Language.French
+    });
+
+    expect(shownCardNames(frames)).toEqual(['Magicien Sombre']);
+    await expect(
+      store.conversations.find(conversationId)
+    ).resolves.toMatchObject({ language: Language.French });
+  });
+
+  it('answers with the model the player chose and keeps it on the conversation', async () => {
+    const chosen: OllamaModel = {
+      name: 'mistral:7b',
+      supportsStructuredOutput: true
+    };
+    const client = createClient(PARSE_ANSWER, PROSE, [
+      CHAT_MODEL_CAPABILITY,
+      chosen
+    ]);
+    const conversationId = await startConversation();
+
+    await runTurn(client, conversationId, {
+      text: REQUEST,
+      model: chosen.name
+    });
+
+    expect(client.chatRequests.map(request => request.model)).toEqual([
+      chosen.name,
+      chosen.name
+    ]);
+    await expect(
+      store.conversations.find(conversationId)
+    ).resolves.toMatchObject({
+      model: chosen.name,
+      language: Language.English
+    });
+  });
+
+  it('refuses a model that is not installed before it streams', async () => {
+    const client = createClient(PARSE_ANSWER);
+    const conversationId = await startConversation();
+
+    const response = await postTurn(client, conversationId, {
+      text: REQUEST,
+      model: 'ghost:latest'
+    });
+
+    expect(response.status).toBe(404);
+    expect(await response.text()).toContain('ghost:latest');
+    expect(client.chatRequests).toEqual([]);
+    await expect(
+      store.conversations.find(conversationId)
+    ).resolves.toMatchObject({ model: CHAT_MODEL });
+    await expect(store.messages.list(conversationId)).resolves.toEqual([]);
+  });
+
+  it('refuses a turn it cannot prepare because Ollama is unreachable', async () => {
+    const client: IOllamaClient = {
+      listModels: async () => {
+        throw new OllamaUnreachableError(BASE_URL);
+      },
+      embed: async () => [],
+      chat: () => {
+        throw new Error('A turn that cannot list models never answers');
+      }
+    };
+    const conversationId = await startConversation();
+
+    const response = await postTurn(client, conversationId);
+
+    expect(response.status).toBe(503);
+    expect(await store.messages.list(conversationId)).toEqual([]);
+  });
+
+  it('refuses a request that says nothing', async () => {
+    const client = createClient(PARSE_ANSWER);
+
+    const response = await postTurn(client, await startConversation(), {
+      text: '   '
+    });
+
+    expect(response.status).toBe(400);
+    expect(client.chatRequests).toEqual([]);
+  });
+
+  it('refuses a conversation whose model is not installed', async () => {
     const client = createClient(PARSE_ANSWER, PROSE, []);
+    const conversationId = await startConversation();
 
-    await runTurn(client, await startConversation());
+    const response = await postTurn(client, conversationId);
 
-    expect(client.chatRequests[0]?.format).toBeUndefined();
+    expect(response.status).toBe(404);
+    expect(client.chatRequests).toEqual([]);
   });
 
   it('answers without the model when the search found nothing', async () => {

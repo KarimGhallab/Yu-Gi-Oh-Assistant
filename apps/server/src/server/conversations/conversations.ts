@@ -16,7 +16,7 @@ import { NotFoundError } from '@ygo-assistant/utils';
 
 import { parseJsonBody } from '../body.js';
 import type { ServerDependencies } from '../types.js';
-import { runTurn } from './turn.js';
+import { requireInstalledModel, runTurn } from './turn.js';
 
 /**
  * The conversation surface: starting a conversation, listing the ones that can
@@ -27,7 +27,8 @@ import { runTurn } from './turn.js';
  * the contracts package, so this is where a stored conversation becomes an API
  * response: both sides are validated, and the contract is what the client sees.
  * A turn is the exception: it answers with a stream of events rather than one
- * body, and each event is validated before it is written.
+ * body, each validated before it is written, and the overrides a request carries
+ * are resolved here against the conversation before the turn reads them.
  */
 export function createConversationRoutes(
   dependencies: ServerDependencies
@@ -101,6 +102,14 @@ export function createConversationRoutes(
       throw new NotFoundError(`No conversation has id ${id}`);
     }
 
+    const model = request.model ?? conversation.model;
+    const language = request.language ?? conversation.language;
+    const selected = await requireInstalledModel(dependencies, model);
+
+    if (model !== conversation.model || language !== conversation.language) {
+      await dependencies.store.conversations.update(id, { model, language });
+    }
+
     const userMessage = await dependencies.store.messages.append({
       conversationId: conversation.id,
       role: MessageRole.User,
@@ -109,9 +118,13 @@ export function createConversationRoutes(
 
     return streamSSE(context, async stream => {
       for await (const event of runTurn(dependencies, {
-        conversation,
+        conversationId: conversation.id,
         text: request.text,
-        userMessageId: userMessage.id
+        userMessageId: userMessage.id,
+        language,
+        model,
+        supportsStructuredOutput: selected.supportsStructuredOutput,
+        editedFilters: request.filters
       })) {
         await stream.writeSSE({
           event: event.type,
