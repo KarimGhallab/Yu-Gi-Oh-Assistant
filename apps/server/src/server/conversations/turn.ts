@@ -108,13 +108,14 @@ export async function* runTurn(
 
     stage = TurnStage.Answer;
     let answer = '';
-    for await (const delta of answerDeltas(
+    const answerGenerator = answerDeltas(
       dependencies,
       model,
       text,
       language,
       cards
-    )) {
+    );
+    for await (const delta of answerGenerator) {
       answer += delta;
       yield { type: TurnEventName.AnswerDelta, text: delta };
     }

@@ -5,6 +5,7 @@ import { apiErrorSchema } from '@ygo-assistant/contracts';
 import { DomainError, HttpStatus } from '@ygo-assistant/utils';
 
 import { createConversationRoutes } from './conversations/conversations.js';
+import { createModelRoutes } from './models/models.js';
 import type { ServerDependencies } from './types.js';
 
 /**
@@ -23,6 +24,8 @@ export function createServer(dependencies: ServerDependencies): Hono {
   app.get('/health', c => c.json({ status: 'ok' }));
 
   app.route('/api/conversations', createConversationRoutes(dependencies));
+
+  app.route('/api/models', createModelRoutes(dependencies));
 
   app.onError((error, c) => {
     if (error instanceof DomainError) {

@@ -68,6 +68,7 @@ const PROSE: ChatChunk[] = [
 
 const CHAT_MODEL_CAPABILITY: OllamaModel = {
   name: CHAT_MODEL,
+  supportsCompletion: true,
   supportsStructuredOutput: true
 };
 
@@ -572,6 +573,7 @@ describe('turn routes', () => {
   it('answers with the model the player chose and keeps it on the conversation', async () => {
     const chosen: OllamaModel = {
       name: 'mistral:7b',
+      supportsCompletion: true,
       supportsStructuredOutput: true
     };
     const client = createClient(PARSE_ANSWER, PROSE, [

@@ -96,7 +96,11 @@ describe('createOllamaClient', () => {
     const client = createOllamaClient(config.ollama);
 
     await expect(client.listModels()).resolves.toEqual([
-      { name: 'qwen3:4b', supportsStructuredOutput: true }
+      {
+        name: 'qwen3:4b',
+        supportsCompletion: true,
+        supportsStructuredOutput: true
+      }
     ]);
     await expect(client.embed(['a card'])).resolves.toEqual([[3, 4, 0]]);
     await expect(

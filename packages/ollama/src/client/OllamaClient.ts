@@ -31,8 +31,9 @@ export class OllamaClient implements IOllamaClient {
   }
 
   /**
-   * Lists the models installed on the server, flagging the ones that support
-   * structured output so the parsing stage can pick its strategy.
+   * Lists the models installed on the server with what each can do: whether it
+   * can complete at all, which is what answering a turn needs, and whether the
+   * parsing stage can hold it to a shape.
    */
   async listModels(): Promise<OllamaModel[]> {
     const { models } = await this._http.getJson(
@@ -50,12 +51,17 @@ export class OllamaClient implements IOllamaClient {
           { operation: `inspect model "${model.name}"`, model: model.name }
         );
 
-        const capabilities = details.capabilities ?? [];
+        const supportsCompletion = (details.capabilities ?? []).includes(
+          OllamaCapability.Completion
+        );
+
+        // Ollama reports no capability for structured output, and a model that
+        // can complete is the one that accepts a format, so the parsing stage's
+        // question is answered by the completion capability it reports.
         return {
           name: model.name,
-          supportsStructuredOutput: capabilities.includes(
-            OllamaCapability.Completion
-          )
+          supportsCompletion,
+          supportsStructuredOutput: supportsCompletion
         };
       })
     );

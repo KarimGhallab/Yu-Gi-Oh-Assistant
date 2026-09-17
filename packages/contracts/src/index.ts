@@ -21,6 +21,8 @@ export {
   messageSchema
 } from './messages.js';
 export type { ConversationWithMessages, Message } from './messages.js';
+export { modelListSchema, modelSchema } from './models.js';
+export type { Model } from './models.js';
 export {
   TurnEventName,
   TurnStage,

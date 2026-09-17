@@ -12,6 +12,7 @@ import {
   cardFiltersSchema,
   conversationSchema,
   describeFilterFields,
+  modelListSchema,
   turnEventSchema
 } from '@ygo-assistant/contracts';
 
@@ -42,6 +43,29 @@ describe('the contracts package', () => {
     });
 
     expect(frame.type).toBe(TurnEventName.TurnEnd);
+  });
+
+  it('reads the models a chooser may offer, and what each of them can do', () => {
+    const models = [
+      {
+        name: 'llama3.1:8B',
+        supportsCompletion: true,
+        supportsStructuredOutput: true
+      },
+      {
+        name: 'nomic-embed-text:latest',
+        supportsCompletion: false,
+        supportsStructuredOutput: false
+      }
+    ];
+
+    expect(modelListSchema.parse(models)).toEqual(models);
+  });
+
+  it('refuses a listing that does not say what a model can do', () => {
+    expect(modelListSchema.safeParse([{ name: 'llama3.1:8B' }]).success).toBe(
+      false
+    );
   });
 });
 

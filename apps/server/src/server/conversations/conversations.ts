@@ -128,7 +128,7 @@ export function createConversationRoutes(
     });
 
     return streamSSE(context, async stream => {
-      for await (const event of runTurn(dependencies, {
+      const turnGenerator = runTurn(dependencies, {
         conversationId: conversation.id,
         text: request.text,
         userMessageId: userMessage.id,
@@ -136,7 +136,8 @@ export function createConversationRoutes(
         model,
         supportsStructuredOutput: selected.supportsStructuredOutput,
         editedFilters: request.filters
-      })) {
+      });
+      for await (const event of turnGenerator) {
         await stream.writeSSE({
           event: event.type,
           data: JSON.stringify(turnEventSchema.parse(event))

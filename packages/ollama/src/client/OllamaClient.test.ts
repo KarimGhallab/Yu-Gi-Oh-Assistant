@@ -82,7 +82,7 @@ describe('OllamaClient', () => {
   };
 
   describe('listModels', () => {
-    it('lists installed models and flags structured-output support from reported capabilities', async () => {
+    it('lists each installed model with the capabilities it reports', async () => {
       const requests: FakeOllamaRequest[] = [];
       const client = await clientFor(request => {
         requests.push(request);
@@ -103,8 +103,16 @@ describe('OllamaClient', () => {
       const models = await client.listModels();
 
       expect(models).toEqual([
-        { name: 'qwen3:4b', supportsStructuredOutput: true },
-        { name: 'nomic-embed-text', supportsStructuredOutput: false }
+        {
+          name: 'qwen3:4b',
+          supportsCompletion: true,
+          supportsStructuredOutput: true
+        },
+        {
+          name: 'nomic-embed-text',
+          supportsCompletion: false,
+          supportsStructuredOutput: false
+        }
       ]);
       expect(
         requests.map(request => `${request.method} ${request.path}`)
@@ -112,7 +120,7 @@ describe('OllamaClient', () => {
       expect(requests[1].body).toEqual({ model: 'qwen3:4b' });
     });
 
-    it('treats a model without reported capabilities as not supporting structured output', async () => {
+    it('treats a model that reports no capabilities as able to do neither', async () => {
       const client = await clientFor(request => {
         if (request.path === '/api/tags') {
           return { json: { models: [{ name: 'mystery:latest' }] } };
@@ -121,7 +129,11 @@ describe('OllamaClient', () => {
       });
 
       await expect(client.listModels()).resolves.toEqual([
-        { name: 'mystery:latest', supportsStructuredOutput: false }
+        {
+          name: 'mystery:latest',
+          supportsCompletion: false,
+          supportsStructuredOutput: false
+        }
       ]);
     });
 
