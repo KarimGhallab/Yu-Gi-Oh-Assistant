@@ -656,6 +656,30 @@ describe('turn routes', () => {
     expect(client.chatRequests).toEqual([]);
   });
 
+  it('answers a French conversation without the model when the search found nothing', async () => {
+    const client = createClient(
+      JSON.stringify({
+        filters: [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: 'Toon'
+          }
+        ]
+      })
+    );
+    const conversationId = await startConversation(Language.French);
+
+    const frames = await runTurn(client, conversationId);
+    const answer = answerText(frames);
+
+    // The reply is the sentence written for the language the conversation is in,
+    // and it is not the model's: the only call it made was the parse.
+    expect(client.chatRequests).toHaveLength(1);
+    expect(answer).toContain('aucune carte');
+    expect(answer).not.toContain('could not find');
+  });
+
   it('answers without the model when the search found nothing', async () => {
     const client = createClient(
       JSON.stringify({

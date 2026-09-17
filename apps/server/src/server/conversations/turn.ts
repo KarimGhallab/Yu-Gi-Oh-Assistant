@@ -1,4 +1,4 @@
-import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
+import { type Card, type CardFilters, Language } from '@ygo-assistant/cards';
 import {
   type TurnEvent,
   TurnEventName,
@@ -42,12 +42,19 @@ export interface TurnInput {
 }
 
 /**
- * What the turn says when the search found nothing. It is English whatever the
- * conversation's language, because the copy is a product decision rather than
- * something the model should be left to improvise.
+ * What the turn says when the search found nothing. The copy is a product
+ * decision rather than something a model should be left to improvise, so it is
+ * written for each language the catalog is indexed in instead of being
+ * translated by the machine: a model asked to say it found nothing can say
+ * something else instead, and a sentence a player reads is worth reviewing in
+ * the language it is read in.
  */
-const NO_CARDS_ANSWER =
-  'I could not find a card that matches that request. Try broadening it.';
+const NO_CARDS_ANSWERS: Record<Language, string> = {
+  [Language.English]:
+    'I could not find a card that matches that request. Try broadening it.',
+  [Language.French]:
+    'Je n’ai trouvé aucune carte qui corresponde à cette demande. Essayez d’élargir votre recherche.'
+};
 
 /**
  * What the turn says when it gave way for a reason it cannot explain to the
@@ -297,7 +304,7 @@ function answerDeltas(
   cards: Card[]
 ): AsyncIterable<string> {
   if (cards.length === 0) {
-    return once(NO_CARDS_ANSWER);
+    return once(NO_CARDS_ANSWERS[language]);
   }
 
   return streamGroundedAnswer({
