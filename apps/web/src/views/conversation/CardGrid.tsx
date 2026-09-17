@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { type Message } from '@ygo-assistant/contracts';
+import { Language, type Message } from '@ygo-assistant/contracts';
 
 /**
  * A card as an answer carries it. The client renders the shape the contracts
@@ -9,8 +9,18 @@ import { type Message } from '@ygo-assistant/contracts';
  */
 export type SuggestedCard = NonNullable<Message['cards']>[number];
 
+/**
+ * The languages a card can be in, as the marker names them: a code, because the
+ * card's language is a machine fact rather than a word the player chose.
+ */
+const LANGUAGE_CODES: Record<Language, string> = {
+  [Language.English]: 'EN',
+  [Language.French]: 'FR'
+};
+
 interface CardGridProps {
   cards: SuggestedCard[];
+  language: Language;
 }
 
 /**
@@ -18,14 +28,14 @@ interface CardGridProps {
  * one is a link to the source the facts came from, so the player can check a
  * suggestion rather than trust it.
  */
-export default function CardGrid({ cards }: CardGridProps) {
+export default function CardGrid({ cards, language }: CardGridProps) {
   return (
     <ul
       aria-label="Suggested cards"
       className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3">
       {cards.map(card => (
         <li key={card.id}>
-          <CardTile card={card} />
+          <CardTile card={card} language={language} />
         </li>
       ))}
     </ul>
@@ -34,6 +44,7 @@ export default function CardGrid({ cards }: CardGridProps) {
 
 interface CardTileProps {
   card: SuggestedCard;
+  language: Language;
 }
 
 /**
@@ -41,34 +52,48 @@ interface CardTileProps {
  * image that will not load leaves the frame standing with the name, so a card is
  * never an empty box. The name is the link's label and the fallback is silent to
  * assistive technology, so a card is announced by its name either way.
+ *
+ * A card the conversation's language has no printing of still appears, with the
+ * language it is in under its name. The marker is text of its own rather than
+ * part of the link, so the card is still announced by its name and the note is
+ * read after it, and it names the language in words rather than leaning on a
+ * color or a shape.
  */
-function CardTile({ card }: CardTileProps) {
+function CardTile({ card, language }: CardTileProps) {
   const [imageFailed, setImageFailed] = useState(card.imageUrl.length === 0);
+  const otherLanguage = card.language !== language;
 
   return (
-    <a
-      href={card.sourceUrl}
-      target="_blank"
-      rel="noreferrer"
-      className="group flex flex-col gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-      <span className="flex aspect-[421/614] items-center justify-center border border-neutral-800 bg-neutral-900 group-hover:border-amber-500">
-        {imageFailed ? (
-          <span
-            aria-hidden="true"
-            className="px-2 text-center text-sm text-neutral-500">
-            No image
-          </span>
-        ) : (
-          <img
-            src={card.imageUrl}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-contain"
-            onError={() => setImageFailed(true)}
-          />
-        )}
-      </span>
-      <span className="text-sm text-neutral-100">{card.name}</span>
-    </a>
+    <div className="flex flex-col gap-1">
+      <a
+        href={card.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="group flex flex-col gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+        <span className="flex aspect-[421/614] items-center justify-center border border-neutral-800 bg-neutral-900 group-hover:border-amber-500">
+          {imageFailed ? (
+            <span
+              aria-hidden="true"
+              className="px-2 text-center text-sm text-neutral-500">
+              No image
+            </span>
+          ) : (
+            <img
+              src={card.imageUrl}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-contain"
+              onError={() => setImageFailed(true)}
+            />
+          )}
+        </span>
+        <span className="text-sm text-neutral-100">{card.name}</span>
+      </a>
+      {otherLanguage ? (
+        <span className="font-mono text-xs text-neutral-500">
+          {LANGUAGE_CODES[card.language]} only
+        </span>
+      ) : null}
+    </div>
   );
 }

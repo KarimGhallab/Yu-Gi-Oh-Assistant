@@ -171,7 +171,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         {turns.length === 0 ? (
           <ExamplePrompts onChoose={text => void send(text, language)} />
         ) : (
-          <MessageHistory messages={turns} />
+          <MessageHistory messages={turns} language={language} />
         )}
       </section>
       <Composer

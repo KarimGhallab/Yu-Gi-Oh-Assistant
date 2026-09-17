@@ -388,6 +388,12 @@ level deep.
 - **Missing image:** the frame stands and says so in Body scale, Ash Grey, and
   silent to assistive technology; the name and the link remain, so a card is
   never an empty box.
+- **Not in this language:** a card the conversation's language has no printing of
+  still appears, saying which language it is in under its name. It is 12px mono
+  in Dust Grey, text of its own rather than part of the link, so the card is
+  still announced by its name and the note is read after it. Nothing about it is
+  a color or a shape, because a card being in the other language is a fact worth
+  knowing rather than a warning.
 
 ### Cards / Containers (panels)
 

@@ -1246,6 +1246,45 @@ describe('the chat', () => {
     expect(screen.getByLabelText('Cards in')).toHaveValue('en');
   });
 
+  it("marks a card the conversation's language has no printing of", async () => {
+    const french = createCard(46986414, 'Magicien Sombre', { language: 'fr' });
+    const english = createCard(55144522, 'Pot of Greed');
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([createConversation(2, { language: 'fr' })])
+          : json(
+              withMessages(createConversation(2, { language: 'fr' }), [
+                playerMessage(10, 'un monstre sombre'),
+                said(11, 'assistant', 'Voici.', {
+                  filters: [],
+                  cards: [french, english]
+                })
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+
+    const cards = await screen.findByRole('list', { name: 'Suggested cards' });
+    const [magicien, greed] = within(cards).getAllByRole('listitem');
+
+    // The card the language has carries nothing, and is still announced by its
+    // name alone: the marker of the other one is not part of any card's label.
+    expect(within(magicien).queryByText('FR only')).toBeNull();
+    expect(
+      within(magicien).getByRole('link', { name: 'Magicien Sombre' })
+    ).toBeInTheDocument();
+
+    // The card only in English says which language it is in.
+    expect(within(greed).getByText('EN only')).toBeInTheDocument();
+    expect(
+      within(greed).getByRole('link', { name: 'Pot of Greed' })
+    ).toBeInTheDocument();
+  });
+
   it('replaces the turn it built with the one the server stored', async () => {
     const turn = turnStream();
     let title: string | null = null;

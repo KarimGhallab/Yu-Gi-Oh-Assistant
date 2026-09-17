@@ -1,4 +1,4 @@
-import { MessageRole } from '@ygo-assistant/contracts';
+import { type Language, MessageRole } from '@ygo-assistant/contracts';
 
 import CardGrid, { type SuggestedCard } from './CardGrid.js';
 
@@ -29,6 +29,7 @@ export interface ChatTurn {
 
 interface MessageHistoryProps {
   messages: ChatTurn[];
+  language: Language;
 }
 
 /**
@@ -36,12 +37,17 @@ interface MessageHistoryProps {
  * request and the assistant's answer are told apart by their own label, and the
  * answer keeps its line breaks so a list does not collapse into one paragraph.
  * Prose is held to a readable measure while the cards below it take the width.
+ * The conversation's language comes down to the cards, because a card the
+ * language has no printing of has to say which language it is in.
  */
-export default function MessageHistory({ messages }: MessageHistoryProps) {
+export default function MessageHistory({
+  messages,
+  language
+}: MessageHistoryProps) {
   return (
     <ol className="flex flex-col gap-6">
       {messages.map(message => (
-        <MessageTurn key={message.key} message={message} />
+        <MessageTurn key={message.key} message={message} language={language} />
       ))}
     </ol>
   );
@@ -49,9 +55,10 @@ export default function MessageHistory({ messages }: MessageHistoryProps) {
 
 interface MessageTurnProps {
   message: ChatTurn;
+  language: Language;
 }
 
-function MessageTurn({ message }: MessageTurnProps) {
+function MessageTurn({ message, language }: MessageTurnProps) {
   const fromPlayer = message.role === MessageRole.User;
   const cards = message.cards ?? [];
   const prose = `${CONTENT_CLASS} ${
@@ -74,7 +81,9 @@ function MessageTurn({ message }: MessageTurnProps) {
           </p>
         </div>
       )}
-      {cards.length === 0 ? null : <CardGrid cards={cards} />}
+      {cards.length === 0 ? null : (
+        <CardGrid cards={cards} language={language} />
+      )}
     </li>
   );
 }
