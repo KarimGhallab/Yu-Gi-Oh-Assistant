@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
 import {
+  type FilterFieldVocabulary,
+  describeFilterFields
+} from '@ygo-assistant/cards';
+import {
   type ChatMessage,
   type ChatRequest,
   ChatRole
@@ -18,10 +22,6 @@ import {
   parseFormatSchema,
   parseResponseSchema
 } from './schema.js';
-import {
-  type FilterFieldVocabulary,
-  describeFilterFields
-} from './vocabulary.js';
 
 /**
  * A parse wants the same answer from the same request every time, so the model

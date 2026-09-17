@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
 import {
-  CardAttribute,
   CardFilterField,
-  CardType,
   FilterOperator,
-  FrameType,
-  LinkMarker
-} from '@ygo-assistant/cards';
-
+  cardFilterSchema
+} from './filters.js';
 import {
   type FilterFieldVocabulary,
   describeFilterFields
@@ -18,6 +15,23 @@ const sorted = (values: readonly string[]): string[] => [...values].sort();
 
 const byField = (): Map<string, FilterFieldVocabulary> =>
   new Map(describeFilterFields().map(entry => [entry.field, entry]));
+
+/**
+ * A value each field accepts, so a filter built from the vocabulary can be put
+ * to the schema without the schema's answer depending on the value being wrong.
+ */
+const SAMPLE_VALUES: Record<CardFilterField, unknown> = {
+  [CardFilterField.Type]: CardType.NormalMonster,
+  [CardFilterField.FrameType]: FrameType.Normal,
+  [CardFilterField.Race]: 'Warrior',
+  [CardFilterField.Attribute]: CardAttribute.Dark,
+  [CardFilterField.Level]: 4,
+  [CardFilterField.Atk]: 1000,
+  [CardFilterField.Def]: 1000,
+  [CardFilterField.LinkVal]: 2,
+  [CardFilterField.LinkMarkers]: LinkMarker.Top,
+  [CardFilterField.Archetype]: 'Blue-Eyes'
+};
 
 describe('describeFilterFields', () => {
   it('describes every field the card domain defines and nothing else', () => {
@@ -55,6 +69,24 @@ describe('describeFilterFields', () => {
     expect(operators(CardFilterField.LinkMarkers)).toEqual([
       FilterOperator.Contains
     ]);
+  });
+
+  it('offers a field exactly the operators the filter schema accepts for it', () => {
+    for (const entry of describeFilterFields()) {
+      for (const operator of Object.values(FilterOperator)) {
+        const accepted = cardFilterSchema.safeParse({
+          field: entry.field,
+          operator,
+          value: SAMPLE_VALUES[entry.field]
+        }).success;
+
+        expect({ field: entry.field, operator, accepted }).toEqual({
+          field: entry.field,
+          operator,
+          accepted: entry.operators.includes(operator)
+        });
+      }
+    }
   });
 
   it('enumerates the values the enumerated fields accept', () => {

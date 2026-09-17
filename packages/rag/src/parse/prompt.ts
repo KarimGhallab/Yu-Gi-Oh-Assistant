@@ -1,4 +1,4 @@
-import type { FilterFieldVocabulary } from './vocabulary.js';
+import type { FilterFieldVocabulary } from '@ygo-assistant/cards';
 
 /**
  * The instruction a parsing model is given: the answer shape it must produce

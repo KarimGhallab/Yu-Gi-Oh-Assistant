@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { CardAttribute } from '@ygo-assistant/cards';
+import { CardAttribute, describeFilterFields } from '@ygo-assistant/cards';
 
 import { buildParsePrompt } from './prompt.js';
-import { describeFilterFields } from './vocabulary.js';
 
 const fieldLines = (prompt: string): Map<string, string> =>
   new Map(

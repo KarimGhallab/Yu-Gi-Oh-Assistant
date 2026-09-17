@@ -21,3 +21,5 @@ export type {
   EqualityOperator,
   TextOperator
 } from './filters/filters.js';
+export { describeFilterFields } from './filters/vocabulary.js';
+export type { FilterFieldVocabulary } from './filters/vocabulary.js';

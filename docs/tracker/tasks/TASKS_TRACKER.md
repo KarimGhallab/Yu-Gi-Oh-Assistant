@@ -43,7 +43,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 33  | [The client streams a turn](./33-the-client-streams-a-turn.md)                                                                              | Resolved (2026-09-16) | 32         | [08](../specs/08-chat-client.md)                                                      |
 | 34  | [Rename and delete a conversation from the sidebar](./34-rename-and-delete-a-conversation-from-the-sidebar.md)                              | Resolved (2026-09-16) | 31         | [08](../specs/08-chat-client.md)                                                      |
 | 35  | [The chat works without a mouse](./35-the-chat-works-without-a-mouse.md)                                                                    | Resolved (2026-09-16) | 33, 34     | [08](../specs/08-chat-client.md)                                                      |
-| 36  | [The controls can name what they must send](./36-the-controls-can-name-what-they-must-send.md)                                              | ready-for-agent       | -          | [09](../specs/09-transparent-controls.md)                                             |
+| 36  | [The controls can name what they must send](./36-the-controls-can-name-what-they-must-send.md)                                              | Resolved (2026-09-17) | -          | [09](../specs/09-transparent-controls.md)                                             |
 | 37  | [The installed models can be listed](./37-the-installed-models-can-be-listed.md)                                                            | ready-for-agent       | -          | [09](../specs/09-transparent-controls.md)                                             |
 | 38  | [The chat shows what the request was understood as](./38-the-chat-shows-what-the-request-was-understood-as.md)                              | ready-for-agent       | 36         | [09](../specs/09-transparent-controls.md)                                             |
 | 39  | [A chip can be corrected and the turn re-run on it](./39-a-chip-can-be-corrected-and-the-turn-re-run-on-it.md)                              | ready-for-agent       | 38         | [09](../specs/09-transparent-controls.md)                                             |
@@ -63,9 +63,10 @@ a keyboard end to end, and what an audit found was fixed rather than recorded.
 Spec 09 (Transparent controls) is ticketed as 36 through 44: the vocabularies the
 controls speak, the model listing a picker reads, the chips that show and correct
 a parse, the language a conversation is in, the reply an empty search gives, the
-marker on a card that is not in that language, and the model chooser. The
-frontier is 36, 37 and 42, which have no blockers; 38 and 41 wait on 36, 39 and
-40 follow 38 in turn, 43 follows 41, and 44 waits on both 37 and 41.
+marker on a card that is not in that language, and the model chooser. Ticket 36 is
+resolved, so nothing is held by it: the frontier is 37 and 42, which have no
+blockers, together with 38 and 41, which 36 was gating. Tickets 39 and 40 follow
+38 in turn, 43 follows 41, and 44 waits on both 37 and 41.
 
 Spec 10 (Local run, CI, and documentation) is free to be ticketed, and owns the
 local-only end-to-end suite, including the Playwright flow and the fake Ollama
