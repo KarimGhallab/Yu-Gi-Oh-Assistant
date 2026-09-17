@@ -1,7 +1,9 @@
 import { type MouseEvent } from 'react';
 import { Outlet, useMatch } from 'react-router';
 
+import { useWideViewport } from '../useWideViewport.js';
 import Sidebar from './Sidebar.js';
+import SidebarDrawer from './SidebarDrawer.js';
 
 const SKIP_CLASS =
   'sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-10 focus:rounded focus:bg-neutral-900 focus:px-3 focus:py-2 focus:text-sm focus:text-neutral-100 focus:outline-2 focus:outline-offset-2 focus:outline-amber-300';
@@ -18,9 +20,14 @@ const SKIP_CLASS =
  */
 export default function ChatFrame() {
   const open = useMatch('/c/:conversationId') !== null;
+  const wide = useWideViewport();
 
+  // The frame is one screen tall at every size and its regions scroll inside it.
+  // Left as `min-h-screen`, the document itself scrolls, and on a narrow window
+  // the bar is dragged off the top the moment the prompt takes the keyboard: the
+  // sidebar stops behaving like a sidebar.
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 md:flex-row">
+    <div className="flex h-dvh flex-col overflow-hidden bg-neutral-950 text-neutral-100 md:flex-row">
       {open ? (
         <a
           href="#conversation"
@@ -39,11 +46,11 @@ export default function ChatFrame() {
           Skip to the conversation
         </a>
       ) : null}
-      <Sidebar />
+      {wide ? <Sidebar /> : <SidebarDrawer />}
       <main
         id="conversation"
         tabIndex={-1}
-        className="flex min-w-0 flex-1 flex-col focus:outline-none">
+        className="flex min-h-0 min-w-0 flex-1 flex-col focus:outline-none">
         <Outlet />
       </main>
     </div>

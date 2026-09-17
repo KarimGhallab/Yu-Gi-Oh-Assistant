@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { Language, cardFiltersSchema, cardSchema } from '@ygo-assistant/cards';
 
+import { idSchema } from './id.js';
+
 /**
  * The names a turn's streamed events go by, on the wire and in the payload. A
  * client reads them to tell one frame from the next without trusting its order.
@@ -55,7 +57,7 @@ export const turnRequestSchema = z.object({
  */
 const turnStartEventSchema = z.object({
   type: z.literal(TurnEventName.TurnStart),
-  userMessageId: z.number().int().positive()
+  userMessageId: idSchema
 });
 
 /**
@@ -115,7 +117,7 @@ const answerEndEventSchema = z.object({
  */
 const turnEndEventSchema = z.object({
   type: z.literal(TurnEventName.TurnEnd),
-  messageId: z.number().int().positive()
+  messageId: idSchema
 });
 
 /**

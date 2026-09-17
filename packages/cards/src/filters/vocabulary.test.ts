@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
-import {
-  CardFilterField,
-  FilterOperator,
-  cardFilterSchema
-} from './filters.js';
+import { CardFilterField, FilterOperator, cardFilterSchema } from './schema.js';
 import {
   type FilterFieldVocabulary,
   describeFilterFields

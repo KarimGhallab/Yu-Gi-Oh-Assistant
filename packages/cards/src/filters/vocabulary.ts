@@ -4,7 +4,7 @@ import {
   CardFilterField,
   FilterOperator,
   cardFiltersSchema
-} from './filters.js';
+} from './schema.js';
 
 /**
  * What one filterable field allows: the operators that fit it, the kind of value

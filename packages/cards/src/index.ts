@@ -1,5 +1,5 @@
-export { cardSchema } from './card/card.js';
-export type { Card } from './card/card.js';
+export { cardSchema } from './card/schema.js';
+export type { Card } from './card/schema.js';
 export {
   CardAttribute,
   CardType,
@@ -13,13 +13,13 @@ export {
   cardFiltersSchema,
   cardMatchesFilters,
   FilterOperator
-} from './filters/filters.js';
+} from './filters/schema.js';
 export type {
   CardFilter,
   CardFilters,
   ComparisonOperator,
   EqualityOperator,
   TextOperator
-} from './filters/filters.js';
+} from './filters/schema.js';
 export { describeFilterFields } from './filters/vocabulary.js';
 export type { FilterFieldVocabulary } from './filters/vocabulary.js';

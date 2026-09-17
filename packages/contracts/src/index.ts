@@ -4,25 +4,26 @@
  */
 export { apiErrorSchema } from './apiError.js';
 export type { ApiError } from './apiError.js';
+export { idSchema } from './id.js';
 export {
   conversationListSchema,
   conversationSchema,
   createConversationRequestSchema,
   updateConversationRequestSchema
-} from './conversations.js';
+} from './conversation.js';
 export type {
   Conversation,
   CreateConversationRequest,
   UpdateConversationRequest
-} from './conversations.js';
+} from './conversation.js';
 export {
   MessageRole,
   conversationWithMessagesSchema,
   messageSchema
-} from './messages.js';
-export type { ConversationWithMessages, Message } from './messages.js';
-export { modelListSchema, modelSchema } from './models.js';
-export type { Model } from './models.js';
+} from './message.js';
+export type { ConversationWithMessages, Message } from './message.js';
+export { modelListSchema, modelSchema } from './model.js';
+export type { Model } from './model.js';
 export {
   TurnEventName,
   TurnStage,

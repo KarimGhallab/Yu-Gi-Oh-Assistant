@@ -2,7 +2,7 @@
 export type { OneTypePair, Pair } from './types/Pair.js';
 
 // File-system exports
-export { existsAsync, readDirectoryAsync } from './utils/fsUtils.js';
+export { existsAsync, readDirectoryAsync } from './utils/files.js';
 
 // Path exports
 export {
@@ -11,9 +11,9 @@ export {
   convertToUnix,
   isSubPath,
   sortPaths
-} from './utils/pathUtils.js';
+} from './utils/paths.js';
 
-export type { PathPair } from './utils/pathUtils.js';
+export type { PathPair } from './utils/paths.js';
 
 // Functions exports
 export { debounce, debounceAsync } from './utils/functions/debounce.js';
@@ -21,7 +21,7 @@ export type {
   AsyncDebouncedFunction,
   DebouncedFunction
 } from './utils/functions/debounce.js';
-export type { Function } from './utils/functions/Function.js';
+export type { Function } from './utils/functions/FunctionType.js';
 export { throttle, throttleAsync } from './utils/functions/throttle.js';
 export type {
   AsyncThrottledFunction,
@@ -34,7 +34,7 @@ export {
   groupBy,
   setIntersection,
   shuffle
-} from './utils/collectionsUtils.js';
+} from './utils/collections.js';
 
 // Other exports
 export { delay } from './utils/other/delay.js';

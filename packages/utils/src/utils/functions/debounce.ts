@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Function } from './Function.js';
+import { Function } from './FunctionType.js';
 
 /**
  * Represents a debounced function.

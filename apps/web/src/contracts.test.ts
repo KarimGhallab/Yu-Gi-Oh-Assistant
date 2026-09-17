@@ -16,8 +16,10 @@ import {
   turnEventSchema
 } from '@ygo-assistant/contracts';
 
+const ID = '3f8a1c2e-5b4d-4a6f-9e7c-1d2b3a4c5d6e';
+
 const conversation = {
-  id: 1,
+  id: ID,
   title: 'A banish deck',
   language: 'en',
   model: 'llama3.1:8b',
@@ -32,14 +34,18 @@ describe('the contracts package', () => {
 
   it('refuses a conversation the client could not render', () => {
     expect(
-      conversationSchema.safeParse({ ...conversation, id: 0 }).success
+      conversationSchema.safeParse({ ...conversation, id: 'not-a-uuid' })
+        .success
+    ).toBe(false);
+    expect(
+      conversationSchema.safeParse({ ...conversation, id: 7 }).success
     ).toBe(false);
   });
 
   it('reads a streamed frame as the event it names', () => {
     const frame = turnEventSchema.parse({
       type: TurnEventName.TurnEnd,
-      messageId: 7
+      messageId: ID
     });
 
     expect(frame.type).toBe(TurnEventName.TurnEnd);

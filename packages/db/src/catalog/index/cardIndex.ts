@@ -11,11 +11,11 @@ import {
 import { delay } from '@ygo-assistant/utils';
 
 import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
-import { readIndexMetadata, writeIndexMetadata } from '../metadata.js';
-import { indexDirectory } from '../paths.js';
-import { buildIdClause, buildWhereClause } from '../predicate.js';
-import { normalizeCard, normalizeCardRow } from '../row.js';
-import { createCardArrowSchema } from '../schema.js';
+import { buildIdClause, buildWhereClause } from '../cardPredicates.js';
+import { createCardArrowSchema } from '../createCardArrowSchema.js';
+import { readIndexMetadata, writeIndexMetadata } from '../indexMetadata.js';
+import { indexDirectory } from '../indexPaths.js';
+import { normalizeCard, normalizeCardRow } from '../normalizeCard.js';
 import type {
   BuildCardIndexOptions,
   CardIndexContents,

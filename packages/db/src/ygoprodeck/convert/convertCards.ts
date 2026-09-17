@@ -1,6 +1,6 @@
 import { type Card, CardType, type Language } from '@ygo-assistant/cards';
 
-import { type YgoProdeckCard, cardInfoResponseSchema } from '../schemas.js';
+import { type YgoProdeckCard, cardInfoResponseSchema } from '../dumpSchemas.js';
 
 /**
  * Card types that are not real, suggestable cards.

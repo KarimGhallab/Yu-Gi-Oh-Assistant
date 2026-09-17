@@ -13,7 +13,7 @@ import {
   describeFilter,
   describeOperator,
   filterFieldName
-} from './filterCopy.js';
+} from './describeFilter.js';
 import {
   defaultOperator,
   defaultValue,

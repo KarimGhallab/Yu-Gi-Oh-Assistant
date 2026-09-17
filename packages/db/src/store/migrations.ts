@@ -40,6 +40,36 @@ const MIGRATIONS: Migration[] = [
       )`,
       `CREATE INDEX messages_by_conversation ON messages (conversation_id, id)`
     ]
+  },
+  {
+    id: 3,
+    name: 'uuid-identities',
+    // An id is a UUID, so it is text and says nothing about how many rows came
+    // before it. SQLite cannot change a column's type in place, so both tables
+    // are rebuilt. What they held was written under the old ids, which are not
+    // the ids of anything any more: the tables come back empty.
+    statements: [
+      `DROP TABLE messages`,
+      `DROP TABLE conversations`,
+      `CREATE TABLE conversations (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        language TEXT NOT NULL,
+        model TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )`,
+      `CREATE TABLE messages (
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL REFERENCES conversations (id) ON DELETE CASCADE,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        filters_json TEXT,
+        card_ids_json TEXT,
+        created_at TEXT NOT NULL
+      )`,
+      `CREATE INDEX messages_by_conversation ON messages (conversation_id)`
+    ]
   }
 ];
 

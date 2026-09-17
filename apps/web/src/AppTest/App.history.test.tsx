@@ -1,0 +1,270 @@
+import { fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  BLUE_EYES,
+  DARK_MAGICIAN,
+  GRAVEYARD,
+  RED_EYES,
+  assistantMessage,
+  clearFocus,
+  createCard,
+  createConversation,
+  json,
+  playerMessage,
+  renderApp,
+  said,
+  settingControl,
+  stubFetch,
+  uuid,
+  withMessages
+} from './appTestHarness.js';
+
+describe('reading a conversation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('opens a conversation on what was said in it, in the order it was said', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'Something to stop my opponent attacking'),
+                assistantMessage(
+                  12,
+                  'Blue-Eyes White Dragon is the biggest body below.'
+                ),
+                playerMessage(13, 'Is it cheap?')
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const turns = within(history).getAllByRole('listitem');
+
+    expect(turns).toHaveLength(3);
+    expect(within(turns[0]).getByText('You')).toBeInTheDocument();
+    expect(
+      within(turns[0]).getByText('Something to stop my opponent attacking')
+    ).toBeInTheDocument();
+    expect(within(turns[1]).getByText('Assistant')).toBeInTheDocument();
+    expect(
+      within(turns[1]).getByText(
+        'Blue-Eyes White Dragon is the biggest body below.'
+      )
+    ).toBeInTheDocument();
+    expect(within(turns[2]).getByText('You')).toBeInTheDocument();
+    expect(within(turns[2]).getByText('Is it cheap?')).toBeInTheDocument();
+  });
+
+  it("shows an answer's cards in the order the server ranked them", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'These are the ones to look at.', [
+                  BLUE_EYES,
+                  DARK_MAGICIAN,
+                  RED_EYES
+                ])
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const answer = within(history).getAllByRole('listitem')[1];
+    const cards = within(answer).getByRole('list', { name: 'Suggested cards' });
+
+    expect(
+      within(cards)
+        .getAllByRole('listitem')
+        .map(card => card.textContent)
+    ).toEqual([
+      'Blue-Eyes White Dragon',
+      'Dark Magician',
+      'Red-Eyes Black Dragon'
+    ]);
+    expect(
+      Array.from(cards.querySelectorAll('img')).map(image =>
+        image.getAttribute('src')
+      )
+    ).toEqual([BLUE_EYES.imageUrl, DARK_MAGICIAN.imageUrl, RED_EYES.imageUrl]);
+    expect(
+      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+  });
+
+  it('keeps a card readable when its image cannot be loaded', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'This is the one to look at.', [BLUE_EYES])
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const cards = within(history).getByRole('list', {
+      name: 'Suggested cards'
+    });
+
+    for (const image of cards.querySelectorAll('img')) {
+      fireEvent.error(image);
+    }
+
+    expect(cards.querySelector('img')).toBeNull();
+    expect(within(cards).getByText('No image')).toBeInTheDocument();
+    expect(
+      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+  });
+
+  it('says what can be asked in a conversation with nothing in it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Ask for cards' })
+    ).toBeInTheDocument();
+    // Four of the fifty are drawn, so the test counts them rather than naming
+    // them: which four is the point of drawing.
+    expect(
+      within(
+        screen.getByRole('list', { name: 'What can be asked' })
+      ).getAllByRole('listitem')
+    ).toHaveLength(4);
+  });
+
+  it("reaches a card's source without a mouse", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'These are the ones to look at.', [
+                  BLUE_EYES,
+                  DARK_MAGICIAN
+                ])
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+    await screen.findByRole('region', { name: 'Messages' });
+    clearFocus();
+
+    // The first stop is the way past the sidebar, and then the ways in are the
+    // control that folds the list, the brand, the control that starts a
+    // conversation, the conversation that is open and the two things that can be
+    // done to it, so the cards the answer suggested come next.
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+
+    expect(
+      screen.getByRole('link', { name: 'Blue-Eyes White Dragon' })
+    ).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('link', { name: 'Dark Magician' })).toHaveFocus();
+
+    // The prompt comes after the conversation, because that is the order the
+    // surface is read in, and it holds everything the request is run with: the
+    // field, the language it is read in, the model that answers, and the Send.
+    await userEvent.tab();
+
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(await settingControl('Cards in')).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(await settingControl('Answered by')).toHaveFocus();
+
+    // The Send is out of the tab order while there is nothing to send, so the
+    // prompt's own controls are where the surface's stops end.
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it("marks a card the conversation's language has no printing of", async () => {
+    const french = createCard(46986414, 'Magicien Sombre', { language: 'fr' });
+    const english = createCard(55144522, 'Pot of Greed');
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([createConversation(2, { language: 'fr' })])
+          : json(
+              withMessages(createConversation(2, { language: 'fr' }), [
+                playerMessage(10, 'un monstre sombre'),
+                said(11, 'assistant', 'Voici.', {
+                  filters: [],
+                  cards: [french, english]
+                })
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const cards = await screen.findByRole('list', { name: 'Suggested cards' });
+    const [magicien, greed] = within(cards).getAllByRole('listitem');
+
+    // The card the language has carries nothing, and is still announced by its
+    // name alone: the marker of the other one is not part of any card's label.
+    expect(within(magicien).queryByText('FR only')).toBeNull();
+    expect(
+      within(magicien).getByRole('link', { name: 'Magicien Sombre' })
+    ).toBeInTheDocument();
+
+    // The card only in English says which language it is in.
+    expect(within(greed).getByText('EN only')).toBeInTheDocument();
+    expect(
+      within(greed).getByRole('link', { name: 'Pot of Greed' })
+    ).toBeInTheDocument();
+  });
+});

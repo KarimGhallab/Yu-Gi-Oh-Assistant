@@ -14,7 +14,7 @@ export enum MessageRole {
  * null title until its first user message provides one.
  */
 export interface Conversation {
-  id: number;
+  id: string;
   title: string | null;
   language: Language;
   model: string;
@@ -49,8 +49,8 @@ export interface UpdateConversationInput {
  * neither.
  */
 export interface Message {
-  id: number;
-  conversationId: number;
+  id: string;
+  conversationId: string;
   role: MessageRole;
   content: string;
   filters?: CardFilters;
@@ -62,7 +62,7 @@ export interface Message {
  * The fields a message is appended from.
  */
 export interface AppendMessageInput {
-  conversationId: number;
+  conversationId: string;
   role: MessageRole;
   content: string;
   filters?: CardFilters;
@@ -77,10 +77,10 @@ export interface AppendMessageInput {
  */
 export interface IConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
-  find(id: number): Promise<Conversation | undefined>;
+  find(id: string): Promise<Conversation | undefined>;
   list(): Promise<Conversation[]>;
-  update(id: number, changes: UpdateConversationInput): Promise<Conversation>;
-  delete(id: number): Promise<void>;
+  update(id: string, changes: UpdateConversationInput): Promise<Conversation>;
+  delete(id: string): Promise<void>;
 }
 
 /**
@@ -89,7 +89,7 @@ export interface IConversationRepository {
  */
 export interface IMessageRepository {
   append(input: AppendMessageInput): Promise<Message>;
-  list(conversationId: number): Promise<Message[]>;
+  list(conversationId: string): Promise<Message[]>;
 }
 
 /**

@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router';
+import { useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 
 import {
   type ConversationWithMessages,
@@ -6,19 +7,23 @@ import {
   MessageRole
 } from '@ygo-assistant/contracts';
 
-import { ApiError, ApiFailureKind } from '../../shared/api/client.js';
+import { ApiError, ApiFailureKind } from '../../shared/api/apiClient.js';
 import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
-import { conversationTitle } from '../../shared/conversationTitle.js';
 import {
   useConversation,
   useModels,
   useUpdateConversation
-} from '../../shared/queries.js';
+} from '../../shared/conversationQueries.js';
+import { conversationTitle } from '../../shared/conversationTitle.js';
+import { pendingRequest } from '../../shared/pendingRequest.js';
 
 import Composer from './Composer.js';
 import ExamplePrompts from './ExamplePrompts.js';
 import MessageHistory, { type ChatTurn } from './MessageHistory.js';
-import { failureAnnouncement, runningAnnouncement } from './turnCopy.js';
+import {
+  failureAnnouncement,
+  runningAnnouncement
+} from './turnAnnouncements.js';
 import { type SearchInterpretation, useTurn } from './useTurn.js';
 
 /**
@@ -47,6 +52,25 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const models = useModels();
   const { send, turn, isRunning, interpretation, correction, correct } =
     useTurn(conversationId);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const handedOver = useRef(false);
+
+  // A request can arrive with the address: the empty state starts a conversation
+  // and hands it what was typed there, because the field it was typed in is gone
+  // by the time this surface exists. It is asked once, and the address is left
+  // without it, so going back to it or reloading it asks for nothing.
+  const request = pendingRequest(location.state);
+
+  useEffect(() => {
+    if (handedOver.current || request === undefined) {
+      return;
+    }
+
+    handedOver.current = true;
+    void navigate(location.pathname, { replace: true, state: null });
+    void send(request);
+  });
 
   if (conversationId.length === 0) {
     return <MissingConversation message="The address names no conversation." />;
@@ -97,7 +121,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
 
   const turns: ChatTurn[] = [
     ...stored.map(message => ({
-      key: String(message.id),
+      key: message.id,
       role: message.role,
       content: message.content,
       cards: message.cards

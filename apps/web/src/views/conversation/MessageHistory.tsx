@@ -5,7 +5,7 @@ import CardGrid, { type SuggestedCard } from './CardGrid.js';
 const PLAYER = 'You';
 const ASSISTANT = 'Assistant';
 
-const CONTENT_CLASS = 'max-w-[68ch] whitespace-pre-wrap text-sm';
+const CONTENT_CLASS = 'whitespace-pre-wrap text-sm';
 
 /**
  * A turn as the history renders it. A stored turn and one that is still being

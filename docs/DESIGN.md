@@ -203,9 +203,12 @@ rarity is what makes it read as light. The conversation screen is where the rule
 is under the most pressure, because it shows the sidebar's New fill and the
 composer's Send fill at once: the primary action of two different regions, and
 whether one screen should carry two filled controls at all is undecided. Until it
-is, two fills in two regions is the limit. The prompt's field carries no amber
-and no border of its own, because it is a surface rather than an outlined bench,
-and the focus ring is the only line ever drawn around it.
+is, two fills in two regions is the limit. A dialog that has taken the room is a
+region of its own and the only one being read while it is open, so the lamp it
+carries is not a third lamp on the screen: the fills behind it are not being
+looked at. The prompt's field carries no amber and no border of its own, because
+it is a surface rather than an outlined bench, and the focus ring is the only line
+ever drawn around it.
 
 **The No Second Accent Rule.** There is no secondary or tertiary color. Failure
 is the only exception, it is text only, and it never becomes a fill.
@@ -243,16 +246,24 @@ hairlines, not from scale.
 ## Layout
 
 The frame is two regions: a sidebar of conversations and the main region. At
-48rem and wider the sidebar is a fixed 288px column beside the main region; below
-that it stacks above it, capped at 16rem with its own scroll, so it never covers
-the chat. The main region is the only thing that scrolls vertically, and it holds
-one header, one content area, and (on the conversation surface) one composer
-docked at its bottom edge. The header carries the conversation's name and nothing
-else, because the language its cards are read in and the model that answers
-belong to the act of asking: they live on the prompt's own surface, beside the
-field they are sent with. That surface is the only enclosed thing on the screen,
-and the name is what gives way last when the window is narrow, because a model's
-name can be long and it is the title that says which conversation this is.
+48rem and wider the sidebar is a fixed 288px column beside the main region. Below
+that it stands over the chat instead: a bar keeps the way in, the name and the way
+to start a conversation, and pressing its mark brings the whole sidebar across
+with the chat dimmed behind it, because on a narrow window the two cannot want the
+width at the same time. The frame is one screen tall at every size and its regions
+scroll inside it, so the bar stays where it is when the prompt takes the keyboard.
+The main region is the only thing that scrolls vertically, and a
+conversation surface holds one header, one content area, and one prompt docked at
+its bottom edge. The home surface holds the same prompt, standing nearer the
+middle of an otherwise empty screen, because typing a request is how a
+conversation begins: sending it starts the conversation and asks the request in
+it, and the prompt moves down to the foot of it as it opens. The header carries
+the conversation's name and nothing else, because the language its cards are read
+in and the model that answers belong to the act of asking: they live on the
+prompt's own surface, beside the field they are sent with. That surface is the
+only enclosed thing on the screen, and the name is what gives way last when the
+window is narrow, because a model's name can be long and it is the title that
+says which conversation this is.
 
 Density is set by a 0.25rem spacing base: 0.75rem inside a row, 1rem for panel
 padding and control height, 1.5rem for page padding on the horizontal axis, 2rem
@@ -272,10 +283,38 @@ steps: Room Black is the room, Bench Slate is a panel standing in it, and Rail
 Grey draws the edge or fills the row that is open. A surface that needs to feel
 closer moves up one step, not forward.
 
-Motion is deliberately absent: state changes are instant color swaps. Whether
-the system should grow a small transition vocabulary is an undecided decision
-rather than a prohibition, so nothing here forbids motion; nothing adds it yet
-either.
+Motion is the exception, and it has a small vocabulary rather than none. State
+changes are instant color swaps; three things move, and each of them is the
+change itself rather than an effect laid over it:
+
+- **The prompt, docking.** Sending the first request of a conversation carries the
+  prompt from the middle of the home surface to the foot of the conversation it
+  just started, because it is one surface in both places and the move is what says
+  so. It takes 420ms on `cubic-bezier(0.16, 1, 0.3, 1)` while the room settles
+  faster, 180ms out and 260ms in, so the conversation is already there when the
+  prompt lands on it. It keeps its size on the way, because it is one card in both
+  places and only its position changes, and the words that were in it are the
+  message that appears above it.
+- **A caret, turning over.** A setting's caret turns while the list it opens is
+  open, 150ms, so the control says which of its two states it is in.
+- **The sidebar, folding and arriving.** On a wide window the panel's width is
+  what changes when the list folds away, so that is what moves: 300ms opening and
+  200ms closing, on `cubic-bezier(0.16, 1, 0.3, 1)`, with the list and the rail
+  swapping as the panel moves. Its contents are clipped to it while it moves, so a
+  label never spills over a panel that has not finished widening. On a narrow one
+  the sidebar arrives instead, from the edge it lives on: 200ms on the same curve,
+  with the chat dimming behind it in 150ms. Nothing is stacked on either: a
+  drawer's shelf does not need a second movement to say it changed.
+- **The status line, with a light in it.** While a turn runs, a band of Bone White
+  travels through the Ash Grey sentence, one pass every 1.8s, linear, so a line
+  that says work is going on is seen to be going on. It is the only loop in the system,
+  and it lives only as long as the work it reports. The line is drawn twice to do
+  it, the second drawing hidden from assistive technology, so the live region
+  still announces the sentence once.
+
+A player who has asked for reduced motion gets the state changes without the
+movement: the prompt where it lands and the cross-fade, the caret already turned,
+and the panel already at its width.
 
 ## Shapes
 
@@ -292,7 +331,8 @@ level deep.
 
 - **Shape:** 4px radius, 1rem of vertical rhythm (`padding: 6px 10px` at 14px/500).
 - **Primary:** Lamp Amber fill, Ember Ink text. The only filled control in the
-  app, and there is normally one per screen.
+  app, and there is normally one per screen. A dialog is a screen of its own
+  while it is open, so it carries its own.
 - **Hover / Focus:** hover steps the fill to Lampglow. Focus draws a 2px Halo
   Amber outline at 2px offset, in addition to nothing else: no shadow, no scale.
 - **Secondary / Ghost:** none exist. A second action is a text link at Bone
@@ -319,6 +359,10 @@ level deep.
 ### Navigation
 
 - **Style:** the conversation list is a `nav` of rows, one per conversation, plus
+  a step of space above its first one, because a focused row draws its ring
+  outside itself and the first row has the header above it: without the step the
+  ring is half-drawn under the header, which reads as a stray line rather than as
+  the control that has the keyboard.
   the brand mark, the fold control, and the new-conversation control above it,
   the last of which carries the plus.
 - **Default / Hover / Active:** Ash Grey text on the panel; hover lifts the whole
@@ -335,7 +379,9 @@ level deep.
   and neither is a glyph. They are quiet at rest and always in the tab order.
 - **Folded:** the fold control collapses the list to a 4rem rail, a column on a
   wide window and a row that scrolls sideways on a narrow one, and folds it back.
-  Its mark points the way the list will go, into the panel to fold it away and out
+  The panel's width is animated, opening slower than it closes, because the width
+  is the whole of what changed and the list and the rail swap along with it. Its
+  mark points the way the list will go, into the panel to fold it away and out
   of it to bring it back, so the drawing says what the control is about to do
   rather than only that a control was there.
   A folded conversation is a square mark carrying the first letter of its name,
@@ -351,27 +397,39 @@ level deep.
   opens the list. The name is a convenience rather than the way a conversation is
   carried, since the mark is already named for assistive technology, so nothing
   about a conversation depends on hovering.
-- **Renaming:** the row becomes a field holding the name it has, with Save and
-  Cancel. Opening it moves focus into the field and selects the name, so typing
-  replaces it and Enter saves it; Escape, Cancel, or an empty name leaves the
-  name it had and puts focus back on the row.
-- **Deleting:** the one irreversible action asks first, in the row itself rather
-  than in a dialog: the row asks the question and offers Delete and Cancel, the
-  confirmation is what the Delete control is described by, and focus moves to it.
-  Nothing else in the app is confirmed. What focus returns to when the row is
-  gone is the conversation that took its place in the list, or the control that
-  starts a new one when there is no list left.
+- **Renaming:** the name is asked for in a dialog, as a deletion is, because the
+  row is what is being named and a row that turns into a field stops saying which
+  conversation the question is about. The dialog holds the name it has, offered
+  selected, so typing replaces it and anything else is one arrow key away, and
+  Enter saves it, because a dialog with one field is a dialog whose Enter is Save.
+  Escape, Cancel, or an empty name leaves the name it had and puts focus back on
+  the row.
+- **Deleting:** the one irreversible action asks first, in a dialog of its own
+  rather than in the row it was asked from. The row is what the question is
+  about, so the row goes on being a row while the question takes the room: a
+  question answered in the row would change the list under the eye that is still
+  reading it. Nothing else in the app is confirmed. What focus returns to when the
+  row is gone is the conversation that took its place in the list, or the control
+  that starts a new one when there is no list left.
 - **The skip:** on a conversation address the first thing focus finds is a way
   past the list, because the list is as long as the player's history and every row
   has controls of its own. It is a Bench Slate panel that appears over the frame
   while it holds focus, and it lands on the request field, or on the conversation
   itself when there is nothing to ask in yet.
-- **Mobile treatment:** the sidebar stacks above the conversation rather than
-  sitting beside it, because the two want the width. Folded there it is the header
-  row and one row of marks, with a mark's name shown below it rather than beside
-  it. A touch screen has nothing to hover, so there the marks are the control and
-  the fold control is what opens the list. The list scrolls inside the sidebar's
-  16rem cap.
+- **Mobile treatment:** on a narrow window the sidebar is a bar and a drawer. The
+  bar is what the header becomes: the mark that opens the list, the monogram with
+  the name, and the way to start a conversation, on one row across the top of the
+  chat. Pressing the mark brings the sidebar across from the edge it lives on, the
+  chat dimmed behind it, and the drawer takes the whole height it is given. It
+  carries the list and a way out of it, and no header: a header inside would say
+  what the bar already says, while a mark at its top closes it, so the list is
+  never a place a player is stuck in. The drawer takes the keyboard as it opens and
+  gives it back to the mark as it closes. Escape, a press on the dimmed chat, and
+  choosing a conversation all close it, the last of those because the drawer
+  watches where the player went rather than which control was pressed, and it is
+  out of the document's tab order while it is shut rather than merely off screen.
+  A touch screen has nothing to hover, so folded marks are not this surface's
+  business: there is no rail below the breakpoint, only the list.
 
 ### Cards (the grid)
 
@@ -403,7 +461,7 @@ level deep.
 - **Background:** Room Black or Bench Slate, one step apart.
 - **Shadow Strategy:** none. See Elevation.
 - **Border:** 1px Rail Grey, and only on the edge that separates, usually the
-  bottom of a header or the top of a composer.
+  bottom of a header.
 - **Internal Padding:** 1.5rem to 2rem.
 
 ### Inputs / Fields
@@ -419,24 +477,50 @@ level deep.
   box. No frame, no fill, and the platform's caret replaced by one drawn at the
   icon set's own stroke, so it is the same mark as the other controls. The text
   is Ash Grey, stepping to Bone White over a Rail Grey surface when it is pointed
-  at, and it takes the same 2px Halo Amber outline as every other control. A
-  patch that fails says so above the prompt, in the recorded alert line, and the
-  control goes back to what the conversation actually holds. The model chooser is
-  the same control, and a model that cannot produce structured filters says so in
-  its own option and again above the prompt as a quiet note, not in the alert
-  line, because answering without a schema is a trade the player may have chosen
-  knowingly. A model the machine no longer has still shows in the chooser, so the
-  control is never blank, and is named above the prompt with what to do about it
-  in the alert line, because a conversation left on a missing model is a state to
+  at, and it takes the same 2px Halo Amber outline as every other control. Its
+  name is the setting and the value it holds, read as one, so what it is set to
+  is never a control that only says what it is for.
+- **The list a setting opens:** drawn rather than borrowed from the platform, so
+  a choice can carry what it is beside its name. It opens above the control, one
+  surface step up over the card and carrying no shadow, because this system has
+  no elevation to give it and the step is what says it is above. One row per
+  choice, the row in force filled a step further and in Bone White, the rest in
+  Ash Grey, and a model's note in 12px mono after its name, because what a model
+  can and cannot do is a machine fact rather than prose. A row that says a model
+  cannot answer is a row that cannot be taken: it is readable, and not selectable,
+  because offering a choice that cannot work is offering a mistake. The keyboard
+  walks the list with the arrows, Escape calls it off and comes back to the control,
+  picking closes it and comes back too, and moving the keyboard out of it closes
+  it without taking the focus anywhere.
+- **A setting that failed, or that is not there:** a patch that fails says so
+  above the prompt, in the recorded alert line, and the control goes back to what
+  the conversation actually holds. A model that cannot produce structured filters
+  says so in its own row and again above the prompt as a quiet note, not in the
+  alert line, because answering without a schema is a trade the player may have
+  chosen knowingly. A model the machine no longer has still shows in the control,
+  so it is never blank, and is named above the prompt with what to do about it in
+  the alert line, because a conversation left on a missing model is a state to
   see rather than a silence. A model that cannot answer a turn at all is named as
-  such in its option and above the prompt in the alert line, because that is not
-  a trade the player chose but a dead end.
+  such in its row and above the prompt in the alert line, because that is not a
+  trade the player chose but a dead end. Where there is no conversation yet, the
+  model control also offers the machine's own model as a choice, so a
+  conversation can be started on whatever the machine answers with rather than on
+  a name this app would have had to guess.
 
 ### Composer
 
 - **Where:** docked at the bottom edge of the conversation, below the message
-  area, separated by a 1px Rail Grey hairline on its top edge. It is the only
-  thing on that surface that does not scroll.
+  area, with no hairline between them: the surface step is what holds it apart,
+  and the focus ring is the only line ever drawn around it. It is the only thing
+  on that surface that does not scroll. The home surface carries the same prompt
+  without the same footing: it stands nearer the middle of an empty screen. The
+  request typed there starts a conversation and is asked in it, which is what the
+  sidebar's New does with the request already in hand, and the settings it will
+  be run with are chosen there as they are here. Until that conversation exists
+  the field keeps its words, so a start that failed leaves the request where it
+  was typed. Sending is also when the prompt is seen moving: the card is named in
+  the view transition that carries it from the middle of the home surface to the
+  foot of the conversation that request just started.
 - **Surface:** the field and the actions the request is run with share one
   surface, because they are one act rather than a field with a row of controls
   under it. It is the field's own Bench Slate surface grown to hold them: 4px
@@ -446,26 +530,31 @@ level deep.
 - **Field:** a textarea on that surface, Body text in Bone White, Dust Grey
   placeholder, five lines tall before it scrolls so a request of a few lines can
   be read back at once. Its scrollbar is thin, without a track, and thumb only.
-  Opening a conversation puts the keyboard in this field, because opening one is
-  how a player arrives to ask, so the conversation address needs no further stop
-  to start typing. Enter sends and Shift+Enter is a line, because a prompt that
-  is one surface with its Send is a prompt whose Enter belongs to the Send; the
-  Send control carries the word as well, for the pointer and for anyone who does
-  not know the key.
+  Opening the app, as much as opening a conversation, puts the keyboard in this
+  field, because arriving is how a player comes to ask, so no address needs a
+  further stop to start typing. Enter sends and Shift+Enter is a line, because a
+  prompt that is one surface with its Send is a prompt whose Enter belongs to the
+  Send; the Send control carries the word as well, for the pointer and for anyone
+  who does not know the key.
 - **The actions:** on the same surface, under the field: the language the cards
   are read in at its left edge, and the model that answers beside the Send at its
   right, so what the request will be run with is read in the same glance as the
-  request. Both are quiet words rather than boxes, and the model's name can be
-  long, so it is the field that keeps the width and the name that gives way.
+  request. Both are quiet words rather than boxes, and each opens its list above
+  itself, into the room rather than over the Send it stands beside. The model's
+  name can be long, so it is the field that keeps the width and the name that
+  gives way.
 - **Send:** the primary button, the filled lamp of this surface, carrying the
   arrow. It is out of action while a turn runs, while the field stays usable so
   the next request can be written as the answer arrives.
 - **Status:** Body, Ash Grey, the last line above the surface, as a live region.
   It says the turn is running, and how the search was arrived at when the request
-  could not be turned into filters; it is empty when nothing is running. It sits
-  with the readout and the alert lines rather than beside the Send, because the
-  Send is on the prompt's surface now and a sentence of moving text beside it
-  would crowd the actions that belong there.
+  could not be turned into filters; it is empty when nothing is running. While the
+  work is going on, a light passes through what it says: the sentence is drawn
+  again in Bone White behind a moving mask, so the line reads as busy without
+  anything about it blinking. It is the only moving thing on the surface, and it
+  stops when the work does. It sits with the readout and the alert lines rather
+  than beside the Send, because the Send is on the prompt's surface now and a
+  sentence of moving text beside it would crowd the actions that belong there.
 - **Readout:** what the last search was understood as, on its own line above the
   field, in 12px mono. One fact per filter: the field it constrains in Dust Grey
   and what it asks of that field in Ash Grey, set apart by space and nothing
@@ -495,6 +584,33 @@ level deep.
 - **Failure:** the alert line above the field, because the composer is the control
   the failed turn came from. The field stays usable, so the player can ask again.
 
+### Dialog (the question a row's control asks)
+
+- **Shape:** the room dimmed a step further and the question centred in it, on a
+  Bench Slate surface at a 4px radius, capped at 28rem so a sentence never becomes
+  a line. No shadow: the dimmed room is what says the dialog stands above it.
+- **Heading:** Title, Bone White, and the question itself: "Delete this
+  conversation?", "Rename this conversation?".
+- **Body:** what the question needs to be answered: the words of a deletion, with
+  the conversation's own name in Bone White and the irreversibility said there
+  rather than in the color of a control, because this system has no red fill and
+  these words are read anyway; or the field a new name is typed in, on the
+  recorded field treatment, taking the width it is given and holding the name it
+  has.
+- **Actions:** exactly two, together at the dialog's right: the answer that
+  changes nothing as a plain text button in Bone White, and the answer that acts
+  as the lamp. It is the only region being read while it is open, which is what
+  lets it carry a fill of its own.
+- **Keyboard:** the keyboard is put on the first thing the dialog offers, which is
+  the field of a question about a name and the answer that changes nothing of a
+  question about a deletion, and it stays among what the dialog offers rather than
+  walking off into a list that is not being read. Escape, and a press anywhere in
+  the room outside, call the whole thing off. Focus goes back to the row that
+  asked, which the list owns.
+- **Use it for:** the two things a row's own controls ask that need the room: a
+  deletion, and a name. Anything that can be answered without it is answered in
+  the row it is about.
+
 ### Notice Panel (empty state, missing conversation, failure)
 
 - **Shape:** a centred column, nothing enclosed, maximum 28rem of body text.
@@ -507,6 +623,18 @@ level deep.
 - **Use it for:** everything that stands in for content that is not there, so the
   empty state, a conversation that does not exist, and a request that failed all
   speak in the same voice.
+- **What can be asked:** a conversation with nothing in it offers the requests
+  themselves as things to press, in the player's own words, because a request that
+  is written out is a request that can be sent without typing one. They are plain
+  text in Ash Grey, stepping to Bone White when pointed at, since four requests
+  beside each other as fills would be four lamps. The home surface shows the same
+  list directly under its own words rather than inside a notice, because there it
+  is the content rather than something standing in for content. Fifty requests are
+  kept and four are drawn from them, without repeating, once per surface: a player
+  who comes back meets a different handful, and the list stays short enough to
+  read. They are drawn rather than listed because a player who has read all fifty
+  would stop seeing them, and because a request the assistant already knows the
+  name of is not the request this app is for.
 
 ### Alert line
 

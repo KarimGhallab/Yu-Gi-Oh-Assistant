@@ -1,19 +1,16 @@
-import {
-  type KeyboardEvent,
-  type SubmitEvent,
-  useEffect,
-  useRef,
-  useState
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useMatch, useNavigate } from 'react-router';
 
-import { conversationTitle } from '../conversationTitle.js';
 import {
   useConversations,
   useDeleteConversation,
   useRenameConversation,
   useStartConversation
-} from '../queries.js';
+} from '../conversationQueries.js';
+import { conversationTitle } from '../conversationTitle.js';
+import DeleteDialog from './DeleteDialog.js';
+import RenameDialog from './RenameDialog.js';
+import MonogramIcon from './icons/MonogramIcon.js';
 import PanelFoldIcon from './icons/PanelFoldIcon.js';
 import PanelOpenIcon from './icons/PanelOpenIcon.js';
 import PencilIcon from './icons/PencilIcon.js';
@@ -25,11 +22,6 @@ const BRAND_CLASS =
 
 const START_CLASS =
   'inline-flex shrink-0 items-center gap-1.5 rounded bg-amber-500 px-2.5 py-1.5 text-sm font-medium whitespace-nowrap text-amber-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
-
-const ROW_FORM_CLASS = 'flex items-center gap-1 py-0.5 pl-2';
-
-const ROW_FIELD_CLASS =
-  'min-w-0 flex-1 rounded border border-amber-500/25 bg-neutral-900 px-1.5 py-1 text-sm text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 /**
  * A quiet action on a row. It is a mark rather than a word, so the list stays a
@@ -55,7 +47,7 @@ const FOLD_CLASS =
  * row that scrolls sideways on a narrow one.
  */
 const RAIL_CLASS =
-  'flex min-h-0 gap-1 overflow-x-auto px-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pb-0';
+  'flex min-h-0 gap-1 overflow-x-auto px-2 pt-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pt-2 md:pb-0';
 
 /**
  * One conversation, folded: the first letter of its name, and its whole name for
@@ -68,10 +60,6 @@ const MARK_CLASS = (open: boolean): string =>
       ? 'bg-neutral-800 text-neutral-100'
       : 'text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100'
   }`;
-
-/** A control of the row that is being edited or confirmed, always visible. */
-const ROW_BUTTON_CLASS =
-  'shrink-0 rounded px-1 text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 /**
  * The row's surface: one conversation and its own controls on the one fill, so
@@ -95,8 +83,7 @@ const conversationLinkClass =
  * time, so the list never turns into a wall of controls.
  */
 type Editing =
-  | { kind: 'rename'; id: number; title: string }
-  | { kind: 'deleting'; id: number };
+  { kind: 'rename'; id: string } | { kind: 'deleting'; id: string };
 
 /** A folded conversation's name, and where on screen to put it. */
 interface NamedMark {
@@ -109,15 +96,14 @@ interface NamedMark {
 /**
  * Where focus goes once a row's controls have closed: the row that was being
  * worked on, or the row that took its place in the list, or the control that
- * starts a new one when there is no list left.
+ * starts a new one when there is no list left. A conversation's id is a UUID, so
+ * the two cases are kept apart by name rather than by what a value looks like:
+ * nothing about an id says whether it names a row or the control that makes one.
  */
-type Refocus = number | 'new';
+type Refocus = { kind: 'row'; id: string } | { kind: 'new' };
 
 /** Names the row a player is put back on once its controls have closed. */
-const conversationLinkId = (id: number): string => `conversation-link-${id}`;
-
-/** Names the question a deletion asks, so the confirmation reads as the answer. */
-const deleteQuestionId = (id: number): string => `delete-question-${id}`;
+const conversationLinkId = (id: string): string => `conversation-link-${id}`;
 
 /**
  * The conversations that can be reopened, the control that starts one, and the
@@ -125,7 +111,17 @@ const deleteQuestionId = (id: number): string => `delete-question-${id}`;
  * the address's business, so the link that is marked is the one the address
  * names, and the list is where a conversation is renamed or deleted.
  */
-export default function Sidebar() {
+interface SidebarProps {
+  /**
+   * Whether the sidebar brings its own header: the fold control, the name and the
+   * way to start a conversation. It does on a wide window, where the sidebar is
+   * the only chrome there is. The drawer on a narrow one is opened from a bar that
+   * already carries all three, so it opens with the list alone.
+   */
+  withHeader?: boolean;
+}
+
+export default function Sidebar({ withHeader = true }: SidebarProps) {
   const conversations = useConversations();
   const startConversation = useStartConversation();
   const rename = useRenameConversation();
@@ -134,8 +130,6 @@ export default function Sidebar() {
   const openId = useMatch('/c/:conversationId')?.params.conversationId;
   const [editing, setEditing] = useState<Editing | undefined>(undefined);
   const [refocus, setRefocus] = useState<Refocus | undefined>(undefined);
-  const nameField = useRef<HTMLInputElement>(null);
-  const deleteButton = useRef<HTMLButtonElement>(null);
   const newConversation = useRef<HTMLButtonElement>(null);
 
   /**
@@ -155,19 +149,6 @@ export default function Sidebar() {
    */
   const [named, setNamed] = useState<NamedMark | undefined>(undefined);
 
-  // Opening a row's controls moves the player into them, so the keyboard does
-  // not have to find its way back to where the row just changed underneath it.
-  useEffect(() => {
-    if (editing?.kind === 'rename') {
-      nameField.current?.focus();
-      nameField.current?.select();
-    }
-
-    if (editing?.kind === 'deleting') {
-      deleteButton.current?.focus();
-    }
-  }, [editing?.kind, editing?.id]);
-
   // Closing them moves the player back out, which has to wait for the row to be
   // a row again: the link being returned to does not exist while a field or a
   // confirmation has taken its place.
@@ -177,8 +158,8 @@ export default function Sidebar() {
     }
 
     const row =
-      typeof refocus === 'number'
-        ? document.getElementById(conversationLinkId(refocus))
+      refocus.kind === 'row'
+        ? document.getElementById(conversationLinkId(refocus.id))
         : null;
 
     (row ?? newConversation.current)?.focus();
@@ -216,44 +197,36 @@ export default function Sidebar() {
   };
 
   /** Closes whatever a row was doing, and puts the keyboard back on it. */
-  const closeEditing = (id: number): void => {
+  const closeEditing = (id: string): void => {
     setEditing(undefined);
-    setRefocus(id);
+    setRefocus({ kind: 'row', id });
   };
-
-  const cancelOnEscape =
-    (id: number): ((event: KeyboardEvent) => void) =>
-    (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        closeEditing(id);
-      }
-    };
 
   /**
    * Where the keyboard goes when a row is gone: the conversation that took its
    * place in the list, or the one that was in front of it, or the control that
    * starts a new one.
    */
-  const neighbourOf = (id: number): Refocus => {
+  const neighbourOf = (id: string): Refocus => {
     const list = conversations.data ?? [];
     const index = list.findIndex(conversation => conversation.id === id);
     const next = list[index + 1] ?? list[index - 1];
 
-    return next?.id ?? 'new';
+    return next === undefined ? { kind: 'new' } : { kind: 'row', id: next.id };
   };
 
   const start = async (): Promise<void> => {
     startConversation.reset();
 
     try {
-      const conversation = await startConversation.mutateAsync();
+      const conversation = await startConversation.mutateAsync({});
       await navigate(`/c/${conversation.id}`);
     } catch {
       // The failure is the mutation's own error, rendered above the list.
     }
   };
 
-  const save = async (id: number, title: string): Promise<void> => {
+  const save = async (id: string, title: string): Promise<void> => {
     rename.reset();
     remove.reset();
     closeEditing(id);
@@ -267,44 +240,52 @@ export default function Sidebar() {
     }
 
     try {
-      await rename.mutateAsync({ id: String(id), title: name });
+      await rename.mutateAsync({ id, title: name });
     } catch {
       // The conversation keeps the name it had, and the error above the list is
       // what says the new one was not taken.
     }
   };
 
-  const confirmDelete = async (id: number): Promise<void> => {
+  const confirmDelete = async (id: string): Promise<void> => {
     rename.reset();
     remove.reset();
     setEditing(undefined);
 
-    const wasOpen = openId === String(id);
+    const wasOpen = openId === id;
     const next = neighbourOf(id);
 
     try {
-      await remove.mutateAsync(String(id));
+      await remove.mutateAsync(id);
 
       if (wasOpen) {
         await navigate('/');
       }
 
-      setRefocus(wasOpen ? 'new' : next);
+      setRefocus(wasOpen ? { kind: 'new' } : next);
     } catch {
       // The conversation is still there, and the error above the list says why.
-      setRefocus(id);
+      setRefocus({ kind: 'row', id });
     }
   };
 
   const failure =
     startConversation.error ?? rename.error ?? remove.error ?? undefined;
 
+  // The conversation a row's control is asking about. The question is asked in a
+  // dialog over the list rather than in the row, so the row goes on being a row
+  // and what the question is about is this.
+  const asking =
+    editing === undefined
+      ? undefined
+      : conversations.data?.find(candidate => candidate.id === editing.id);
+
   /** The conversations, as the sidebar's body and as the panel the rail opens. */
   const listing = (
     <nav
       id="conversations"
       aria-label="Conversations"
-      className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+      className="min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-3">
       {conversations.isPending ? (
         <p role="status" className="px-2 py-1 text-sm text-neutral-500">
           Loading conversations…
@@ -320,101 +301,32 @@ export default function Sidebar() {
       <ul className="space-y-1">
         {(conversations.data ?? []).map(conversation => (
           <li key={conversation.id} className="group">
-            {editing?.kind === 'rename' && editing.id === conversation.id ? (
-              <form
-                className={ROW_FORM_CLASS}
-                onKeyDown={cancelOnEscape(conversation.id)}
-                onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
-                  event.preventDefault();
-                  void save(conversation.id, editing.title);
-                }}>
-                <label
-                  htmlFor={`conversation-name-${conversation.id}`}
-                  className="sr-only">
-                  Conversation name
-                </label>
-                <input
-                  id={`conversation-name-${conversation.id}`}
-                  ref={nameField}
-                  value={editing.title}
-                  onChange={event =>
-                    setEditing({
-                      kind: 'rename',
-                      id: conversation.id,
-                      title: event.target.value
-                    })
-                  }
-                  className={ROW_FIELD_CLASS}
-                />
-                <button type="submit" className={ROW_BUTTON_CLASS}>
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => closeEditing(conversation.id)}
-                  className={ROW_BUTTON_CLASS}>
-                  Cancel
-                </button>
-              </form>
-            ) : editing?.kind === 'deleting' &&
-              editing.id === conversation.id ? (
-              <div
-                className={ROW_FORM_CLASS}
-                onKeyDown={cancelOnEscape(conversation.id)}>
-                <p
-                  id={deleteQuestionId(conversation.id)}
-                  role="alert"
-                  className="min-w-0 flex-1 truncate text-sm text-neutral-100">
-                  Delete this conversation?
-                </p>
-                <button
-                  type="button"
-                  ref={deleteButton}
-                  aria-label={`Delete ${conversationTitle(conversation)}`}
-                  aria-describedby={deleteQuestionId(conversation.id)}
-                  onClick={() => void confirmDelete(conversation.id)}
-                  className={ROW_BUTTON_CLASS}>
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => closeEditing(conversation.id)}
-                  className={ROW_BUTTON_CLASS}>
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <div className={rowClass(openId === String(conversation.id))}>
-                <NavLink
-                  to={`/c/${conversation.id}`}
-                  id={conversationLinkId(conversation.id)}
-                  className={conversationLinkClass}>
-                  {conversationTitle(conversation)}
-                </NavLink>
-                <button
-                  type="button"
-                  aria-label={`Rename ${conversationTitle(conversation)}`}
-                  onClick={() =>
-                    setEditing({
-                      kind: 'rename',
-                      id: conversation.id,
-                      title: conversationTitle(conversation)
-                    })
-                  }
-                  className={ROW_ACTION_CLASS}>
-                  <PencilIcon />
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Delete ${conversationTitle(conversation)}`}
-                  onClick={() =>
-                    setEditing({ kind: 'deleting', id: conversation.id })
-                  }
-                  className={ROW_ACTION_CLASS}>
-                  <TrashIcon />
-                </button>
-              </div>
-            )}
+            <div className={rowClass(openId === conversation.id)}>
+              <NavLink
+                to={`/c/${conversation.id}`}
+                id={conversationLinkId(conversation.id)}
+                className={conversationLinkClass}>
+                {conversationTitle(conversation)}
+              </NavLink>
+              <button
+                type="button"
+                aria-label={`Rename ${conversationTitle(conversation)}`}
+                onClick={() =>
+                  setEditing({ kind: 'rename', id: conversation.id })
+                }
+                className={ROW_ACTION_CLASS}>
+                <PencilIcon />
+              </button>
+              <button
+                type="button"
+                aria-label={`Delete ${conversationTitle(conversation)}`}
+                onClick={() =>
+                  setEditing({ kind: 'deleting', id: conversation.id })
+                }
+                className={ROW_ACTION_CLASS}>
+                <TrashIcon />
+              </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -423,48 +335,64 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex max-h-64 shrink-0 flex-col border-b border-neutral-800 bg-neutral-900 md:h-screen md:max-h-none md:border-b-0 md:border-r ${
-        folded ? 'md:w-16' : 'md:w-72'
+      className={`flex max-h-64 shrink-0 flex-col overflow-hidden border-b border-neutral-800 bg-neutral-900 transition-[width] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none md:h-screen md:max-h-none md:border-b-0 md:border-r ${
+        folded ? 'duration-200 md:w-16' : 'duration-300 md:w-72'
       }`}>
-      <div
-        className={`flex items-center gap-1 p-4 ${
-          folded ? 'md:flex-col md:items-start' : ''
-        }`}>
-        <button
-          type="button"
-          aria-expanded={!folded}
-          aria-controls="conversations conversations-rail"
-          aria-label={
-            folded ? 'Show the conversations' : 'Hide the conversations'
-          }
-          className={FOLD_CLASS}
-          onClick={() => fold(!folded)}>
-          {folded ? <PanelOpenIcon /> : <PanelFoldIcon />}
-        </button>
-        <Link
-          to="/"
-          className={`${BRAND_CLASS} flex-1 ${folded ? 'md:hidden' : ''}`}>
-          Yu-Gi-Oh Assistant
-        </Link>
-        {folded ? (
+      {editing?.kind === 'rename' && asking !== undefined ? (
+        <RenameDialog
+          name={conversationTitle(asking)}
+          onSave={name => void save(asking.id, name)}
+          onCancel={() => closeEditing(asking.id)}
+        />
+      ) : null}
+      {editing?.kind === 'deleting' && asking !== undefined ? (
+        <DeleteDialog
+          title={conversationTitle(asking)}
+          onConfirm={() => void confirmDelete(asking.id)}
+          onCancel={() => closeEditing(asking.id)}
+        />
+      ) : null}
+      {withHeader ? (
+        <div
+          className={`flex items-center gap-1 p-4 ${
+            folded ? 'md:flex-col md:items-start' : ''
+          }`}>
+          <button
+            type="button"
+            aria-expanded={!folded}
+            aria-controls="conversations conversations-rail"
+            aria-label={
+              folded ? 'Show the conversations' : 'Hide the conversations'
+            }
+            className={FOLD_CLASS}
+            onClick={() => fold(!folded)}>
+            {folded ? <PanelOpenIcon /> : <PanelFoldIcon />}
+          </button>
           <Link
             to="/"
-            aria-label="Yu-Gi-Oh Assistant"
-            className={`hidden md:block md:px-2 ${BRAND_CLASS}`}>
-            Y
+            className={`${BRAND_CLASS} flex-1 ${folded ? 'md:hidden' : ''}`}>
+            Yu-Gi-Oh Assistant
           </Link>
-        ) : null}
-        <button
-          type="button"
-          ref={newConversation}
-          className={`${START_CLASS} ${folded ? 'md:px-2' : ''}`}
-          aria-label="New conversation"
-          onClick={() => void start()}
-          disabled={startConversation.isPending}>
-          <PlusIcon />
-          <span className={folded ? 'md:hidden' : ''}>New</span>
-        </button>
-      </div>
+          {folded ? (
+            <Link
+              to="/"
+              aria-label="Yu-Gi-Oh Assistant"
+              className={`hidden md:block md:px-2 ${BRAND_CLASS}`}>
+              <MonogramIcon />
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            ref={newConversation}
+            className={`${START_CLASS} ${folded ? 'md:px-2' : ''}`}
+            aria-label="New conversation"
+            onClick={() => void start()}
+            disabled={startConversation.isPending}>
+            <PlusIcon />
+            <span className={folded ? 'md:hidden' : ''}>New</span>
+          </button>
+        </div>
+      ) : null}
 
       {failure === undefined ? null : (
         <p role="alert" className="px-4 pb-2 text-sm text-red-400">
@@ -478,7 +406,7 @@ export default function Sidebar() {
           aria-label="Conversations"
           className={RAIL_CLASS}>
           {(conversations.data ?? []).map(conversation => {
-            const open = openId === String(conversation.id);
+            const open = openId === conversation.id;
             const name = conversationTitle(conversation);
 
             return (

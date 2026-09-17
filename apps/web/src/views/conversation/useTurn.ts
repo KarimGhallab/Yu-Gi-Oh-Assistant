@@ -10,8 +10,8 @@ import {
   type TurnStatus
 } from '@ygo-assistant/contracts';
 
-import { streamTurn } from '../../shared/api/turns.js';
-import { refreshConversations } from '../../shared/queries.js';
+import { streamTurn } from '../../shared/api/turn.js';
+import { refreshConversations } from '../../shared/conversationQueries.js';
 
 import type { SuggestedCard } from './CardGrid.js';
 
@@ -45,7 +45,7 @@ export interface TurnFailure {
 interface TurnInFlight {
   question: string;
   confirmed: boolean;
-  userMessageId?: number;
+  userMessageId?: string;
   pieces: string[];
   cards: SuggestedCard[];
   status?: TurnStatus;

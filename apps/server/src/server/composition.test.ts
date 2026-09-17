@@ -8,7 +8,7 @@ import type { ILogger } from '@ygo-assistant/logger';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
 
 import { loadConfig } from '../config/index.js';
-import { createServer } from './server.js';
+import { createServer } from './createServer.js';
 
 const silentLogger: ILogger = {
   debug: () => {},

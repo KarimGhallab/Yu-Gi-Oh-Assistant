@@ -1,5 +1,5 @@
+import { OllamaHttp } from '../OllamaHttp.js';
 import { OllamaInvalidResponseError } from '../errors.js';
-import { OllamaHttp } from '../http.js';
 import {
   chatChunkSchema,
   embedResponseSchema,

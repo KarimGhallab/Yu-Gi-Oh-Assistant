@@ -15,7 +15,6 @@ export enum NodeEnvironment {
 export interface OllamaConfig {
   baseUrl: string;
   embeddingBaseUrl: string;
-  chatModel: string;
   embeddingModel: string;
   embeddingDimensions: number;
 }
