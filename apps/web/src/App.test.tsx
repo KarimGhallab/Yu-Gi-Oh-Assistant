@@ -15,6 +15,7 @@ import {
   CardAttribute,
   type CardFilter,
   CardFilterField,
+  CardType,
   FilterOperator,
   type TurnEvent,
   TurnEventName,
@@ -1011,6 +1012,114 @@ describe('the chat', () => {
     await act(async () => {
       turn.close();
     });
+  });
+
+  it('adds a filter the request never named, and searches with it beside the one it did', async () => {
+    const turn = turnStream();
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE]
+      })
+    ];
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, stored))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Add a filter' })
+    );
+    await userEvent.selectOptions(screen.getByLabelText('Field'), 'type');
+
+    // A field with a fixed set of values comes with one of them, so the filter
+    // is one the search accepts before the player touches anything but the field.
+    expect(screen.getByLabelText('Operator')).toHaveValue(FilterOperator.Eq);
+    expect(screen.getByLabelText('Value')).toHaveValue(CardType.NormalMonster);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+
+    const readout = screen.getByRole('list', {
+      name: 'What the search was understood as'
+    });
+
+    expect(
+      within(readout)
+        .getAllByRole('listitem')
+        .map(fact => fact.textContent)
+    ).toEqual(['attribute is DARK', 'type is Normal Monster']);
+
+    await send('a dark monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({
+          text: 'a dark monster',
+          filters: [
+            { field: 'attribute', operator: 'eq', value: 'DARK' },
+            { field: 'type', operator: 'eq', value: CardType.NormalMonster }
+          ]
+        })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('gathers the value and the operators the way the field being added takes them', async () => {
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', { filters: [] })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Add a filter' })
+    );
+
+    // A new filter starts on a field that takes a number, which is a field the
+    // player has to fill in before it can be added.
+    expect(screen.getByLabelText('Value')).toHaveAttribute('type', 'number');
+    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+
+    // An archetype is any words at all, and the operators are the ones text
+    // takes rather than the ones a number takes.
+    await userEvent.selectOptions(screen.getByLabelText('Field'), 'archetype');
+
+    expect(screen.getByLabelText('Value')).toHaveAttribute('type', 'text');
+    expect(
+      within(screen.getByLabelText('Operator')).queryByRole('option', {
+        name: 'above'
+      })
+    ).toBeNull();
+    expect(
+      within(screen.getByLabelText('Operator')).getByRole('option', {
+        name: 'contains'
+      })
+    ).toBeInTheDocument();
+
+    // A frame type is one of a fixed set, so the value is offered rather than
+    // spelled, and it arrives with one of them.
+    await userEvent.selectOptions(screen.getByLabelText('Field'), 'frameType');
+
+    expect(screen.getByLabelText('Value').tagName).toBe('SELECT');
+    expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
   });
 
   it('replaces the turn it built with the one the server stored', async () => {

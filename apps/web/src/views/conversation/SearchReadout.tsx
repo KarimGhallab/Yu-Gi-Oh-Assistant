@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   type CardFilter,
+  type CardFilterField,
   type CardFilters,
   type FilterOperator,
   TurnStatus,
@@ -13,14 +14,23 @@ import {
   describeOperator,
   filterFieldName
 } from './filterCopy.js';
-import { fieldVocabulary, takesNumber } from './filterFields.js';
+import {
+  defaultOperator,
+  defaultValue,
+  fieldVocabulary,
+  filterFields,
+  takesNumber
+} from './filterFields.js';
 import type { SearchInterpretation } from './useTurn.js';
 
+const ROW_CLASS = 'flex flex-wrap items-center gap-x-4 gap-y-1';
 const LIST_CLASS =
   'flex flex-wrap items-start gap-x-4 gap-y-1 font-mono text-xs';
 const CHIP_CLASS =
   'group rounded text-left text-neutral-500 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 const ASK_CLASS = 'text-neutral-400 group-hover:text-neutral-100';
+const ADD_CLASS =
+  'rounded text-left text-neutral-500 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 const NOTE_CLASS = 'font-mono text-xs text-neutral-400';
 
 const EDITOR_CLASS = 'flex flex-wrap items-center gap-2 font-mono text-xs';
@@ -40,12 +50,13 @@ interface SearchReadoutProps {
  * beside it. Nothing else said the same thing, so a player can tell whether the
  * assistant read the request the way they meant it.
  *
- * Each fact is the control that corrects it, because the player is the one who
- * knows what they asked for; correcting one hands the whole set to the surface
- * that runs the turn, which is what makes the next search run on the corrected
- * set instead of reading the request again. The facts are still facts rather
- * than containers, set apart by space alone, since the system has no boxes and
- * no pills to put them in.
+ * Each fact is the control that corrects it, and the readout also offers the
+ * filter the request never named, because the player is the one who knows what
+ * they asked for. Either way the whole set is handed to the surface that runs
+ * the turn, which is what makes the next search run on the set rather than on a
+ * fresh reading of the request. The facts are still facts rather than
+ * containers, set apart by space alone, since the system has no boxes and no
+ * pills to put them in.
  *
  * It is deliberately not a live region. The status line beside Send already
  * announces how a turn is being searched, and a region that is announced cannot
@@ -55,132 +66,178 @@ export default function SearchReadout({
   interpretation,
   onCorrect
 }: SearchReadoutProps) {
+  const filters = interpretation.filters;
   const [editing, setEditing] = useState<number | undefined>(undefined);
-  const [refocus, setRefocus] = useState<number | undefined>(undefined);
+  const [adding, setAdding] = useState(false);
+  const [refocus, setRefocus] = useState<string | undefined>(undefined);
 
-  // Correcting a chip replaces it and removing one leaves the next in its place,
-  // so the keyboard comes back to the chip that is there now. Taking the last
-  // one away leaves nothing to come back to, which is why the request field is
-  // what a readout with no filters left hands the keyboard to.
+  // Correcting a filter replaces it, removing one leaves the next in its place,
+  // and adding one puts it at the end, so the keyboard comes back to the fact it
+  // is about to be. Taking the last one away leaves nothing to come back to,
+  // which is why the request field is what a readout with no filters hands the
+  // keyboard to.
   useEffect(() => {
-    if (editing !== undefined || refocus === undefined) {
+    if (editing !== undefined || adding || refocus === undefined) {
       return;
     }
 
-    const chip = document.getElementById(chipId(refocus));
+    const control = document.getElementById(refocus);
 
-    (chip ?? document.getElementById('prompt'))?.focus();
+    (control ?? document.getElementById('prompt'))?.focus();
     setRefocus(undefined);
-  }, [editing, refocus]);
+  }, [adding, editing, refocus]);
 
-  if (interpretation.filters.length === 0) {
-    return <p className={NOTE_CLASS}>{searchNote(interpretation)}</p>;
-  }
-
-  const replace = (index: number, corrected: CardFilter): void => {
+  const save = (at: number | undefined, corrected: CardFilter): void => {
     onCorrect(
-      interpretation.filters.map((filter, at) =>
-        at === index ? corrected : filter
-      )
+      at === undefined
+        ? [...filters, corrected]
+        : filters.map((filter, index) => (index === at ? corrected : filter))
     );
     setEditing(undefined);
-    setRefocus(index);
+    setAdding(false);
+    setRefocus(chipId(at ?? filters.length));
   };
 
-  const remove = (index: number): void => {
-    onCorrect(interpretation.filters.filter((_, at) => at !== index));
+  const remove = (at: number): void => {
+    onCorrect(filters.filter((_, index) => index !== at));
     setEditing(undefined);
-    setRefocus(index);
+    setRefocus(chipId(at));
+  };
+
+  const cancelAdding = (): void => {
+    setAdding(false);
+    setRefocus(ADD_ID);
   };
 
   return (
-    <ul aria-label="What the search was understood as" className={LIST_CLASS}>
-      {interpretation.filters.map((filter, index) => {
-        const { field, says } = describeFilter(filter);
+    <div className={ROW_CLASS}>
+      {filters.length === 0 ? (
+        <p className={NOTE_CLASS}>{searchNote(interpretation)}</p>
+      ) : (
+        <ul
+          aria-label="What the search was understood as"
+          className={LIST_CLASS}>
+          {filters.map((filter, index) => {
+            const { field, says } = describeFilter(filter);
 
-        return (
-          <li key={index}>
-            {index === editing ? (
-              <ChipEditor
-                filter={filter}
-                onSave={corrected => replace(index, corrected)}
-                onRemove={() => remove(index)}
-                onCancel={() => {
-                  setEditing(undefined);
-                  setRefocus(index);
-                }}
-              />
-            ) : (
-              <button
-                id={chipId(index)}
-                type="button"
-                aria-label={`Change ${field} ${says}`}
-                onClick={() => setEditing(index)}
-                className={CHIP_CLASS}>
-                <span>{field}</span> <span className={ASK_CLASS}>{says}</span>
-              </button>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+            return (
+              <li key={index}>
+                {index === editing ? (
+                  <ChipEditor
+                    correcting={filter}
+                    onSave={corrected => save(index, corrected)}
+                    onRemove={() => remove(index)}
+                    onCancel={() => {
+                      setEditing(undefined);
+                      setRefocus(chipId(index));
+                    }}
+                  />
+                ) : (
+                  <button
+                    id={chipId(index)}
+                    type="button"
+                    aria-label={`Change ${field} ${says}`}
+                    onClick={() => setEditing(index)}
+                    className={CHIP_CLASS}>
+                    <span>{field}</span>{' '}
+                    <span className={ASK_CLASS}>{says}</span>
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {adding ? (
+        <ChipEditor
+          onSave={corrected => save(undefined, corrected)}
+          onCancel={cancelAdding}
+        />
+      ) : (
+        <button
+          id={ADD_ID}
+          type="button"
+          onClick={() => setAdding(true)}
+          className={ADD_CLASS}>
+          Add a filter
+        </button>
+      )}
+    </div>
   );
 }
 
-/** The chip at one position in the readout, so the keyboard can come back to it. */
+/** The fact at one position in the readout, so the keyboard can come back to it. */
 const chipId = (index: number): string => `filter-chip-${index}`;
 
+/** The control that offers the filter the request never named. */
+const ADD_ID = 'filter-add';
+
 interface ChipEditorProps {
-  filter: CardFilter;
+  correcting?: CardFilter;
   onSave(filter: CardFilter): void;
-  onRemove(): void;
+  onRemove?(): void;
   onCancel(): void;
 }
 
 /**
- * One filter being corrected: its field, which is the part the readout is sure
- * of, and the operator and the value that can be put right beside it. The value
- * is asked for the way the field takes it, a fixed set where the domain has one
- * and a number where the field is a stat, so nothing can be built here that the
- * search would refuse.
+ * One filter being said: the field it constrains, then the operator and the
+ * value it takes, gathered the way that field takes them, a fixed set where the
+ * domain has one and a number where the field is a stat, so nothing can be built
+ * here that the search would refuse.
  *
- * The three controls are one group rather than three loose ones, because what
- * they say together is a single filter, and the group is what the keyboard
- * arrives in. Escape calls the whole thing off, the way it does in the list of
- * conversations.
+ * Correcting a fact fixes its field, because the field is the part the readout
+ * is sure of; adding one offers the fields the search supports instead, and
+ * changing the field gathers the next operator and value the way the new field
+ * takes them. Either way the controls are one group, because what they say
+ * together is a single filter, and the group is where the keyboard arrives.
+ * Escape calls the whole thing off.
  */
-function ChipEditor({ filter, onSave, onRemove, onCancel }: ChipEditorProps) {
-  const vocabulary = fieldVocabulary(filter.field);
-  const [operator, setOperator] = useState<FilterOperator>(filter.operator);
-  const [value, setValue] = useState(String(filter.value));
-  const operatorControl = useRef<HTMLSelectElement>(null);
+function ChipEditor({
+  correcting,
+  onSave,
+  onRemove,
+  onCancel
+}: ChipEditorProps) {
+  const adding = correcting === undefined;
+  const [field, setField] = useState<CardFilterField>(
+    correcting?.field ?? filterFields()[0].field
+  );
+  const vocabulary = fieldVocabulary(field);
+  const [operator, setOperator] = useState<FilterOperator>(
+    correcting?.operator ?? defaultOperator(field)
+  );
+  const [value, setValue] = useState(
+    correcting === undefined ? defaultValue(field) : String(correcting.value)
+  );
+  const firstControl = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
-    operatorControl.current?.focus();
+    firstControl.current?.focus();
   }, []);
 
   /**
    * The filter these controls now say, or nothing when they do not say one the
    * search would accept, which is what keeps Save out of action rather than
    * sending something the server would refuse. The schema decides, so the
-   * vocabulary and the correction cannot disagree.
+   * vocabulary and the filter cannot disagree.
    */
-  const corrected = (): CardFilter | undefined => {
+  const said = (): CardFilter | undefined => {
     if (value.trim().length === 0) {
       return undefined;
     }
 
     const parsed = cardFilterSchema.safeParse({
-      field: filter.field,
+      field,
       operator,
-      value: takesNumber(filter.field) ? Number(value) : value
+      value: takesNumber(field) ? Number(value) : value
     });
 
     return parsed.success ? parsed.data : undefined;
   };
 
   const save = (): void => {
-    const candidate = corrected();
+    const candidate = said();
 
     if (candidate === undefined) {
       return;
@@ -192,17 +249,48 @@ function ChipEditor({ filter, onSave, onRemove, onCancel }: ChipEditorProps) {
   return (
     <div
       role="group"
-      aria-label={`Change ${describeFilter(filter).field} ${describeFilter(filter).says}`}
+      aria-label={
+        correcting === undefined
+          ? 'Add a filter'
+          : `Change ${describeFilter(correcting).field} ${describeFilter(correcting).says}`
+      }
       className={EDITOR_CLASS}
       onKeyDown={event => {
         if (event.key === 'Escape') {
           onCancel();
         }
       }}>
-      <span>{filterFieldName(filter.field)}</span>
+      {adding ? (
+        <select
+          ref={firstControl}
+          value={field}
+          aria-label="Field"
+          onChange={event => {
+            const chosen = filterFields().find(
+              entry => entry.field === event.target.value
+            );
+
+            if (chosen === undefined) {
+              return;
+            }
+
+            setField(chosen.field);
+            setOperator(defaultOperator(chosen.field));
+            setValue(defaultValue(chosen.field));
+          }}
+          className={CONTROL_CLASS}>
+          {filterFields().map(entry => (
+            <option key={entry.field} value={entry.field}>
+              {filterFieldName(entry.field)}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span>{filterFieldName(field)}</span>
+      )}
 
       <select
-        ref={operatorControl}
+        ref={adding ? undefined : firstControl}
         value={operator}
         aria-label="Operator"
         onChange={event => {
@@ -224,9 +312,9 @@ function ChipEditor({ filter, onSave, onRemove, onCancel }: ChipEditorProps) {
 
       {vocabulary.values === undefined ? (
         <input
-          type={takesNumber(filter.field) ? 'number' : 'text'}
-          inputMode={takesNumber(filter.field) ? 'numeric' : undefined}
-          step={takesNumber(filter.field) ? 1 : undefined}
+          type={takesNumber(field) ? 'number' : 'text'}
+          inputMode={takesNumber(field) ? 'numeric' : undefined}
+          step={takesNumber(field) ? 1 : undefined}
           value={value}
           aria-label="Value"
           onChange={event => setValue(event.target.value)}
@@ -249,13 +337,15 @@ function ChipEditor({ filter, onSave, onRemove, onCancel }: ChipEditorProps) {
       <button
         type="button"
         onClick={save}
-        disabled={corrected() === undefined}
+        disabled={said() === undefined}
         className={BUTTON_CLASS}>
-        Save
+        {adding ? 'Add' : 'Save'}
       </button>
-      <button type="button" onClick={onRemove} className={BUTTON_CLASS}>
-        Remove
-      </button>
+      {onRemove === undefined ? null : (
+        <button type="button" onClick={onRemove} className={BUTTON_CLASS}>
+          Remove
+        </button>
+      )}
       <button type="button" onClick={onCancel} className={BUTTON_CLASS}>
         Cancel
       </button>
