@@ -1,6 +1,7 @@
 import {
   type Conversation,
   type ConversationWithMessages,
+  type UpdateConversationRequest,
   conversationListSchema,
   conversationSchema,
   conversationWithMessagesSchema
@@ -33,12 +34,13 @@ export const createConversation = (): Promise<Conversation> =>
   });
 
 /**
- * Names a conversation. Only the title is sent: renaming is not where the
- * language or the model is chosen, and an omitted field is left alone.
+ * Changes part of a conversation. Only what the patch names is moved, so a
+ * control that changes one thing never changes another: the language a
+ * conversation searches in is not its name, and its name is not its language.
  */
-export const renameConversation = (
+export const updateConversation = (
   id: string,
-  title: string
+  patch: UpdateConversationRequest
 ): Promise<Conversation> =>
   apiRequest(
     `/api/conversations/${encodeURIComponent(id)}`,
@@ -46,9 +48,17 @@ export const renameConversation = (
     {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ title })
+      body: JSON.stringify(patch)
     }
   );
+
+/**
+ * Names a conversation, which is a patch that moves the title and nothing else.
+ */
+export const renameConversation = (
+  id: string,
+  title: string
+): Promise<Conversation> => updateConversation(id, { title });
 
 export const deleteConversation = (id: string): Promise<void> =>
   apiSend(`/api/conversations/${encodeURIComponent(id)}`, {

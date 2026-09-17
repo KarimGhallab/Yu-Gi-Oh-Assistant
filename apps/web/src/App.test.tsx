@@ -649,7 +649,9 @@ describe('the chat', () => {
     // The first stop is the way past the sidebar, and then the way in is the
     // control that folds the list, the brand, the control that starts a
     // conversation, the conversation that is open and the two things that can be
-    // done to it, so the cards the answer suggested come next.
+    // done to it, then the language the conversation is in, so the cards the
+    // answer suggested come next.
+    await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -688,7 +690,8 @@ describe('the chat', () => {
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          text: 'A cheap way to stop my opponent attacking'
+          text: 'A cheap way to stop my opponent attacking',
+          language: 'en'
         })
       })
     );
@@ -904,6 +907,7 @@ describe('the chat', () => {
       expect.objectContaining({
         body: JSON.stringify({
           text: 'a dark monster',
+          language: 'en',
           filters: [{ field: 'attribute', operator: 'eq', value: 'LIGHT' }]
         })
       })
@@ -935,7 +939,7 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenLastCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'another request' })
+        body: JSON.stringify({ text: 'another request', language: 'en' })
       })
     );
 
@@ -973,7 +977,11 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'a dark monster', filters: [] })
+        body: JSON.stringify({
+          text: 'a dark monster',
+          language: 'en',
+          filters: []
+        })
       })
     );
 
@@ -1005,7 +1013,7 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'a light monster' })
+        body: JSON.stringify({ text: 'a light monster', language: 'en' })
       })
     );
 
@@ -1060,6 +1068,7 @@ describe('the chat', () => {
       expect.objectContaining({
         body: JSON.stringify({
           text: 'a dark monster',
+          language: 'en',
           filters: [
             { field: 'attribute', operator: 'eq', value: 'DARK' },
             { field: 'type', operator: 'eq', value: CardType.NormalMonster }
@@ -1120,6 +1129,121 @@ describe('the chat', () => {
 
     expect(screen.getByLabelText('Value').tagName).toBe('SELECT');
     expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
+  });
+
+  it('switches the language of a conversation and searches in it', async () => {
+    const turn = turnStream();
+    let language = 'en';
+    const english = createCard(46986414, 'Dark Magician');
+    const french = createCard(46986414, 'Magicien Sombre', { language: 'fr' });
+    const fetchMock = stubFetch((url, init) => {
+      if (url.endsWith('/messages')) {
+        return turn.response;
+      }
+      if (init?.method === 'PATCH') {
+        language = 'fr';
+        return json(createConversation(2, { language }));
+      }
+      if (url === '/api/conversations') {
+        return json([createConversation(2, { language })]);
+      }
+
+      return json(
+        withMessages(createConversation(2, { language }), [
+          playerMessage(10, 'a dark monster'),
+          said(11, 'assistant', 'Here it is.', {
+            filters: [],
+            cards: [language === 'fr' ? french : english]
+          })
+        ])
+      );
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    expect(
+      await screen.findByRole('link', { name: 'Dark Magician' })
+    ).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByLabelText('Cards in'), 'fr');
+
+    // The same turn comes back in the other language, and it is the same turn:
+    // the cards were read again rather than the question answered twice.
+    expect(
+      await screen.findByRole('link', { name: 'Magicien Sombre' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Dark Magician' })).toBeNull();
+    expect(screen.getAllByText('Assistant')).toHaveLength(1);
+
+    // The turn that follows is searched in the language that is on screen.
+    await send('a dark monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({ text: 'a dark monster', language: 'fr' })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('opens a conversation on the language it was left in', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([createConversation(2, { language: 'fr' })])
+          : json(
+              withMessages(createConversation(2, { language: 'fr' }), [
+                playerMessage(10, 'un monstre sombre'),
+                said(11, 'assistant', 'Le voici.', {
+                  filters: [],
+                  cards: [
+                    createCard(46986414, 'Magicien Sombre', { language: 'fr' })
+                  ]
+                })
+              ])
+            )
+      )
+    );
+
+    renderApp('/c/2');
+
+    expect(await screen.findByLabelText('Cards in')).toHaveValue('fr');
+    expect(
+      await screen.findByRole('link', { name: 'Magicien Sombre' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the language and says what went wrong when the switch fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) => {
+        if (init?.method === 'PATCH') {
+          return json({ error: 'The conversation could not be changed' }, 503);
+        }
+
+        return url === '/api/conversations'
+          ? json([createConversation(2)])
+          : json(withMessages(createConversation(2)));
+      })
+    );
+
+    renderApp('/c/2');
+
+    await userEvent.selectOptions(
+      await screen.findByLabelText('Cards in'),
+      'fr'
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The conversation could not be changed'
+    );
+    expect(screen.getByLabelText('Cards in')).toHaveValue('en');
   });
 
   it('replaces the turn it built with the one the server stored', async () => {
@@ -1380,7 +1504,10 @@ describe('the chat', () => {
       '/api/conversations/2/messages',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ text: 'Something to support a Red-Eyes deck' })
+        body: JSON.stringify({
+          text: 'Something to support a Red-Eyes deck',
+          language: 'en'
+        })
       })
     );
 

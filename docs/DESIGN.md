@@ -68,6 +68,12 @@ components:
     textColor: '{colors.ink}'
     typography: '{typography.title}'
     padding: '16px 24px'
+  pane-setting-label:
+    textColor: '{colors.ink-faint}'
+    typography: '{typography.body}'
+  pane-setting-control:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
   notice-panel:
     backgroundColor: '{colors.surface}'
     textColor: '{colors.ink}'
@@ -241,7 +247,10 @@ The frame is two regions: a sidebar of conversations and the main region. At
 that it stacks above it, capped at 16rem with its own scroll, so it never covers
 the chat. The main region is the only thing that scrolls vertically, and it holds
 one header, one content area, and (on the conversation surface) one composer
-docked at its bottom edge.
+docked at its bottom edge. The header is also where the conversation's own
+settings live, beside its name: what the cards are read in today, and the model
+that answers tomorrow, because those belong to the conversation rather than to
+the request.
 
 Density is set by a 0.25rem spacing base: 0.75rem inside a row, 1rem for panel
 padding and control height, 1.5rem for page padding on the horizontal axis, 2rem
@@ -397,6 +406,13 @@ level deep.
   acts.
 - **Focus:** the same 2px Halo Amber outline at 2px offset. There is no inner
   glow and no border-color change.
+- **A setting in the header:** the same field without its surface. Transparent,
+  14px, Ash Grey, quiet enough to sit beside the conversation's name, with the
+  platform's own caret as the sign that it can be changed and Bone White on hover
+  or focus. It is neither amber nor filled, because the header is not the bench
+  and the two amber fills a conversation already carries are the limit. A patch
+  that fails says so under the row, in the recorded alert line, and the control
+  goes back to what the conversation actually holds.
 
 ### Composer
 

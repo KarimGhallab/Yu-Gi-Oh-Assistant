@@ -48,7 +48,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 38  | [The chat shows what the request was understood as](./38-the-chat-shows-what-the-request-was-understood-as.md)                              | Resolved (2026-09-17) | 36         | [09](../specs/09-transparent-controls.md)                                             |
 | 39  | [A chip can be corrected and the turn re-run on it](./39-a-chip-can-be-corrected-and-the-turn-re-run-on-it.md)                              | Resolved (2026-09-17) | 38         | [09](../specs/09-transparent-controls.md)                                             |
 | 40  | [A filter can be added](./40-a-filter-can-be-added.md)                                                                                      | Resolved (2026-09-17) | 39         | [09](../specs/09-transparent-controls.md)                                             |
-| 41  | [The conversation's language is the player's to choose](./41-the-conversations-language-is-the-players-to-choose.md)                        | ready-for-agent       | 36         | [09](../specs/09-transparent-controls.md)                                             |
+| 41  | [The conversation's language is the player's to choose](./41-the-conversations-language-is-the-players-to-choose.md)                        | Resolved (2026-09-17) | 36         | [09](../specs/09-transparent-controls.md)                                             |
 | 42  | [A turn that finds nothing answers in the conversation's language](./42-a-turn-that-finds-nothing-answers-in-the-conversations-language.md) | ready-for-agent       | -          | [09](../specs/09-transparent-controls.md)                                             |
 | 43  | [A card that is not in the conversation's language says so](./43-a-card-that-is-not-in-the-conversations-language-says-so.md)               | ready-for-agent       | 41         | [09](../specs/09-transparent-controls.md)                                             |
 | 44  | [The player picks the model](./44-the-player-picks-the-model.md)                                                                            | ready-for-agent       | 37, 41     | [09](../specs/09-transparent-controls.md)                                             |
@@ -64,8 +64,7 @@ Spec 09 (Transparent controls) is ticketed as 36 through 44: the vocabularies th
 controls speak, the model listing a picker reads, the chips that show and correct
 a parse, the language a conversation is in, the reply an empty search gives, the
 marker on a card that is not in that language, and the model chooser. Tickets 36
-through 40 are resolved, so nothing is held by them: the frontier is 41 and 42.
-Ticket 43 follows 41, and 44 waits on 41 alone.
+through 41 are resolved, so nothing is held by them: the frontier is 42, 43 and 44.
 
 Spec 10 (Local run, CI, and documentation) is free to be ticketed, and owns the
 local-only end-to-end suite, including the Playwright flow and the fake Ollama

@@ -9,7 +9,8 @@ import {
 
 import type {
   Conversation,
-  ConversationWithMessages
+  ConversationWithMessages,
+  UpdateConversationRequest
 } from '@ygo-assistant/contracts';
 
 import {
@@ -17,7 +18,8 @@ import {
   deleteConversation,
   getConversation,
   listConversations,
-  renameConversation
+  renameConversation,
+  updateConversation
 } from './api/conversations.js';
 
 /**
@@ -111,6 +113,33 @@ export function useRenameConversation(): UseMutationResult<
   return useMutation({
     mutationFn: (request: RenameConversationRequest) =>
       renameConversation(request.id, request.title),
+    onSuccess: () => {
+      void refreshConversations(client);
+    }
+  });
+}
+
+export interface UpdateConversationVariables {
+  id: string;
+  patch: UpdateConversationRequest;
+}
+
+/**
+ * Changes part of a conversation and refreshes what reads conversations, which
+ * is the list it is named in and the page it is open on. A conversation's cards
+ * are read back in the language it is in, so moving that language comes back as
+ * the same turn in the other language rather than as another turn.
+ */
+export function useUpdateConversation(): UseMutationResult<
+  Conversation,
+  Error,
+  UpdateConversationVariables
+> {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, patch }: UpdateConversationVariables) =>
+      updateConversation(id, patch),
     onSuccess: () => {
       void refreshConversations(client);
     }
