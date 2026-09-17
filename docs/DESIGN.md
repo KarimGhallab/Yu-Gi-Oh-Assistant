@@ -248,9 +248,11 @@ that it stacks above it, capped at 16rem with its own scroll, so it never covers
 the chat. The main region is the only thing that scrolls vertically, and it holds
 one header, one content area, and (on the conversation surface) one composer
 docked at its bottom edge. The header is also where the conversation's own
-settings live, beside its name: what the cards are read in today, and the model
-that answers tomorrow, because those belong to the conversation rather than to
-the request.
+settings live, beside its name: the language its cards are read in and the model
+that answers, because those belong to the conversation rather than to the
+request. The settings wrap under the name when the window is too narrow to hold
+both, so the name is what gives way last: a model's name can be long, and it is
+the title that says which conversation this is.
 
 Density is set by a 0.25rem spacing base: 0.75rem inside a row, 1rem for panel
 padding and control height, 1.5rem for page padding on the horizontal axis, 2rem
@@ -418,7 +420,16 @@ level deep.
   or focus. It is neither amber nor filled, because the header is not the bench
   and the two amber fills a conversation already carries are the limit. A patch
   that fails says so under the row, in the recorded alert line, and the control
-  goes back to what the conversation actually holds.
+  goes back to what the conversation actually holds. The model chooser is the
+  same control, and a model that cannot produce structured filters says so in its
+  own option and again under the row as a quiet note, not in the alert line,
+  because answering without a schema is a trade the player may have chosen
+  knowingly. A model the machine no longer has still shows in the chooser, so the
+  control is never blank, and is named under the row with what to do about it in
+  the alert line, because a conversation left on a missing model is a state to
+  see rather than a silence. A model that cannot answer a turn at all is named as
+  such in its option and under the row in the alert line, because that is not a
+  trade the player chose but a dead end.
 
 ### Composer
 

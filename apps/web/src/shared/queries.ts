@@ -10,6 +10,7 @@ import {
 import type {
   Conversation,
   ConversationWithMessages,
+  Model,
   UpdateConversationRequest
 } from '@ygo-assistant/contracts';
 
@@ -21,6 +22,7 @@ import {
   renameConversation,
   updateConversation
 } from './api/conversations.js';
+import { listModels } from './api/models.js';
 
 /**
  * The key prefix every conversation query shares, so a write can refresh
@@ -60,6 +62,17 @@ export const refreshConversations = async (
 
 export function useConversations(): UseQueryResult<Conversation[], Error> {
   return useQuery({ queryKey: CONVERSATIONS_KEY, queryFn: listConversations });
+}
+
+/**
+ * The key the model listing is read under. Nothing writes to it: what is
+ * installed belongs to the machine Ollama runs on rather than to this app, so
+ * the listing is read and never patched.
+ */
+const MODELS_KEY = ['models'] as const;
+
+export function useModels(): UseQueryResult<Model[], Error> {
+  return useQuery({ queryKey: MODELS_KEY, queryFn: listModels });
 }
 
 export function useConversation(

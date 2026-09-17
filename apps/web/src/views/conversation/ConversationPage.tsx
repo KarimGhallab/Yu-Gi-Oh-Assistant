@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router';
 import {
   type ConversationWithMessages,
   Language,
-  MessageRole
+  MessageRole,
+  type Model
 } from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/client.js';
@@ -11,6 +12,7 @@ import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
 import { conversationTitle } from '../../shared/conversationTitle.js';
 import {
   useConversation,
+  useModels,
   useUpdateConversation
 } from '../../shared/queries.js';
 
@@ -43,6 +45,7 @@ interface ConversationSurfaceProps {
 function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const conversation = useConversation(conversationId);
   const update = useUpdateConversation();
+  const models = useModels();
   const { send, turn, isRunning, interpretation, correction, correct } =
     useTurn(conversationId);
 
@@ -119,15 +122,20 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         ])
   ];
 
-  // The control shows what was asked for while the change is on its way, so a
+  // The controls show what was asked for while a change is on its way, so a
   // switch does not look like it bounced back before it lands.
-  const asked = update.isPending ? update.variables?.patch.language : undefined;
-  const language = asked ?? conversation.data.language;
+  const asked = update.isPending ? update.variables?.patch : undefined;
+  const language = asked?.language ?? conversation.data.language;
+  const model = asked?.model ?? conversation.data.model;
+  // A conversation can be left on a model the machine no longer has, which is a
+  // state the player should see rather than a control that shows nothing.
+  const chosen = models.data?.find(candidate => candidate.name === model);
+  const missing = models.data !== undefined && chosen === undefined;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="flex flex-col gap-1 border-b border-neutral-800 px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <h1 className="truncate text-lg font-semibold text-neutral-100">
             {conversationTitle(conversation.data)}
           </h1>
@@ -139,14 +147,14 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
               id="language"
               value={language}
               onChange={event => {
-                const chosen = LANGUAGES.find(
+                const chosenLanguage = LANGUAGES.find(
                   candidate => candidate.language === event.target.value
                 );
 
-                if (chosen !== undefined) {
+                if (chosenLanguage !== undefined) {
                   update.mutate({
                     id: conversationId,
-                    patch: { language: chosen.language }
+                    patch: { language: chosenLanguage.language }
                   });
                 }
               }}
@@ -157,6 +165,27 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
                 </option>
               ))}
             </select>
+            <label htmlFor="model" className="text-sm text-neutral-500">
+              Answered by
+            </label>
+            <select
+              id="model"
+              value={model}
+              onChange={event =>
+                update.mutate({
+                  id: conversationId,
+                  patch: { model: event.target.value }
+                })
+              }
+              className={LANGUAGE_CLASS}>
+              {missing ? <option value={model}>{model}</option> : null}
+              {(models.data ?? []).map(candidate => (
+                <option key={candidate.name} value={candidate.name}>
+                  {candidate.name}
+                  {limitation(candidate)}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         {update.error === null ? null : (
@@ -164,18 +193,37 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
             {update.error.message}
           </p>
         )}
+        {missing ? (
+          <p role="alert" className="text-sm text-red-400">
+            {model} is not installed. Run ollama pull {model} to install it.
+          </p>
+        ) : null}
+        {chosen !== undefined && !chosen.supportsCompletion ? (
+          <p role="alert" className="text-sm text-red-400">
+            {chosen.name} cannot answer a turn.
+          </p>
+        ) : null}
+        {chosen?.supportsCompletion === true &&
+        chosen.supportsStructuredOutput === false ? (
+          <p className="text-sm text-neutral-500">
+            {chosen.name} cannot produce structured filters, so a request is
+            parsed from the prompt.
+          </p>
+        ) : null}
       </header>
       <section
         aria-label="Messages"
         className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
         {turns.length === 0 ? (
-          <ExamplePrompts onChoose={text => void send(text, language)} />
+          <ExamplePrompts
+            onChoose={text => void send(text, { language, model })}
+          />
         ) : (
           <MessageHistory messages={turns} language={language} />
         )}
       </section>
       <Composer
-        onSend={text => void send(text, language)}
+        onSend={text => void send(text, { language, model })}
         running={isRunning}
         announcement={isRunning ? runningAnnouncement(turn?.status) : undefined}
         readout={
@@ -222,6 +270,20 @@ const LANGUAGES: { language: Language; name: string }[] = [
  */
 const LANGUAGE_CLASS =
   'rounded bg-transparent pr-1 text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
+
+/**
+ * What a model's own option says about it. A model that cannot answer a turn at
+ * all is named as such rather than as one that only answers without a schema,
+ * because that is the fact that matters when it is chosen, and the listing
+ * reports both.
+ */
+const limitation = (candidate: Model): string => {
+  if (!candidate.supportsCompletion) {
+    return ' (cannot answer)';
+  }
+
+  return candidate.supportsStructuredOutput ? '' : ' (no structured filters)';
+};
 
 /**
  * What the last stored search was understood as. A reply a turn stored keeps the

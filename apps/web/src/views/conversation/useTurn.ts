@@ -54,12 +54,22 @@ interface TurnInFlight {
 }
 
 export interface UseTurnResult {
-  send(text: string, language?: Language): Promise<void>;
+  send(text: string, settings?: TurnSettings): Promise<void>;
   turn?: TurnInFlight;
   isRunning: boolean;
   interpretation?: SearchInterpretation;
   correction?: CardFilters;
   correct(filters: CardFilters): void;
+}
+
+/**
+ * What a turn is searched and answered with beyond its words: the language the
+ * player is looking at and the model they chose. Either one left out leaves the
+ * conversation's own setting in charge.
+ */
+interface TurnSettings {
+  language?: Language;
+  model?: string;
 }
 
 /**
@@ -161,7 +171,7 @@ export function useTurn(conversationId: string): UseTurnResult {
   );
 
   const send = useCallback(
-    async (text: string, language?: Language): Promise<void> => {
+    async (text: string, settings?: TurnSettings): Promise<void> => {
       if (turn?.running === true) {
         return;
       }
@@ -187,11 +197,11 @@ export function useTurn(conversationId: string): UseTurnResult {
       running.current = controller;
       let confirmed = false;
       // Sending the corrected set is what tells the server not to read the
-      // request again, and sending the language the player is looking at is what
-      // keeps a turn started straight after a switch off the language it had
-      // before. A player who left the readout alone sends no filters at all,
-      // which is what asks for the request to be parsed as usual.
-      const request: TurnRequest = { text, language, filters: correction };
+      // request again, and sending the conversation's settings is what keeps a
+      // turn started straight after a change off the settings it had before. A
+      // player who left the readout alone sends no filters at all, which is what
+      // asks for the request to be parsed as usual.
+      const request: TurnRequest = { text, ...settings, filters: correction };
 
       try {
         for await (const event of streamTurn(

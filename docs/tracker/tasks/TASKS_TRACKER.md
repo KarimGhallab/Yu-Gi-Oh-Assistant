@@ -51,7 +51,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 41  | [The conversation's language is the player's to choose](./41-the-conversations-language-is-the-players-to-choose.md)                        | Resolved (2026-09-17) | 36         | [09](../specs/09-transparent-controls.md)                                             |
 | 42  | [A turn that finds nothing answers in the conversation's language](./42-a-turn-that-finds-nothing-answers-in-the-conversations-language.md) | Resolved (2026-09-17) | -          | [09](../specs/09-transparent-controls.md)                                             |
 | 43  | [A card that is not in the conversation's language says so](./43-a-card-that-is-not-in-the-conversations-language-says-so.md)               | Resolved (2026-09-17) | 41         | [09](../specs/09-transparent-controls.md)                                             |
-| 44  | [The player picks the model](./44-the-player-picks-the-model.md)                                                                            | ready-for-agent       | 37, 41     | [09](../specs/09-transparent-controls.md)                                             |
+| 44  | [The player picks the model](./44-the-player-picks-the-model.md)                                                                            | Resolved (2026-09-17) | 37, 41     | [09](../specs/09-transparent-controls.md)                                             |
 
 ## Frontier
 
@@ -60,14 +60,13 @@ Specs 04 (Retrieval engine), 05 (Conversation store and CRUD), 06
 client) are fully landed: 17 through 35 are resolved. The chat can be driven from
 a keyboard end to end, and what an audit found was fixed rather than recorded.
 
-Spec 09 (Transparent controls) is ticketed as 36 through 44: the vocabularies the
-controls speak, the model listing a picker reads, the chips that show and correct
-a parse, the language a conversation is in, the reply an empty search gives, the
-marker on a card that is not in that language, and the model chooser. Tickets 36
-through 43 are resolved, so nothing is held by them: the frontier is 44, the
-model chooser, which waits on the listing ticket 37 already landed.
+Spec 09 (Transparent controls) is ticketed as 36 through 44, and every one of
+them is resolved: the vocabularies the controls speak, the model listing a picker
+reads, the chips that show, correct, and extend a parse, the language a
+conversation is in, the reply an empty search gives, the marker on a card that is
+not in that language, and the model chooser. No ticket of it is left.
 
-Spec 10 (Local run, CI, and documentation) is free to be ticketed, and owns the
-local-only end-to-end suite, including the Playwright flow and the fake Ollama
-server that the specs' testing decisions mention but do not build here. Ticket 11
-supersedes the single-origin setup in ticket 06 and spec 01.
+Spec 10 (Local run, CI, and documentation) is the frontier and is free to be
+ticketed, and owns the local-only end-to-end suite, including the Playwright flow
+and the fake Ollama server that the specs' testing decisions mention but do not
+build here. Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.

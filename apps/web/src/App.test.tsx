@@ -177,10 +177,37 @@ type FetchHandler = (
   init: RequestInit | undefined
 ) => Response | Promise<Response>;
 
-const stubFetch = (handler: FetchHandler): ReturnType<typeof vi.fn> =>
-  vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
-    handler(String(input), init)
-  );
+/**
+ * The models a test's machine has installed unless it says otherwise: the one
+ * the conversation fixtures are set to, so a test that is not about choosing a
+ * model never has to think about the listing.
+ */
+const DEFAULT_MODELS = [
+  {
+    name: 'llama3.1:8b',
+    supportsCompletion: true,
+    supportsStructuredOutput: true
+  }
+];
+
+/**
+ * A fetch stub for the app. The model listing is answered here rather than in
+ * every test, because its answer is the same for all of them except the ones
+ * about choosing a model, which pass the listing they mean.
+ */
+const stubFetch = (
+  handler: FetchHandler,
+  models: unknown[] = DEFAULT_MODELS
+): ReturnType<typeof vi.fn> =>
+  vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+
+    if (url === '/api/models') {
+      return json(models);
+    }
+
+    return handler(url, init);
+  });
 
 const requestedUrls = (fetchMock: ReturnType<typeof vi.fn>): string[] =>
   fetchMock.mock.calls.map(call => String(call[0]));
@@ -649,8 +676,9 @@ describe('the chat', () => {
     // The first stop is the way past the sidebar, and then the way in is the
     // control that folds the list, the brand, the control that starts a
     // conversation, the conversation that is open and the two things that can be
-    // done to it, then the language the conversation is in, so the cards the
-    // answer suggested come next.
+    // done to it, then the language the conversation is in and the model that
+    // answers, so the cards the answer suggested come next.
+    await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -691,7 +719,8 @@ describe('the chat', () => {
         method: 'POST',
         body: JSON.stringify({
           text: 'A cheap way to stop my opponent attacking',
-          language: 'en'
+          language: 'en',
+          model: 'llama3.1:8b'
         })
       })
     );
@@ -908,6 +937,7 @@ describe('the chat', () => {
         body: JSON.stringify({
           text: 'a dark monster',
           language: 'en',
+          model: 'llama3.1:8b',
           filters: [{ field: 'attribute', operator: 'eq', value: 'LIGHT' }]
         })
       })
@@ -939,7 +969,11 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenLastCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'another request', language: 'en' })
+        body: JSON.stringify({
+          text: 'another request',
+          language: 'en',
+          model: 'llama3.1:8b'
+        })
       })
     );
 
@@ -980,6 +1014,7 @@ describe('the chat', () => {
         body: JSON.stringify({
           text: 'a dark monster',
           language: 'en',
+          model: 'llama3.1:8b',
           filters: []
         })
       })
@@ -1013,7 +1048,11 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'a light monster', language: 'en' })
+        body: JSON.stringify({
+          text: 'a light monster',
+          language: 'en',
+          model: 'llama3.1:8b'
+        })
       })
     );
 
@@ -1069,6 +1108,7 @@ describe('the chat', () => {
         body: JSON.stringify({
           text: 'a dark monster',
           language: 'en',
+          model: 'llama3.1:8b',
           filters: [
             { field: 'attribute', operator: 'eq', value: 'DARK' },
             { field: 'type', operator: 'eq', value: CardType.NormalMonster }
@@ -1182,7 +1222,11 @@ describe('the chat', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/conversations/2/messages',
       expect.objectContaining({
-        body: JSON.stringify({ text: 'a dark monster', language: 'fr' })
+        body: JSON.stringify({
+          text: 'a dark monster',
+          language: 'fr',
+          model: 'llama3.1:8b'
+        })
       })
     );
 
@@ -1283,6 +1327,144 @@ describe('the chat', () => {
     expect(
       within(greed).getByRole('link', { name: 'Pot of Greed' })
     ).toBeInTheDocument();
+  });
+
+  it('offers the installed models, saying which cannot produce structured filters', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(
+        url =>
+          url === '/api/conversations'
+            ? json([GRAVEYARD])
+            : json(withMessages(GRAVEYARD)),
+        [
+          {
+            name: 'llama3.1:8b',
+            supportsCompletion: true,
+            supportsStructuredOutput: true
+          },
+          {
+            name: 'mistral:7b',
+            supportsCompletion: true,
+            supportsStructuredOutput: false
+          },
+          {
+            name: 'nomic-embed-text',
+            supportsCompletion: false,
+            supportsStructuredOutput: false
+          }
+        ]
+      )
+    );
+
+    renderApp('/c/2');
+
+    const chooser = await screen.findByLabelText('Answered by');
+
+    expect(
+      within(chooser)
+        .getAllByRole('option')
+        .map(option => option.textContent)
+    ).toEqual([
+      'llama3.1:8b',
+      'mistral:7b (no structured filters)',
+      'nomic-embed-text (cannot answer)'
+    ]);
+    expect(chooser).toHaveValue('llama3.1:8b');
+  });
+
+  it('runs the next turn on the model the player picked, and keeps it', async () => {
+    const turn = turnStream();
+    let model = 'llama3.1:8b';
+    const fetchMock = stubFetch(
+      (url, init) => {
+        if (url.endsWith('/messages')) {
+          return turn.response;
+        }
+        if (init?.method === 'PATCH') {
+          model = 'mistral:7b';
+          return json(createConversation(2, { model }));
+        }
+        if (url === '/api/conversations') {
+          return json([createConversation(2, { model })]);
+        }
+
+        return json(withMessages(createConversation(2, { model })));
+      },
+      [
+        {
+          name: 'llama3.1:8b',
+          supportsCompletion: true,
+          supportsStructuredOutput: true
+        },
+        {
+          name: 'mistral:7b',
+          supportsCompletion: true,
+          supportsStructuredOutput: false
+        }
+      ]
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.selectOptions(
+      await screen.findByLabelText('Answered by'),
+      'mistral:7b'
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ model: 'mistral:7b' })
+      })
+    );
+
+    await send('a dark monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({
+          text: 'a dark monster',
+          language: 'en',
+          model: 'mistral:7b'
+        })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('names a model that is not installed, and says what to do about it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(
+        url =>
+          url === '/api/conversations'
+            ? json([createConversation(2)])
+            : json(withMessages(createConversation(2))),
+        [
+          {
+            name: 'mistral:7b',
+            supportsCompletion: true,
+            supportsStructuredOutput: false
+          }
+        ]
+      )
+    );
+
+    renderApp('/c/2');
+
+    expect(await screen.findByLabelText('Answered by')).toHaveValue(
+      'llama3.1:8b'
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Run ollama pull llama3.1:8b to install it.'
+    );
   });
 
   it('replaces the turn it built with the one the server stored', async () => {
@@ -1545,7 +1727,8 @@ describe('the chat', () => {
         method: 'POST',
         body: JSON.stringify({
           text: 'Something to support a Red-Eyes deck',
-          language: 'en'
+          language: 'en',
+          model: 'llama3.1:8b'
         })
       })
     );
