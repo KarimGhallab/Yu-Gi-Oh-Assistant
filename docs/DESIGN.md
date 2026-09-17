@@ -200,12 +200,12 @@ the accent and failure.
 **The One Lamp Rule.** Amber marks what is actionable, chosen, or focused, and
 nothing else. No amber headings, no amber decoration, no amber dividers. Its
 rarity is what makes it read as light. The conversation screen is where the rule
-is under the most pressure, because it shows the sidebar's New fill, the
-composer's field wash, and the composer's Send fill at once. The wash is a wash
-rather than a fill, and the two fills are the primary action of two different
-regions; whether one screen should carry two filled controls at all is
-undecided. Until it is, two fills in two regions is the limit, and a wash is the
-whisper that does not count as a lamp.
+is under the most pressure, because it shows the sidebar's New fill and the
+composer's Send fill at once: the primary action of two different regions, and
+whether one screen should carry two filled controls at all is undecided. Until it
+is, two fills in two regions is the limit. The prompt's field carries no amber
+and no border of its own, because it is a surface rather than an outlined bench,
+and the focus ring is the only line ever drawn around it.
 
 **The No Second Accent Rule.** There is no secondary or tertiary color. Failure
 is the only exception, it is text only, and it never becomes a fill.
@@ -247,12 +247,12 @@ The frame is two regions: a sidebar of conversations and the main region. At
 that it stacks above it, capped at 16rem with its own scroll, so it never covers
 the chat. The main region is the only thing that scrolls vertically, and it holds
 one header, one content area, and (on the conversation surface) one composer
-docked at its bottom edge. The header is also where the conversation's own
-settings live, beside its name: the language its cards are read in and the model
-that answers, because those belong to the conversation rather than to the
-request. The settings wrap under the name when the window is too narrow to hold
-both, so the name is what gives way last: a model's name can be long, and it is
-the title that says which conversation this is.
+docked at its bottom edge. The header carries the conversation's name and nothing
+else, because the language its cards are read in and the model that answers
+belong to the act of asking: they live on the prompt's own surface, beside the
+field they are sent with. That surface is the only enclosed thing on the screen,
+and the name is what gives way last when the window is narrow, because a model's
+name can be long and it is the title that says which conversation this is.
 
 Density is set by a 0.25rem spacing base: 0.75rem inside a row, 1rem for panel
 padding and control height, 1.5rem for page padding on the horizontal axis, 2rem
@@ -409,45 +409,63 @@ level deep.
 ### Inputs / Fields
 
 - **Style:** a Bench Slate or transparent field, 4px radius, 14px Bone White
-  text, Dust Grey placeholder. On the bench surface the field is bordered in a
-  25% amber wash rather than a rail, because that surface is where the player
-  acts.
+  text, Dust Grey placeholder. The prompt's own field is the surface itself: no
+  border and no wash, so nothing is outlined until the keyboard is in it.
 - **Focus:** the same 2px Halo Amber outline at 2px offset. There is no inner
-  glow and no border-color change.
-- **A setting in the header:** the same field without its surface. Transparent,
-  14px, Ash Grey, quiet enough to sit beside the conversation's name, with the
-  platform's own caret as the sign that it can be changed and Bone White on hover
-  or focus. It is neither amber nor filled, because the header is not the bench
-  and the two amber fills a conversation already carries are the limit. A patch
-  that fails says so under the row, in the recorded alert line, and the control
-  goes back to what the conversation actually holds. The model chooser is the
-  same control, and a model that cannot produce structured filters says so in its
-  own option and again under the row as a quiet note, not in the alert line,
-  because answering without a schema is a trade the player may have chosen
+  glow and no border-color change. Where a field and other controls share one
+  surface, the outline goes on the surface, so the keyboard lights the whole
+  prompt rather than a box inside it.
+- **A setting in the prompt:** a quiet word on the prompt's surface rather than a
+  box. No frame, no fill, and the platform's caret replaced by one drawn at the
+  icon set's own stroke, so it is the same mark as the other controls. The text
+  is Ash Grey, stepping to Bone White over a Rail Grey surface when it is pointed
+  at, and it takes the same 2px Halo Amber outline as every other control. A
+  patch that fails says so above the prompt, in the recorded alert line, and the
+  control goes back to what the conversation actually holds. The model chooser is
+  the same control, and a model that cannot produce structured filters says so in
+  its own option and again above the prompt as a quiet note, not in the alert
+  line, because answering without a schema is a trade the player may have chosen
   knowingly. A model the machine no longer has still shows in the chooser, so the
-  control is never blank, and is named under the row with what to do about it in
-  the alert line, because a conversation left on a missing model is a state to
+  control is never blank, and is named above the prompt with what to do about it
+  in the alert line, because a conversation left on a missing model is a state to
   see rather than a silence. A model that cannot answer a turn at all is named as
-  such in its option and under the row in the alert line, because that is not a
-  trade the player chose but a dead end.
+  such in its option and above the prompt in the alert line, because that is not
+  a trade the player chose but a dead end.
 
 ### Composer
 
 - **Where:** docked at the bottom edge of the conversation, below the message
   area, separated by a 1px Rail Grey hairline on its top edge. It is the only
   thing on that surface that does not scroll.
-- **Field:** a textarea on a Bench Slate surface, 4px radius, one hairline of
-  25% amber rather than a rail, Body text in Bone White, Dust Grey placeholder.
-  Focus draws the same 2px Halo Amber outline as every other control, and the
-  border does not change. Opening a conversation puts the keyboard in this field,
-  because opening one is how a player arrives to ask, so the conversation
-  address needs no further stop to start typing.
+- **Surface:** the field and the actions the request is run with share one
+  surface, because they are one act rather than a field with a row of controls
+  under it. It is the field's own Bench Slate surface grown to hold them: 4px
+  radius, no border and no wash, holding itself apart from the room by the
+  surface step alone, and the only enclosed thing on the conversation screen.
+  The keyboard lights the whole of it rather than a box inside it.
+- **Field:** a textarea on that surface, Body text in Bone White, Dust Grey
+  placeholder, five lines tall before it scrolls so a request of a few lines can
+  be read back at once. Its scrollbar is thin, without a track, and thumb only.
+  Opening a conversation puts the keyboard in this field, because opening one is
+  how a player arrives to ask, so the conversation address needs no further stop
+  to start typing. Enter sends and Shift+Enter is a line, because a prompt that
+  is one surface with its Send is a prompt whose Enter belongs to the Send; the
+  Send control carries the word as well, for the pointer and for anyone who does
+  not know the key.
+- **The actions:** on the same surface, under the field: the language the cards
+  are read in at its left edge, and the model that answers beside the Send at its
+  right, so what the request will be run with is read in the same glance as the
+  request. Both are quiet words rather than boxes, and the model's name can be
+  long, so it is the field that keeps the width and the name that gives way.
 - **Send:** the primary button, the filled lamp of this surface, carrying the
   arrow. It is out of action while a turn runs, while the field stays usable so
   the next request can be written as the answer arrives.
-- **Status:** Body, Ash Grey, sitting beside the Send control as a live region.
+- **Status:** Body, Ash Grey, the last line above the surface, as a live region.
   It says the turn is running, and how the search was arrived at when the request
-  could not be turned into filters; it is empty when nothing is running.
+  could not be turned into filters; it is empty when nothing is running. It sits
+  with the readout and the alert lines rather than beside the Send, because the
+  Send is on the prompt's surface now and a sentence of moving text beside it
+  would crowd the actions that belong there.
 - **Readout:** what the last search was understood as, on its own line above the
   field, in 12px mono. One fact per filter: the field it constrains in Dust Grey
   and what it asks of that field in Ash Grey, set apart by space and nothing

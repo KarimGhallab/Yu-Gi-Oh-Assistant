@@ -3,8 +3,7 @@ import { Link, useParams } from 'react-router';
 import {
   type ConversationWithMessages,
   Language,
-  MessageRole,
-  type Model
+  MessageRole
 } from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/client.js';
@@ -127,89 +126,31 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const asked = update.isPending ? update.variables?.patch : undefined;
   const language = asked?.language ?? conversation.data.language;
   const model = asked?.model ?? conversation.data.model;
-  // A conversation can be left on a model the machine no longer has, which is a
-  // state the player should see rather than a control that shows nothing.
-  const chosen = models.data?.find(candidate => candidate.name === model);
-  const missing = models.data !== undefined && chosen === undefined;
+
+  const changeLanguage = (next: Language): void => {
+    update.mutate({ id: conversationId, patch: { language: next } });
+  };
+
+  const changeModel = (next: string): void => {
+    update.mutate({ id: conversationId, patch: { model: next } });
+  };
+
+  const announcement = isRunning
+    ? runningAnnouncement(turn?.status)
+    : undefined;
+  const failure =
+    turn?.failure === undefined ? undefined : failureAnnouncement(turn.failure);
+  const readout =
+    correction === undefined
+      ? (interpretation ?? lastSearch(conversation.data.messages))
+      : { filters: correction };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex flex-col gap-1 border-b border-neutral-800 px-6 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-          <h1 className="truncate text-lg font-semibold text-neutral-100">
-            {conversationTitle(conversation.data)}
-          </h1>
-          <div className="flex shrink-0 items-center gap-2">
-            <label htmlFor="language" className="text-sm text-neutral-500">
-              Cards in
-            </label>
-            <select
-              id="language"
-              value={language}
-              onChange={event => {
-                const chosenLanguage = LANGUAGES.find(
-                  candidate => candidate.language === event.target.value
-                );
-
-                if (chosenLanguage !== undefined) {
-                  update.mutate({
-                    id: conversationId,
-                    patch: { language: chosenLanguage.language }
-                  });
-                }
-              }}
-              className={LANGUAGE_CLASS}>
-              {LANGUAGES.map(candidate => (
-                <option key={candidate.language} value={candidate.language}>
-                  {candidate.name}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="model" className="text-sm text-neutral-500">
-              Answered by
-            </label>
-            <select
-              id="model"
-              value={model}
-              onChange={event =>
-                update.mutate({
-                  id: conversationId,
-                  patch: { model: event.target.value }
-                })
-              }
-              className={LANGUAGE_CLASS}>
-              {missing ? <option value={model}>{model}</option> : null}
-              {(models.data ?? []).map(candidate => (
-                <option key={candidate.name} value={candidate.name}>
-                  {candidate.name}
-                  {limitation(candidate)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        {update.error === null ? null : (
-          <p role="alert" className="text-sm text-red-400">
-            {update.error.message}
-          </p>
-        )}
-        {missing ? (
-          <p role="alert" className="text-sm text-red-400">
-            {model} is not installed. Run ollama pull {model} to install it.
-          </p>
-        ) : null}
-        {chosen !== undefined && !chosen.supportsCompletion ? (
-          <p role="alert" className="text-sm text-red-400">
-            {chosen.name} cannot answer a turn.
-          </p>
-        ) : null}
-        {chosen?.supportsCompletion === true &&
-        chosen.supportsStructuredOutput === false ? (
-          <p className="text-sm text-neutral-500">
-            {chosen.name} cannot produce structured filters, so a request is
-            parsed from the prompt.
-          </p>
-        ) : null}
+      <header className="border-b border-neutral-800 px-6 py-4">
+        <h1 className="truncate text-lg font-semibold text-neutral-100">
+          {conversationTitle(conversation.data)}
+        </h1>
       </header>
       <section
         aria-label="Messages"
@@ -225,18 +166,16 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
       <Composer
         onSend={text => void send(text, { language, model })}
         running={isRunning}
-        announcement={isRunning ? runningAnnouncement(turn?.status) : undefined}
-        readout={
-          correction === undefined
-            ? (interpretation ?? lastSearch(conversation.data.messages))
-            : { filters: correction }
-        }
+        announcement={announcement}
+        readout={readout}
         onCorrect={correct}
-        failure={
-          turn?.failure === undefined
-            ? undefined
-            : failureAnnouncement(turn.failure)
-        }
+        failure={failure}
+        language={language}
+        model={model}
+        models={models.data}
+        settingsError={update.error?.message}
+        onLanguage={changeLanguage}
+        onModel={changeModel}
       />
     </div>
   );
@@ -252,38 +191,6 @@ interface MissingConversationProps {
  */
 const ASKING = 'asking';
 const ANSWERING = 'answering';
-
-/**
- * The languages a conversation can be in, each with the word the player reads
- * for it. The values are the domain's, so what the control sends is what the
- * search partitions the catalog by.
- */
-const LANGUAGES: { language: Language; name: string }[] = [
-  { language: Language.English, name: 'English' },
-  { language: Language.French, name: 'French' }
-];
-
-/**
- * A setting of the conversation rather than of the request: quiet text with the
- * platform's own caret, because the header is not the bench, and the two amber
- * fills a conversation already carries are the limit.
- */
-const LANGUAGE_CLASS =
-  'rounded bg-transparent pr-1 text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
-
-/**
- * What a model's own option says about it. A model that cannot answer a turn at
- * all is named as such rather than as one that only answers without a schema,
- * because that is the fact that matters when it is chosen, and the listing
- * reports both.
- */
-const limitation = (candidate: Model): string => {
-  if (!candidate.supportsCompletion) {
-    return ' (cannot answer)';
-  }
-
-  return candidate.supportsStructuredOutput ? '' : ' (no structured filters)';
-};
 
 /**
  * What the last stored search was understood as. A reply a turn stored keeps the

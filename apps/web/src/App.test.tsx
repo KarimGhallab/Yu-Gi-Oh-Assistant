@@ -673,13 +673,10 @@ describe('the chat', () => {
     await screen.findByRole('region', { name: 'Messages' });
     clearFocus();
 
-    // The first stop is the way past the sidebar, and then the way in is the
+    // The first stop is the way past the sidebar, and then the ways in are the
     // control that folds the list, the brand, the control that starts a
     // conversation, the conversation that is open and the two things that can be
-    // done to it, then the language the conversation is in and the model that
-    // answers, so the cards the answer suggested come next.
-    await userEvent.tab();
-    await userEvent.tab();
+    // done to it, so the cards the answer suggested come next.
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
@@ -696,6 +693,25 @@ describe('the chat', () => {
     await userEvent.tab();
 
     expect(screen.getByRole('link', { name: 'Dark Magician' })).toHaveFocus();
+
+    // The prompt comes after the conversation, because that is the order the
+    // surface is read in, and it holds everything the request is run with: the
+    // field, the language it is read in, the model that answers, and the Send.
+    await userEvent.tab();
+
+    expect(screen.getByRole('textbox', { name: 'Your request' })).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('combobox', { name: 'Cards in' })).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('combobox', { name: 'Answered by' })).toHaveFocus();
+
+    // The Send is out of the tab order while there is nothing to send, so the
+    // prompt's own controls are where the surface's stops end.
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
   it('sends what the player typed and shows it before the server confirms it', async () => {
@@ -730,6 +746,50 @@ describe('the chat', () => {
     expect(
       screen.getAllByText('A cheap way to stop my opponent attacking')
     ).toHaveLength(1);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('sends on Enter and writes a line on Shift+Enter', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, []))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+    const field = await screen.findByRole('textbox', { name: 'Your request' });
+
+    await userEvent.type(field, 'a dark monster');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+
+    // Shift+Enter is a line rather than a request, so nothing has gone out and
+    // the words, and the line, are still in the field.
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.anything()
+    );
+    expect(field).toHaveValue('a dark monster\n');
+
+    await userEvent.type(field, 'with no tribute');
+    await userEvent.keyboard('{Enter}');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          text: 'a dark monster\nwith no tribute',
+          language: 'en',
+          model: 'llama3.1:8b'
+        })
+      })
+    );
+    expect(field).toHaveValue('');
 
     await act(async () => {
       turn.close();
