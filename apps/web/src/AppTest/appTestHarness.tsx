@@ -101,6 +101,7 @@ export interface MessageFixture {
   content: string;
   filters?: CardFilter[];
   cards?: CardFixture[];
+  query?: string;
   createdAt: string;
 }
 

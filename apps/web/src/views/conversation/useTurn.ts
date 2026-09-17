@@ -49,6 +49,13 @@ interface TurnInFlight {
   pieces: string[];
   cards: SuggestedCard[];
   status?: TurnStatus;
+  /*
+   * The free text the search ran on, once this turn has reported it: the
+   * request rewritten into card wording. It belongs to the turn rather than to
+   * the readout, which keeps the last search past the end of its turn, so a
+   * question being asked never shows what the one before it was searched as.
+   */
+  query?: string;
   failure?: TurnFailure;
   running: boolean;
 }
@@ -257,6 +264,7 @@ export function useTurn(conversationId: string): UseTurnResult {
               // rather than read back from the stored turn, so what the readout
               // shows is right while the turn is still running. A status this
               // turn reported arrived just before it and is carried along.
+              change(current => ({ ...current, query: event.query }));
               setInterpretation(current => ({
                 filters: event.filters,
                 query: event.query,

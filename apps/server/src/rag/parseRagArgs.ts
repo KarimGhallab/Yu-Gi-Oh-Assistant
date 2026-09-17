@@ -30,9 +30,11 @@ export interface RagArgs {
   filters?: CardFilters;
   parse: boolean;
   answer: boolean;
+  filter: boolean;
   topK?: number;
   shown?: number;
   minScore?: number;
+  filterPool?: number;
   debug: boolean;
   json: boolean;
   help: boolean;
@@ -44,9 +46,11 @@ interface RagValues {
   filters?: string;
   'no-parse'?: boolean;
   'retrieve-only'?: boolean;
+  'no-filter'?: boolean;
   'top-k'?: string;
   shown?: string;
   'min-score'?: string;
+  'filter-pool'?: string;
   debug?: boolean;
   json?: boolean;
   help?: boolean;
@@ -58,9 +62,11 @@ const OPTIONS = {
   filters: { type: 'string' },
   'no-parse': { type: 'boolean' },
   'retrieve-only': { type: 'boolean' },
+  'no-filter': { type: 'boolean' },
   'top-k': { type: 'string' },
   shown: { type: 'string' },
   'min-score': { type: 'string' },
+  'filter-pool': { type: 'string' },
   debug: { type: 'boolean' },
   json: { type: 'boolean' },
   help: { type: 'boolean', short: 'h' }
@@ -90,9 +96,11 @@ export function parseRagArgs(argv: string[]): RagArgs {
     filters: toFilters(values.filters),
     parse: values['no-parse'] !== true,
     answer: values['retrieve-only'] !== true,
+    filter: values['no-filter'] !== true,
     topK: toCount(values['top-k'], '--top-k'),
     shown: toCount(values.shown, '--shown'),
     minScore: toNumber(values['min-score'], '--min-score'),
+    filterPool: toCount(values['filter-pool'], '--filter-pool'),
     debug: values.debug === true,
     json: values.json === true,
     help: values.help === true

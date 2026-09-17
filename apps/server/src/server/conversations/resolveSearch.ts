@@ -1,4 +1,4 @@
-import type { CardFilters } from '@ygo-assistant/cards';
+import type { CardFilters, Language } from '@ygo-assistant/cards';
 import { TurnStatus } from '@ygo-assistant/contracts';
 import {
   ParseOutcome,
@@ -31,6 +31,7 @@ export interface SearchInput {
   text: string;
   model: string;
   supportsStructuredOutput: boolean;
+  language: Language;
   editedFilters?: CardFilters;
   /** Only carried to correlate the trace; a caller without a conversation omits it. */
   conversationId?: string;
@@ -60,7 +61,8 @@ export async function resolveSearch(
     client: dependencies.ollama,
     model: input.model,
     supportsStructuredOutput: input.supportsStructuredOutput,
-    request: input.text
+    request: input.text,
+    language: input.language
   });
   const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
 
@@ -68,7 +70,8 @@ export async function resolveSearch(
     conversationId: input.conversationId,
     outcome: parse.outcome,
     filters: filters.length,
-    query: parse.query !== undefined
+    originalQuery: input.text,
+    rephrasedQuery: parse.query ?? ''
   });
 
   const search: TurnSearch = {

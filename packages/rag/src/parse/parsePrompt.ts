@@ -1,12 +1,19 @@
-import type { FilterFieldVocabulary } from '@ygo-assistant/cards';
+import type { FilterFieldVocabulary, Language } from '@ygo-assistant/cards';
+
+import { languageName } from '../languageName.js';
+import { phrasingSamples } from './phrasingSamples.js';
 
 /**
- * The instruction a parsing model is given: the answer shape it must produce
- * and the vocabulary it may draw on. The vocabulary is rendered from the filter
- * schema, so the prompt never lists a field or operator the schema would reject
- * and never misses one it accepts.
+ * The instruction a parsing model is given: the answer shape it must produce,
+ * the vocabulary it may draw on, and the language and wording the free text has
+ * to be in. The vocabulary is rendered from the filter schema, so the prompt
+ * never lists a field or operator the schema would reject and never misses one
+ * it accepts.
  */
-export function buildParsePrompt(vocabulary: FilterFieldVocabulary[]): string {
+export function buildParsePrompt(
+  vocabulary: FilterFieldVocabulary[],
+  language: Language
+): string {
   return [
     'You turn a Yu-Gi-Oh card request into a JSON object for a card search.',
     '',
@@ -18,10 +25,17 @@ export function buildParsePrompt(vocabulary: FilterFieldVocabulary[]): string {
     '',
     'Add a filter only when the request itself asks for it, and leave out every field the request does not mention. A vague request is a query with no filters, never a guess.',
     '',
+    'Every filter must hold at once, so alternatives a request allows, such as a Spell or a Trap, belong in the query and never in two filters on the same field: two equality filters on one field match nothing.',
+    '',
+    `Rewrite the request into the query using the wording a Yu-Gi-Oh card uses, because the cards the search must match are written that way, and write it in ${languageName(language)}. Cards of every kind are written like this:`,
+    ...phrasingSamples(language).map(sample => `- ${sample}`),
+    '',
+    'A rewrite in that register says things like "add 1 Spell from your GY to your hand" where the request said "get a spell back from the graveyard". Keep every card the request asks for, and do not copy the examples themselves.',
+    '',
     'The fields you may filter on, with the operators each takes and the value each accepts:',
     ...vocabulary.map(describeField),
     '',
-    'Use only the fields, operators, and values above. Prefer the few constraints you are certain of over the ones you are guessing at, and keep the request wording in the query.'
+    'Use only the fields, operators, and values above. Prefer the few constraints you are certain of over the ones you are guessing at.'
   ].join('\n');
 }
 

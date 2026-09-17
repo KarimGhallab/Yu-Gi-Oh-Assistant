@@ -19,6 +19,10 @@ export enum MessageRole {
  * the cards it suggested are absent on a message that carried neither, such as
  * the player's own. The cards are resolved from the ids the turn stored, so a
  * client renders a stored turn without knowing an id was ever involved.
+ *
+ * A player's message carries the free text its turn searched on, which is the
+ * request rewritten into card wording when the parse rewrote it, and absent when
+ * the search ran on the player's own words.
  */
 export const messageSchema = z.object({
   id: idSchema,
@@ -27,6 +31,7 @@ export const messageSchema = z.object({
   content: z.string().min(1),
   filters: cardFiltersSchema.optional(),
   cards: z.array(cardSchema).optional(),
+  query: z.string().min(1).optional(),
   createdAt: z.iso.datetime()
 });
 

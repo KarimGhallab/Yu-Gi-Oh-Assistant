@@ -209,6 +209,35 @@ describe('app store messages', () => {
     expect(messages[0].cardIds).toEqual([]);
   });
 
+  it('attaches the free text a turn searched on to the message it answered', async () => {
+    const conversation = await createConversation();
+    const asked = await store.messages.append({
+      conversationId: conversation.id,
+      role: MessageRole.User,
+      content: 'a card that gets a spell back from the graveyard'
+    });
+
+    expect(asked.query).toBeUndefined();
+
+    await store.messages.setQuery(
+      asked.id,
+      'add 1 Spell from your GY to your hand'
+    );
+
+    const messages = await store.messages.list(conversation.id);
+
+    expect(messages[0].query).toBe('add 1 Spell from your GY to your hand');
+  });
+
+  it('refuses to attach a query to a message that does not exist', async () => {
+    await expect(
+      store.messages.setQuery(
+        'f0000000-0000-4000-8000-000000000000',
+        'anything'
+      )
+    ).rejects.toThrow(/No message has id/);
+  });
+
   it('keeps the messages of one conversation out of another', async () => {
     const first = await createConversation();
     const second = await createConversation();

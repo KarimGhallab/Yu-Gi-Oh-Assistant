@@ -70,6 +70,14 @@ const MIGRATIONS: Migration[] = [
       )`,
       `CREATE INDEX messages_by_conversation ON messages (conversation_id)`
     ]
+  },
+  {
+    id: 4,
+    name: 'message-query',
+    // The free text a turn's search actually ran on, when the parse rewrote the
+    // request. It is written after the user message is appended, because it is
+    // not known until the parse has run, so it arrives as a later column.
+    statements: [`ALTER TABLE messages ADD COLUMN query TEXT`]
   }
 ];
 

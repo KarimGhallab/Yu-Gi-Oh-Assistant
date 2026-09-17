@@ -14,7 +14,6 @@ const ANSWER_RULE = '-'.repeat(60);
 export class RagReporter {
   private readonly _startedAt = performance.now();
   private _stageStartedAt = performance.now();
-  private _shown = 0;
   private _answering = false;
 
   constructor(private readonly _json: boolean) {}
@@ -27,8 +26,6 @@ export class RagReporter {
     shown: number;
     minScore: number;
   }): void {
-    this._shown = header.shown;
-
     if (this._json) {
       this._print(JSON.stringify({ type: 'header', ...header }));
       return;
@@ -53,6 +50,10 @@ export class RagReporter {
     }
     if (event.type === 'ranked') {
       this._printRanked(event.ranked);
+      return;
+    }
+    if (event.type === 'selected') {
+      this._printSelected(event);
       return;
     }
 
@@ -93,12 +94,35 @@ export class RagReporter {
 
   private _printRanked(ranked: RankedCard[]): void {
     this._print('');
-    this._print(
-      `Retrieval (${this._takeStage()}s)    ${ranked.length} ranked, ${Math.min(this._shown, ranked.length)} shown`
-    );
+    this._print(`Retrieval (${this._takeStage()}s)    ${ranked.length} ranked`);
 
     for (const candidate of ranked) {
       this._print(`  ${describeRanked(candidate)}`);
+    }
+  }
+
+  private _printSelected(
+    event: Extract<RagQueryEvent, { type: 'selected' }>
+  ): void {
+    const seconds = this._takeStage();
+    this._print('');
+
+    if (event.pool === 0) {
+      this._print(`Filter (${seconds}s)    not asked: nothing to judge`);
+      return;
+    }
+    if (event.fellBack) {
+      this._print(
+        `Filter (${seconds}s)    the judgement failed, the ranking stands: ${event.cards.length} kept`
+      );
+    } else {
+      this._print(
+        `Filter (${seconds}s)    ${event.pool} judged, ${event.cards.length} kept`
+      );
+    }
+
+    for (const card of event.cards) {
+      this._print(`  ${card.name}`);
     }
   }
 

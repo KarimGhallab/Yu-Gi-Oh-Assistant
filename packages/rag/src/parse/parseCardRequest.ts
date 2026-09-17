@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   type FilterFieldVocabulary,
+  type Language,
   describeFilterFields
 } from '@ygo-assistant/cards';
 import {
@@ -16,6 +17,7 @@ import {
   type ParseResult,
   type ParsedRequest
 } from '../types.js';
+import { dropContradictions } from './dropContradictions.js';
 import { buildParsePrompt, buildRepairPrompt } from './parsePrompt.js';
 import {
   type ParseResponse,
@@ -50,7 +52,7 @@ export async function parseCardRequest(
   options: ParseCardRequestOptions
 ): Promise<ParseResult> {
   const vocabulary = describeFilterFields();
-  const messages = buildMessages(options.request, vocabulary);
+  const messages = buildMessages(options.request, vocabulary, options.language);
 
   const answer = await askTheModel(options, messages);
   const payload = readJson(answer);
@@ -118,10 +120,11 @@ async function askTheModel(
 
 function buildMessages(
   request: string,
-  vocabulary: FilterFieldVocabulary[]
+  vocabulary: FilterFieldVocabulary[],
+  language: Language
 ): ChatMessage[] {
   return [
-    { role: ChatRole.System, content: buildParsePrompt(vocabulary) },
+    { role: ChatRole.System, content: buildParsePrompt(vocabulary, language) },
     { role: ChatRole.User, content: request }
   ];
 }
@@ -154,7 +157,7 @@ function readJson(content: string): unknown {
 function toParsedRequest(response: ParseResponse): ParsedRequest {
   return {
     outcome: ParseOutcome.Parsed,
-    filters: response.filters ?? [],
+    filters: dropContradictions(response.filters ?? []),
     query: toQuery(response.query)
   };
 }

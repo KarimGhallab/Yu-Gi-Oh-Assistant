@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T18:15:00.000Z",
+  "generatedAt": "2026-09-17T20:54:46.000Z",
   "title": "Design System: Yu-Gi-Oh Assistant",
   "extensions": {
     "colorMeta": {
@@ -356,6 +356,14 @@
       "description": "The first thing focus finds on a conversation, so the keyboard is not walked down the whole conversation list. Hidden until it holds focus, then a Bench Slate panel over the frame.",
       "html": "<a class=\"ds-skip\" href=\"#conversation\">Skip to the conversation</a>",
       "css": ".ds-skip { position: absolute; left: 16px; top: 16px; z-index: 10; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-radius: 4px; background: oklch(20.5% 0 none); padding: 8px 12px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; } .ds-skip:focus-visible { width: auto; height: auto; clip-path: none; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Searched As",
+      "kind": "caption",
+      "refersTo": "message-searched-as",
+      "description": "The words a request was searched with, when the parse rewrote it into card wording rather than searching the player's own. Pointing at the turn, the name and the request together, is the only thing that shows it: there is no control to press, and nothing keeps it once the pointer leaves. It is out of the layout while it is hidden, so its arrival moves what follows it, and it stays in the page while it is out of the way, so a reader that cannot point at it is told it with the request.",
+      "html": "<div class=\"ds-message-turn\"><p class=\"ds-message-label\">You</p><p class=\"ds-message-prose\">A card that lets me get a spell back</p><div class=\"ds-searched-as-block\"><p class=\"ds-searched-as-label\">Searched as</p><p class=\"ds-searched-as\">add 1 Spell from your GY to your hand</p></div></div>",
+      "css": ".ds-message-turn { display: flex; flex-direction: column; gap: 4px; } .ds-message-label { margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; color: oklch(70.8% 0 none); } .ds-message-prose { margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; color: oklch(70.8% 0 none); } .ds-searched-as-block { display: flex; flex-direction: column; gap: 4px; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .ds-searched-as-label, .ds-searched-as { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-searched-as-label { color: oklch(55.6% 0 none); } .ds-searched-as { color: oklch(70.8% 0 none); white-space: pre-wrap; } .ds-message-turn:hover .ds-searched-as-block { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }"
     }
   ],
   "narrative": {

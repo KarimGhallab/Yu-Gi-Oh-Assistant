@@ -16,11 +16,13 @@ describe('parseRagArgs', () => {
     expect(args.language).toBe(Language.English);
     expect(args.parse).toBe(true);
     expect(args.answer).toBe(true);
+    expect(args.filter).toBe(true);
     expect(args.model).toBeUndefined();
     expect(args.filters).toBeUndefined();
     expect(args.topK).toBeUndefined();
     expect(args.shown).toBeUndefined();
     expect(args.minScore).toBeUndefined();
+    expect(args.filterPool).toBeUndefined();
     expect(args.debug).toBe(false);
     expect(args.json).toBe(false);
     expect(args.help).toBe(false);
@@ -43,8 +45,11 @@ describe('parseRagArgs', () => {
       '3',
       '--min-score',
       '0.25',
+      '--filter-pool',
+      '30',
       '--retrieve-only',
       '--no-parse',
+      '--no-filter',
       '--debug',
       '--json'
     ]);
@@ -54,8 +59,10 @@ describe('parseRagArgs', () => {
     expect(args.topK).toBe(10);
     expect(args.shown).toBe(3);
     expect(args.minScore).toBe(0.25);
+    expect(args.filterPool).toBe(30);
     expect(args.answer).toBe(false);
     expect(args.parse).toBe(false);
+    expect(args.filter).toBe(false);
     expect(args.debug).toBe(true);
     expect(args.json).toBe(true);
   });

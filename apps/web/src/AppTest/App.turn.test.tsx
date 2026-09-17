@@ -195,6 +195,47 @@ describe('running a turn', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows what a request was searched as, on the request itself', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, []))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp(`/c/${uuid(2)}`);
+    await send('A card that lets me get a spell back');
+
+    await arrives(turn, {
+      type: TurnEventName.TurnStart,
+      userMessageId: uuid(11)
+    });
+    await arrives(turn, {
+      type: TurnEventName.Filters,
+      filters: [],
+      query: 'add 1 Spell from your GY to your hand'
+    });
+
+    // The words the search ran on stay with the request they answered, out of
+    // the way until the request is pointed at. There is nothing to press: the
+    // pointer is what shows them, and nothing keeps them once it leaves.
+    expect(
+      screen.queryByRole('button', { name: 'Searched as' })
+    ).not.toBeInTheDocument();
+
+    const caption = screen.getByText('Searched as');
+    expect(caption.parentElement).toHaveClass('sr-only');
+    expect(caption.parentElement).toHaveClass('group-hover:not-sr-only');
+    expect(
+      screen.getByText('add 1 Spell from your GY to your hand')
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
   it('replaces the turn it built with the one the server stored', async () => {
     const turn = turnStream();
     let title: string | null = null;

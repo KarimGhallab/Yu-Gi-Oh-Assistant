@@ -1,14 +1,6 @@
 import { type Card, Language } from '@ygo-assistant/cards';
 
-/**
- * How a language is named in the prompt. The model is told the language to
- * answer in by name, because leaving it to read the request's language is not
- * something a small model does reliably.
- */
-const LANGUAGE_NAMES: Record<Language, string> = {
-  [Language.English]: 'English',
-  [Language.French]: 'French'
-};
+import { languageName } from '../languageName.js';
 
 /**
  * The instruction a grounded answer is written from: the only cards the answer
@@ -23,7 +15,7 @@ export function buildAnswerPrompt(cards: Card[], language: Language): string {
     'The cards the search found:',
     ...cards.map(describeCard),
     '',
-    `Answer the request that follows in ${LANGUAGE_NAMES[language]}. Mention no card that is not listed above, and say why each card you recommend matches the request.`
+    `Answer the request that follows in ${languageName(language)}. Mention no card that is not listed above, and say why each card you recommend matches the request.`
   ].join('\n');
 }
 

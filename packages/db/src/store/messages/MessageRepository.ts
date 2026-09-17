@@ -16,7 +16,7 @@ import type {
 import { MessageRole } from '../types.js';
 
 const COLUMNS =
-  'id, conversation_id, role, content, filters_json, card_ids_json, created_at';
+  'id, conversation_id, role, content, filters_json, card_ids_json, query, created_at';
 
 const cardIdsSchema = z.array(z.number().int().positive());
 
@@ -65,6 +65,16 @@ export class MessageRepository implements IMessageRepository {
       .all(conversationId);
 
     return rows.map(row => toMessage(row));
+  }
+
+  async setQuery(messageId: string, query: string): Promise<void> {
+    const result = this._database
+      .prepare('UPDATE messages SET query = ? WHERE id = ?')
+      .run(query, messageId);
+
+    if (Number(result.changes) === 0) {
+      throw new NotFoundError(`No message has id ${messageId}`);
+    }
   }
 }
 
@@ -144,6 +154,7 @@ function toMessage(row: Record<string, unknown>): Message {
     content: toString(row.content, 'content'),
     filters: toFilters(row.filters_json),
     cardIds: toCardIds(row.card_ids_json),
+    query: toOptionalString(row.query, 'query') ?? undefined,
     createdAt: toString(row.created_at, 'created_at')
   };
 }

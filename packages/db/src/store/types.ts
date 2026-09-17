@@ -46,7 +46,8 @@ export interface UpdateConversationInput {
 /**
  * A stored message. The parsed filters and the suggested card ids are filled by
  * the turn that produced the reply, so a message that carried neither has
- * neither.
+ * neither. A user message carries the free text the turn searched on when the
+ * parse rewrote it, which is written once the turn has worked it out.
  */
 export interface Message {
   id: string;
@@ -55,6 +56,7 @@ export interface Message {
   content: string;
   filters?: CardFilters;
   cardIds?: number[];
+  query?: string;
   createdAt: string;
 }
 
@@ -85,11 +87,14 @@ export interface IConversationRepository {
 
 /**
  * Reads and appends the messages of a conversation, in the order they were
- * written. Appending is the seam the turn writes through.
+ * written. Appending is the seam the turn writes through. The query a turn
+ * searched on is set after the message exists, because the parse that produces
+ * it runs after the player's message has been appended.
  */
 export interface IMessageRepository {
   append(input: AppendMessageInput): Promise<Message>;
   list(conversationId: string): Promise<Message[]>;
+  setQuery(messageId: string, query: string): Promise<void>;
 }
 
 /**

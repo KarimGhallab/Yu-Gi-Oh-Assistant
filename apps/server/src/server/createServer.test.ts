@@ -60,7 +60,10 @@ const storeStub: IAppStore = {
     append: async () => {
       throw new Error('These tests never store a message');
     },
-    list: async () => []
+    list: async () => [],
+    setQuery: async () => {
+      throw new Error('These tests never store a query');
+    }
   },
   close: async () => {}
 };

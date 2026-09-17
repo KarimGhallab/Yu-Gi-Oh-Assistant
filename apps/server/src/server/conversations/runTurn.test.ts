@@ -105,6 +105,15 @@ const CREATED_IDS: Card[] = [
 ];
 
 /**
+ * What the filter answers when a test is not about the judgement: every card
+ * the index holds, so what a turn shows is the ranking's own top.
+ */
+const KEEP_EVERYTHING: ChatChunk = {
+  content: JSON.stringify({ keep: CREATED_IDS.map(card => card.id) }),
+  done: true
+};
+
+/**
  * One vector per seeded card. The first is the best match for a request, so the
  * card shown for a search is predictable; the French one is deliberately a worse
  * match than the English one, so a search that ignored the language and returned
@@ -247,6 +256,10 @@ describe('turn routes', () => {
       embeddings: [QUERY_VECTOR],
       chatResponses: [
         ...answers.map(answer => [{ content: answer, done: true }]),
+        // The filter judges the search's candidates between the parse and the
+        // answer. A test that is not about the judgement keeps every seeded
+        // card, so what is shown is the ranking's own top, as before.
+        [KEEP_EVERYTHING],
         prose
       ]
     });
@@ -450,9 +463,9 @@ describe('turn routes', () => {
     expect(client.embeddedInputs).toEqual([[REQUEST]]);
     expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
     expect(answerText(frames)).toBe('Blue-Eyes fits.');
-    // The two parse attempts, then the answer: a parse that degrades costs one
-    // extra call and never the turn.
-    expect(client.chatRequests).toHaveLength(3);
+    // The two parse attempts, the judgement, then the answer: a parse that
+    // degrades costs one extra call and never the turn.
+    expect(client.chatRequests).toHaveLength(4);
   });
   it('stores what it searched when the parse gave up', async () => {
     const client = createClient(['not JSON', 'still not JSON']);
@@ -478,6 +491,80 @@ describe('turn routes', () => {
       filters: [],
       cards: [{ id: CREATED_IDS[0]?.id, name: 'Blue-Eyes White Dragon' }]
     });
+    // The search ran on the player's own words, so there is no rewrite to keep.
+    expect(conversation.messages[0]?.query).toBeUndefined();
+  });
+
+  it('keeps the free text the parse rewrote the request into', async () => {
+    const client = createClient(PARSE_ANSWER);
+    const conversationId = await startConversation();
+
+    await runTurn(client, conversationId);
+
+    const response = await app(client).request(
+      `/api/conversations/${conversationId}`
+    );
+    const conversation = conversationWithMessagesSchema.parse(
+      await response.json()
+    );
+
+    expect(conversation.messages[0]).toMatchObject({
+      role: 'user',
+      content: REQUEST,
+      query: 'banish cards'
+    });
+  });
+
+  it('shows the cards the judgement kept', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [
+        [{ content: PARSE_ANSWER, done: true }],
+        [
+          {
+            content: JSON.stringify({ keep: [CREATED_IDS[1]?.id] }),
+            done: true
+          }
+        ],
+        PROSE
+      ]
+    });
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId);
+
+    // The search ranked Blue-Eyes first; the judgement kept Luster Dragon, and
+    // that is what the turn shows.
+    expect(shownCardNames(frames)).toEqual(['Luster Dragon']);
+  });
+
+  it('falls back to the search own ranking when the judgement fails', async () => {
+    const client = new FakeOllamaClient({
+      models: [CHAT_MODEL_CAPABILITY],
+      embeddings: [QUERY_VECTOR],
+      chatResponses: [
+        [{ content: PARSE_ANSWER, done: true }],
+        [{ content: 'I would keep Blue-Eyes.', done: true }],
+        PROSE
+      ]
+    });
+    const conversationId = await startConversation();
+
+    const frames = await runTurn(client, conversationId);
+
+    expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
+  });
+
+  it('judges the candidates against the request the player wrote', async () => {
+    const client = createClient(PARSE_ANSWER);
+
+    await runTurn(client, await startConversation());
+
+    // The parse rewrote the request into "banish cards"; what a card has to
+    // answer is what the player asked for, so that is what the judgement reads.
+    expect(client.chatRequests[1]?.messages[1]?.content).toBe(REQUEST);
+    expect(client.chatRequests[1]?.format).toBeDefined();
   });
 
   it('searches the language the conversation is in', async () => {
@@ -496,15 +583,18 @@ describe('turn routes', () => {
 
     await runTurn(client, await startConversation());
 
-    // The capability reaches the parse as a schema and never reaches the answer,
-    // which is prose; this is what reading the model's capability buys.
-    expect(client.chatRequests).toHaveLength(2);
+    // The capability reaches the parse and the judgement as a schema and never
+    // reaches the answer, which is prose; this is what reading the model's
+    // capability buys.
+    expect(client.chatRequests).toHaveLength(3);
     expect(client.chatRequests[0]?.model).toBe(CHAT_MODEL);
     expect(client.chatRequests[0]?.format).toBeDefined();
     expect(client.chatRequests[0]?.temperature).toBe(0);
-    expect(client.chatRequests[1]?.format).toBeUndefined();
+    expect(client.chatRequests[1]?.format).toBeDefined();
     expect(client.chatRequests[1]?.temperature).toBe(0);
-    expect(client.chatRequests[1]?.messages[0]?.content).toContain(
+    expect(client.chatRequests[2]?.format).toBeUndefined();
+    expect(client.chatRequests[2]?.temperature).toBe(0);
+    expect(client.chatRequests[2]?.messages[0]?.content).toContain(
       CREATED_IDS[0]?.name
     );
   });
@@ -520,7 +610,7 @@ describe('turn routes', () => {
     const client = new FakeOllamaClient({
       models: [CHAT_MODEL_CAPABILITY],
       embeddings: [QUERY_VECTOR],
-      chatResponses: [PROSE]
+      chatResponses: [[KEEP_EVERYTHING], PROSE]
     });
     const conversationId = await startConversation();
 
@@ -529,9 +619,9 @@ describe('turn routes', () => {
       filters: dark
     });
 
-    // Only the answer: an edited filter set is what the parse would have said,
-    // so there is nothing left to parse.
-    expect(client.chatRequests).toHaveLength(1);
+    // The judgement and the answer: an edited filter set is what the parse would
+    // have said, so there is nothing left to parse.
+    expect(client.chatRequests).toHaveLength(2);
     expect(statusEvents(frames)).toEqual([]);
     expect(filtersEvents(frames)).toEqual([
       { type: TurnEventName.Filters, filters: dark, query: REQUEST }
@@ -546,7 +636,7 @@ describe('turn routes', () => {
     const client = new FakeOllamaClient({
       models: [CHAT_MODEL_CAPABILITY],
       embeddings: [QUERY_VECTOR],
-      chatResponses: [PROSE]
+      chatResponses: [[KEEP_EVERYTHING], PROSE]
     });
     const conversationId = await startConversation();
 
@@ -555,7 +645,7 @@ describe('turn routes', () => {
       filters: []
     });
 
-    expect(client.chatRequests).toHaveLength(1);
+    expect(client.chatRequests).toHaveLength(2);
     expect(filtersEvents(frames)).toEqual([
       { type: TurnEventName.Filters, filters: [], query: REQUEST }
     ]);
@@ -594,6 +684,7 @@ describe('turn routes', () => {
     });
 
     expect(client.chatRequests.map(request => request.model)).toEqual([
+      chosen.name,
       chosen.name,
       chosen.name
     ]);
@@ -729,12 +820,13 @@ describe('turn routes', () => {
       embeddings: [QUERY_VECTOR],
       chatResponses: [
         [{ content: PARSE_ANSWER, done: true }],
+        [KEEP_EVERYTHING],
         [
           { content: 'Blue-Eyes ', done: false },
           { content: 'fits', done: false }
         ]
       ],
-      chatFailures: [undefined, new OllamaUnreachableError(BASE_URL)]
+      chatFailures: [undefined, undefined, new OllamaUnreachableError(BASE_URL)]
     });
     const { logger, records } = createRecordingLogger();
     const conversationId = await startConversation();
@@ -776,7 +868,11 @@ describe('turn routes', () => {
     const client = new FakeOllamaClient({
       models: [CHAT_MODEL_CAPABILITY],
       embeddings: [QUERY_VECTOR],
-      chatResponses: [[{ content: PARSE_ANSWER, done: true }], []]
+      chatResponses: [
+        [{ content: PARSE_ANSWER, done: true }],
+        [KEEP_EVERYTHING],
+        []
+      ]
     });
     const { logger, records } = createRecordingLogger();
     const conversationId = await startConversation();

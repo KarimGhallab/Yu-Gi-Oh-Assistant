@@ -40,9 +40,11 @@ Options:
   --filters <json>    Use these filters as they stand instead of parsing
   --no-parse          Search the request as free text, with no parse
   --retrieve-only     Stop after retrieval, without asking for an answer
+  --no-filter        Show the search's own top cards, with no model judgement
   --top-k <n>         Candidates retrieval may return (default: configured)
-  --shown <n>         Cards the answer may mention (default: configured)
+  --shown <n>         Cards a turn may show (default: configured)
   --min-score <n>     Lowest similarity retrieval keeps (default: configured)
+  --filter-pool <n>   Candidates the model judges (default: configured)
   --debug             Log at debug level
   --json              Write one JSON line per event
   -h, --help          Show this message
@@ -117,9 +119,11 @@ async function main(): Promise<void> {
     editedFilters: args.filters,
     parse: args.parse,
     answer: args.answer,
+    filter: args.filter,
     topK: args.topK ?? config.retrieval.topK,
     shown: args.shown ?? config.retrieval.shown,
-    minScore: args.minScore ?? config.retrieval.minScore
+    minScore: args.minScore ?? config.retrieval.minScore,
+    filterPool: args.filterPool ?? config.retrieval.filterPool
   };
 
   const reporter = new RagReporter(args.json);

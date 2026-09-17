@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { CardFilterField, CardType, FrameType } from '@ygo-assistant/cards';
+import {
+  CardFilterField,
+  CardType,
+  FrameType,
+  Language
+} from '@ygo-assistant/cards';
 import {
   type ChatChunk,
   type ChatRequest,
@@ -54,7 +59,8 @@ const parseAnswers = async (
     client: model.client,
     model: MODEL,
     supportsStructuredOutput,
-    request: REQUEST
+    request: REQUEST,
+    language: Language.English
   });
 
   return { result, model };
@@ -107,6 +113,24 @@ describe('parseCardRequest', () => {
       outcome: ParseOutcome.Parsed,
       filters: [],
       query: undefined
+    });
+  });
+
+  it('drops equality filters on one field that cannot hold at once', async () => {
+    const { result } = await parse(
+      json({
+        filters: [
+          { field: 'type', operator: 'eq', value: CardType.SpellCard },
+          { field: 'type', operator: 'eq', value: CardType.TrapCard }
+        ],
+        query: 'add 1 Spell or Trap from your GY to your hand'
+      })
+    );
+
+    expect(result).toEqual({
+      outcome: ParseOutcome.Parsed,
+      filters: [],
+      query: 'add 1 Spell or Trap from your GY to your hand'
     });
   });
 
@@ -191,7 +215,8 @@ describe('parseCardRequest', () => {
       client: model.client,
       model: MODEL,
       supportsStructuredOutput: true,
-      request
+      request,
+      language: Language.English
     });
 
     expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: request });
@@ -212,7 +237,8 @@ describe('parseCardRequest', () => {
         client,
         model: MODEL,
         supportsStructuredOutput: true,
-        request: REQUEST
+        request: REQUEST,
+        language: Language.English
       })
     ).rejects.toThrow('the model server is unreachable');
   });
@@ -356,7 +382,8 @@ describe('parseCardRequest repair', () => {
       client,
       model: MODEL,
       supportsStructuredOutput: false,
-      request: REQUEST
+      request: REQUEST,
+      language: Language.English
     });
 
     expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: REQUEST });

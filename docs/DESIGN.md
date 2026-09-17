@@ -94,6 +94,12 @@ components:
   message-prose:
     textColor: '{colors.ink}'
     typography: '{typography.body}'
+  message-searched-as-label:
+    textColor: '{colors.ink-faint}'
+    typography: '{typography.mono}'
+  message-searched-as:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
   composer-field:
     backgroundColor: '{colors.surface-panel}'
     textColor: '{colors.ink}'
@@ -569,6 +575,16 @@ level deep.
   the words it fell back on. It is not a second live region: the status line is
   what announces a turn, and the readout is what is left on screen once the turn
   is over.
+- **Searched as:** the words a request was searched with, when the parse rewrote
+  it into card wording rather than searching the player's own. It sits under the
+  request it answered, in the readout's 12px mono, and pointing at the turn, the
+  name and the request together, is the only thing that shows it: there is no
+  control to press, and nothing keeps it once the pointer leaves. It is kept out
+  of the layout while it is hidden,
+  which is what its arrival costs, and it stays in the page whether or not it is
+  in front of you, so a reader that cannot point at it is told it with the
+  request rather than never. A request whose search ran on the player's own words
+  has nothing to show: the readout already says it was searched as written.
 - **A filter being corrected or added:** the readout becomes the controls that
   say it: the field it constrains, then the operator and the value, gathered the
   way that field takes them, a fixed set where the domain has one and a number

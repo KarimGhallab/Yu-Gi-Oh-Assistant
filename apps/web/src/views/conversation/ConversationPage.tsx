@@ -124,11 +124,19 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
       key: message.id,
       role: message.role,
       content: message.content,
-      cards: message.cards
+      cards: message.cards,
+      query: message.query
     })),
     ...(turn === undefined || turn.question.length === 0 || askingTwice
       ? []
-      : [{ key: ASKING, role: MessageRole.User, content: turn.question }]),
+      : [
+          {
+            key: ASKING,
+            role: MessageRole.User,
+            content: turn.question,
+            query: turn.query === turn.question ? undefined : turn.query
+          }
+        ]),
     // The answer's turn stands from the moment the turn runs, before it has said
     // anything: that is what makes the region its pieces arrive in a live region
     // rather than one the screen reader meets already full.

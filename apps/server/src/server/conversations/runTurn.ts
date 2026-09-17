@@ -5,7 +5,7 @@ import {
   TurnStage
 } from '@ygo-assistant/contracts';
 import { MessageRole } from '@ygo-assistant/db';
-import { retrieveCards } from '@ygo-assistant/rag';
+import { ParseOutcome, retrieveCards, selectCards } from '@ygo-assistant/rag';
 import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
 
 import type { ServerDependencies } from '../types.js';
@@ -60,6 +60,8 @@ export async function* runTurn(
   try {
     const search: TurnSearch = await resolveSearch(dependencies, input);
 
+    await storeQuery(dependencies, input, search);
+
     if (search.status !== undefined) {
       yield { type: TurnEventName.Status, status: search.status };
     }
@@ -83,14 +85,24 @@ export async function* runTurn(
         minScore: dependencies.config.retrieval.minScore
       }
     });
-    const cards = ranked
-      .slice(0, dependencies.config.retrieval.shown)
-      .map(rankedCard => rankedCard.card);
+    const selection = await selectCards({
+      client: dependencies.ollama,
+      model,
+      supportsStructuredOutput: input.supportsStructuredOutput,
+      request: text,
+      ranked,
+      pool: dependencies.config.retrieval.filterPool,
+      shown: dependencies.config.retrieval.shown,
+      filter: true
+    });
+    const cards = selection.cards;
 
-    dependencies.logger.debug('Cards retrieved', {
+    dependencies.logger.debug('Cards selected', {
       conversationId: input.conversationId,
       retrieved: ranked.length,
-      shown: cards.length
+      pool: selection.pool,
+      shown: cards.length,
+      fellBack: selection.fellBack
     });
 
     yield { type: TurnEventName.Cards, cards };
@@ -140,6 +152,40 @@ export async function* runTurn(
       stage,
       message: failureMessage(error)
     };
+  }
+}
+
+/**
+ * Keeps the free text the turn's search actually ran on. The parse is the only
+ * stage that rewrites the request, so a parse that produced nothing usable, and
+ * every path that skipped the parse, leave the message with the player's own
+ * words and nothing else. A store that will not take it is worth a warning
+ * rather than a failed turn: the search has already run, and the rewrite is only
+ * how the player gets to see what it ran on.
+ */
+async function storeQuery(
+  dependencies: ServerDependencies,
+  input: TurnInput,
+  search: TurnSearch
+): Promise<void> {
+  if (
+    search.outcome !== ParseOutcome.Parsed ||
+    search.text === undefined ||
+    search.text === input.text
+  ) {
+    return;
+  }
+
+  try {
+    await dependencies.store.messages.setQuery(
+      input.userMessageId,
+      search.text
+    );
+  } catch (error) {
+    dependencies.logger.warn('The rewritten query could not be stored', {
+      conversationId: input.conversationId,
+      message: describeError(error)
+    });
   }
 }
 

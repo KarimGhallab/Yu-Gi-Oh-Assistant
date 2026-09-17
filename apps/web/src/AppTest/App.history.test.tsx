@@ -26,6 +26,36 @@ describe('reading a conversation', () => {
     vi.unstubAllGlobals();
   });
 
+  it('keeps what a stored request was searched as with the request', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(() =>
+        json(
+          withMessages(GRAVEYARD, [
+            said(11, 'user', 'A card that lets me get a spell back', {
+              query: 'add 1 Spell from your GY to your hand'
+            }),
+            assistantMessage(12, 'Try Magical Stone Excavation', [
+              DARK_MAGICIAN
+            ])
+          ])
+        )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const caption = await screen.findByText('Searched as');
+
+    expect(caption.parentElement).toHaveClass('sr-only');
+    expect(
+      screen.getByText('add 1 Spell from your GY to your hand')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Searched as' })
+    ).not.toBeInTheDocument();
+  });
+
   it('opens a conversation on what was said in it, in the order it was said', async () => {
     vi.stubGlobal(
       'fetch',

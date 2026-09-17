@@ -1,7 +1,7 @@
-import type { CardFilters, Language } from '@ygo-assistant/cards';
+import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
 import type { TurnStatus } from '@ygo-assistant/contracts';
 import type { ParseOutcome, RankedCard } from '@ygo-assistant/rag';
-import { retrieveCards } from '@ygo-assistant/rag';
+import { retrieveCards, selectCards } from '@ygo-assistant/rag';
 
 import { answerDeltas } from '../server/conversations/answerDeltas.js';
 import {
@@ -14,7 +14,7 @@ import type { OllamaDependencies } from '../server/types.js';
 /**
  * Everything the command resolved before it runs: the request, the language and
  * model to answer it in, whether the parse runs at all, whether the answer does,
- * and the ranking the search uses.
+ * whether the model judges the candidates, and the ranking the search uses.
  */
 export interface RagQueryInput {
   prompt: string;
@@ -24,9 +24,11 @@ export interface RagQueryInput {
   editedFilters?: CardFilters;
   parse: boolean;
   answer: boolean;
+  filter: boolean;
   topK: number;
   shown: number;
   minScore: number;
+  filterPool: number;
 }
 
 /**
@@ -50,14 +52,16 @@ export type RagQueryEvent =
       outcome?: ParseOutcome;
     }
   | { type: 'ranked'; ranked: RankedCard[] }
+  | { type: 'selected'; pool: number; cards: Card[]; fellBack: boolean }
   | { type: 'answer'; text: string };
 
 /**
  * Runs the pipeline the server's turns run, and nothing else: the search the
- * request resolves to, the cards ranked for it, and the grounded answer as it is
- * written. Nothing is stored and no turn is announced, so this is the pipeline
- * on its own, which is what makes it usable for judging a parse, a ranking, or
- * an answer without a conversation in the way.
+ * request resolves to, the cards ranked for it, the cards the model keeps of
+ * them, and the grounded answer as it is written. Nothing is stored and no turn
+ * is announced, so this is the pipeline on its own, which is what makes it
+ * usable for judging a parse, a ranking, a judgement, or an answer without a
+ * conversation in the way.
  */
 export async function* runRagQuery(
   dependencies: RagQueryDependencies,
@@ -88,17 +92,34 @@ export async function* runRagQuery(
 
   yield { type: 'ranked', ranked };
 
+  const selection = await selectCards({
+    client: dependencies.ollama,
+    model: input.model,
+    supportsStructuredOutput: input.supportsStructuredOutput,
+    request: input.prompt,
+    ranked,
+    pool: input.filterPool,
+    shown: input.shown,
+    filter: input.filter
+  });
+
+  yield {
+    type: 'selected',
+    pool: selection.pool,
+    cards: selection.cards,
+    fellBack: selection.fellBack
+  };
+
   if (!input.answer) {
     return;
   }
 
-  const cards = ranked.slice(0, input.shown).map(rankedCard => rankedCard.card);
   const deltas = answerDeltas(
     dependencies,
     input.model,
     input.prompt,
     input.language,
-    cards
+    selection.cards
   );
   for await (const delta of deltas) {
     yield { type: 'answer', text: delta };
@@ -110,6 +131,7 @@ function searchInput(input: RagQueryInput): SearchInput {
     text: input.prompt,
     model: input.model,
     supportsStructuredOutput: input.supportsStructuredOutput,
+    language: input.language,
     editedFilters: input.editedFilters
   };
 }

@@ -18,7 +18,8 @@ const environmentSchema = z.object({
   OLLAMA_EMBEDDING_DIMENSIONS: z.coerce.number().int().positive().default(1024),
   RETRIEVAL_TOP_K: z.coerce.number().int().positive().default(25),
   RETRIEVAL_SHOWN: z.coerce.number().int().positive().default(8),
-  RETRIEVAL_MIN_SCORE: z.coerce.number().min(-1).max(1).default(0)
+  RETRIEVAL_MIN_SCORE: z.coerce.number().min(-1).max(1).default(0),
+  RETRIEVAL_FILTER_POOL: z.coerce.number().int().positive().default(25)
 });
 
 /**
@@ -72,7 +73,8 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     retrieval: {
       topK: parsed.RETRIEVAL_TOP_K,
       shown: parsed.RETRIEVAL_SHOWN,
-      minScore: parsed.RETRIEVAL_MIN_SCORE
+      minScore: parsed.RETRIEVAL_MIN_SCORE,
+      filterPool: parsed.RETRIEVAL_FILTER_POOL
     }
   };
 }

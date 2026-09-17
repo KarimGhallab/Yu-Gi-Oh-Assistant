@@ -126,6 +126,16 @@ function searchEventOf(
   return event;
 }
 
+function selectedEventOf(
+  events: RagQueryEvent[]
+): Extract<RagQueryEvent, { type: 'selected' }> {
+  const event = events.find(candidate => candidate.type === 'selected');
+  if (event === undefined || event.type !== 'selected') {
+    throw new Error('The query reported no selection');
+  }
+  return event;
+}
+
 function rankedEventOf(
   events: RagQueryEvent[]
 ): Extract<RagQueryEvent, { type: 'ranked' }> {
@@ -177,19 +187,32 @@ describe('runRagQuery', () => {
     supportsStructuredOutput: true,
     parse: true,
     answer: true,
+    filter: true,
     topK: 25,
     shown: 1,
-    minScore: 0
+    minScore: 0,
+    filterPool: 25
+  };
+
+  /**
+   * What the judgement answers unless a test says otherwise: both cards the
+   * index holds, so what is shown is the ranking's own top.
+   */
+  const KEEPS_EVERYTHING = {
+    content: JSON.stringify({ keep: [DRAGON.id, REBORN.id] }),
+    done: true
   };
 
   const answeringClient = (
-    parseAnswer: string = PARSE_WITH_FILTER
+    parseAnswer: string = PARSE_WITH_FILTER,
+    judgement: { content: string; done: boolean } = KEEPS_EVERYTHING
   ): FakeOllamaClient =>
     new FakeOllamaClient({
       models: [CHAT_MODEL],
       embeddings: [[0.9, 0.4, 0]],
       chatResponses: [
         [{ content: parseAnswer, done: true }],
+        [judgement],
         [{ content: 'Blue-Eyes is the dragon you want.', done: true }]
       ]
     });
@@ -237,6 +260,43 @@ describe('runRagQuery', () => {
     expect(answerRequest?.messages[0].content).not.toContain('Monster Reborn');
   });
 
+  it('shows the cards the judgement kept', async () => {
+    const ollama = answeringClient(PARSE_QUERY_ONLY, {
+      content: JSON.stringify({ keep: [REBORN.id] }),
+      done: true
+    });
+
+    const events = await collect(
+      runRagQuery(dependencies(ollama), defaultInput)
+    );
+
+    expect(selectedEventOf(events).cards.map(card => card.name)).toEqual([
+      'Monster Reborn'
+    ]);
+
+    const answerRequest = ollama.chatRequests.at(-1);
+    expect(answerRequest?.messages[0].content).toContain('Monster Reborn');
+    expect(answerRequest?.messages[0].content).not.toContain(
+      'Blue-Eyes White Dragon'
+    );
+  });
+
+  it('shows the search own top when no judgement is asked for', async () => {
+    const ollama = answeringClient();
+
+    const events = await collect(
+      runRagQuery(dependencies(ollama), { ...defaultInput, filter: false })
+    );
+
+    const selected = selectedEventOf(events);
+    expect(selected.pool).toBe(0);
+    expect(selected.cards.map(card => card.name)).toEqual([
+      'Blue-Eyes White Dragon'
+    ]);
+    // The parse and the answer, with nothing asked in between.
+    expect(ollama.chatRequests).toHaveLength(2);
+  });
+
   it('searches the request as free text when the parse is skipped', async () => {
     const ollama = answeringClient();
 
@@ -248,7 +308,7 @@ describe('runRagQuery', () => {
     expect(search.outcome).toBeUndefined();
     expect(search.filters).toEqual([]);
     expect(search.query).toBe(defaultInput.prompt);
-    expect(ollama.chatRequests).toHaveLength(1);
+    expect(ollama.chatRequests).toHaveLength(2);
   });
 
   it('takes the edited filters at their word instead of parsing', async () => {
@@ -265,18 +325,22 @@ describe('runRagQuery', () => {
     expect(search.outcome).toBeUndefined();
     expect(search.filters).toEqual(DRAGON_FILTER);
     expect(search.query).toBe(defaultInput.prompt);
-    expect(ollama.chatRequests).toHaveLength(1);
+    expect(ollama.chatRequests).toHaveLength(2);
   });
 
-  it('stops after the ranking when the answer is not wanted', async () => {
+  it('stops after the ranking and the judgement when the answer is not wanted', async () => {
     const ollama = answeringClient();
 
     const events = await collect(
       runRagQuery(dependencies(ollama), { ...defaultInput, answer: false })
     );
 
-    expect(events.map(event => event.type)).toEqual(['search', 'ranked']);
-    expect(ollama.chatRequests).toHaveLength(1);
+    expect(events.map(event => event.type)).toEqual([
+      'search',
+      'ranked',
+      'selected'
+    ]);
+    expect(ollama.chatRequests).toHaveLength(2);
   });
 
   it('falls back to the request text when the parse gives up', async () => {
@@ -286,6 +350,7 @@ describe('runRagQuery', () => {
       chatResponses: [
         [{ content: 'not json', done: true }],
         [{ content: 'still not json', done: true }],
+        [KEEPS_EVERYTHING],
         [{ content: 'The dragon.', done: true }]
       ]
     });

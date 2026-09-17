@@ -22,6 +22,7 @@ describe('loadConfig', () => {
     expect(config.retrieval.topK).toBe(25);
     expect(config.retrieval.shown).toBe(8);
     expect(config.retrieval.minScore).toBe(0);
+    expect(config.retrieval.filterPool).toBe(25);
   });
 
   it('reads and coerces every value from the environment', () => {
@@ -54,6 +55,7 @@ describe('loadConfig', () => {
     expect(config.retrieval.topK).toBe(40);
     expect(config.retrieval.shown).toBe(12);
     expect(config.retrieval.minScore).toBe(0.4);
+    expect(config.retrieval.filterPool).toBe(25);
   });
 
   it('falls back to the base URL when no embedding URL is set', () => {

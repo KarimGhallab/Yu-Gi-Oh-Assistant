@@ -26,6 +26,12 @@ export interface RetrievalConfig {
   topK: number;
   shown: number;
   minScore: number;
+  /**
+   * How many of the ranking's candidates the model is asked to judge. The pool
+   * is what a judgement is made over, so it is what a card that ranked low has
+   * to reach to be kept at all.
+   */
+  filterPool: number;
 }
 
 /**
