@@ -16,6 +16,7 @@ import {
   LinkMarker,
   cardMatchesFilters
 } from '@ygo-assistant/cards';
+import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import {
   type IOllamaClient,
   OllamaInvalidResponseError
@@ -204,6 +205,46 @@ describe('card index', () => {
 
     expect(batches.map(batch => batch.length)).toEqual([2, 1]);
     expect(batches.flat()).toEqual(cards.map(composeCardDocument));
+  });
+
+  it('records the embedding progress batch by batch', async () => {
+    const directory = await createDataDir();
+    const cards = [
+      createDarkMagician(),
+      createPotOfGreed(),
+      createDarkMagician({ id: 89631139, name: 'Blue-Eyes White Dragon' })
+    ];
+    const records: Array<{ message: string; context?: LogContext }> = [];
+    const logger: ILogger = {
+      debug: () => {},
+      info: (message, context) => {
+        records.push({ message, context });
+      },
+      warn: () => {},
+      error: () => {}
+    };
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards,
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15',
+      batchSize: 2,
+      logger
+    });
+
+    expect(records).toEqual([
+      {
+        message: 'Embedded card batch',
+        context: { batch: 1, batches: 2, embedded: 2, total: 3 }
+      },
+      {
+        message: 'Embedded card batch',
+        context: { batch: 2, batches: 2, embedded: 3, total: 3 }
+      }
+    ]);
   });
 
   it('retries a transient embedding failure', async () => {

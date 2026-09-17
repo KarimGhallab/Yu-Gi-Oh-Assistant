@@ -66,7 +66,8 @@ export async function populateCardIndex(
     embedder: options.embedder,
     embeddingModel: options.embeddingModel,
     dimensions: options.dimensions,
-    datasetVersion
+    datasetVersion,
+    logger: options.logger
   });
 
   return { datasetVersion, cards: cards.length };

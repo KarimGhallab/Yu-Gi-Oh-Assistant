@@ -4,7 +4,7 @@ import {
 } from '@ygo-assistant/ollama';
 import { UnavailableError } from '@ygo-assistant/utils';
 
-import type { ServerDependencies } from '../types.js';
+import type { OllamaDependencies } from '../types.js';
 
 /**
  * Which models the instance has, which one answers when the player has not said,
@@ -21,9 +21,13 @@ import type { ServerDependencies } from '../types.js';
  * on when nobody has said is the same too.
  */
 export async function installedModels(
-  dependencies: ServerDependencies
+  dependencies: OllamaDependencies
 ): Promise<OllamaModel[]> {
   const models = await dependencies.ollama.listModels();
+
+  dependencies.logger.debug('Installed models listed', {
+    count: models.length
+  });
 
   return [...models].sort((left, right) => {
     if (left.name === right.name) {
@@ -59,7 +63,7 @@ export function defaultModel(models: OllamaModel[]): string {
  * a conversation whose model is no longer installed.
  */
 export async function requireInstalledModel(
-  dependencies: ServerDependencies,
+  dependencies: OllamaDependencies,
   model: string
 ): Promise<OllamaModel> {
   const models = await dependencies.ollama.listModels();
@@ -68,6 +72,11 @@ export async function requireInstalledModel(
   if (selected === undefined) {
     throw new OllamaModelNotFoundError(model);
   }
+
+  dependencies.logger.debug('Model accepted for the turn', {
+    model,
+    supportsStructuredOutput: selected.supportsStructuredOutput
+  });
 
   return selected;
 }

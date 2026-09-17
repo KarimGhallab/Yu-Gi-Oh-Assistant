@@ -1,21 +1,16 @@
-import { type Card, type CardFilters, Language } from '@ygo-assistant/cards';
+import { type CardFilters, Language } from '@ygo-assistant/cards';
 import {
   type TurnEvent,
   TurnEventName,
-  TurnStage,
-  TurnStatus
+  TurnStage
 } from '@ygo-assistant/contracts';
 import { MessageRole } from '@ygo-assistant/db';
-import {
-  ParseOutcome,
-  type ParseResult,
-  parseCardRequest,
-  retrieveCards,
-  streamGroundedAnswer
-} from '@ygo-assistant/rag';
+import { retrieveCards } from '@ygo-assistant/rag';
 import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
 
 import type { ServerDependencies } from '../types.js';
+import { answerDeltas } from './answerDeltas.js';
+import { type TurnSearch, resolveSearch } from './resolveSearch.js';
 
 /**
  * What the turn runs on: the conversation it happens in, what the player asked
@@ -36,21 +31,6 @@ export interface TurnInput {
   supportsStructuredOutput: boolean;
   editedFilters?: CardFilters;
 }
-
-/**
- * What the turn says when the search found nothing. The copy is a product
- * decision rather than something a model should be left to improvise, so it is
- * written for each language the catalog is indexed in instead of being
- * translated by the machine: a model asked to say it found nothing can say
- * something else instead, and a sentence a player reads is worth reviewing in
- * the language it is read in.
- */
-const NO_CARDS_ANSWERS: Record<Language, string> = {
-  [Language.English]:
-    'I could not find a card that matches that request. Try broadening it.',
-  [Language.French]:
-    'Je n’ai trouvé aucune carte qui corresponde à cette demande. Essayez d’élargir votre recherche.'
-};
 
 /**
  * What the turn says when it gave way for a reason it cannot explain to the
@@ -78,7 +58,7 @@ export async function* runTurn(
 
   let stage = TurnStage.Parse;
   try {
-    const search = await resolveSearch(dependencies, input);
+    const search: TurnSearch = await resolveSearch(dependencies, input);
 
     if (search.status !== undefined) {
       yield { type: TurnEventName.Status, status: search.status };
@@ -106,6 +86,12 @@ export async function* runTurn(
     const cards = ranked
       .slice(0, dependencies.config.retrieval.shown)
       .map(rankedCard => rankedCard.card);
+
+    dependencies.logger.debug('Cards retrieved', {
+      conversationId: input.conversationId,
+      retrieved: ranked.length,
+      shown: cards.length
+    });
 
     yield { type: TurnEventName.Cards, cards };
 
@@ -139,6 +125,13 @@ export async function* runTurn(
       cardIds: cards.map(card => card.id)
     });
 
+    dependencies.logger.info('Turn answered', {
+      conversationId: input.conversationId,
+      cards: cards.length,
+      answerLength: answer.length,
+      messageId: message.id
+    });
+
     yield { type: TurnEventName.TurnEnd, messageId: message.id };
   } catch (error) {
     logFailure(dependencies, input, stage, error);
@@ -148,51 +141,6 @@ export async function* runTurn(
       message: failureMessage(error)
     };
   }
-}
-
-/**
- * The search a turn runs: the constraints and the free text, each of which the
- * turn always has an answer for, unlike a retrieval query where either may be
- * absent, and the status the player is owed about how it was arrived at.
- */
-interface TurnSearch {
-  text?: string;
-  filters: CardFilters;
-  status?: TurnStatus;
-}
-
-/**
- * The search a turn runs. A request the player edited the filters of is taken
- * at their word: the filters are used as they stand and the text becomes the
- * free text, because parsing it again would overwrite the correction. Anything
- * else is parsed, and a parse that left the turn nothing of its own hands the
- * request over as the free text with a status saying so.
- */
-async function resolveSearch(
-  dependencies: ServerDependencies,
-  input: TurnInput
-): Promise<TurnSearch> {
-  if (input.editedFilters !== undefined) {
-    return { text: input.text, filters: input.editedFilters };
-  }
-
-  const parse = await parseCardRequest({
-    client: dependencies.ollama,
-    model: input.model,
-    supportsStructuredOutput: input.supportsStructuredOutput,
-    request: input.text
-  });
-  const filters = parse.outcome === ParseOutcome.Parsed ? parse.filters : [];
-  const search: TurnSearch = {
-    text: searchText(parse, filters, input.text),
-    filters
-  };
-
-  if (leftNothingToSearch(parse)) {
-    search.status = TurnStatus.FreeTextOnly;
-  }
-
-  return search;
 }
 
 /**
@@ -232,66 +180,4 @@ function logFailure(
 
 function describeError(error: unknown): string {
   return hasErrorMessage(error) ? error.message : String(error);
-}
-
-/**
- * Whether the parse left the turn with nothing of its own: no constraints and
- * no free text either, so the search runs on the request as the player wrote it.
- * That is the state worth announcing, because an empty filter list on its own
- * does not say whether the request named nothing or the parse found nothing. A
- * parse that kept a query of its own is not this case, even when that query is
- * the request word for word: the model did read something into it.
- */
-function leftNothingToSearch(parse: ParseResult): boolean {
-  return (
-    parse.outcome !== ParseOutcome.Parsed ||
-    (parse.filters.length === 0 && parse.query === undefined)
-  );
-}
-
-/**
- * The free text a turn searches on. The parse's own query is used whenever it
- * kept one, and a request it could not turn into anything at all is searched
- * itself, because handing retrieval neither a query nor a constraint returns
- * the catalog's arbitrary top cards rather than a search of what was asked.
- */
-function searchText(
-  parse: ParseResult,
-  filters: CardFilters,
-  request: string
-): string | undefined {
-  if (parse.query !== undefined) {
-    return parse.query;
-  }
-
-  return filters.length === 0 ? request : undefined;
-}
-
-/**
- * The prose a turn streams. A search that found nothing is answered without the
- * model: the reply is known before the answer stage would run, and a model
- * asked to say it found nothing can say something else instead.
- */
-function answerDeltas(
-  dependencies: ServerDependencies,
-  model: string,
-  request: string,
-  language: Language,
-  cards: Card[]
-): AsyncIterable<string> {
-  if (cards.length === 0) {
-    return once(NO_CARDS_ANSWERS[language]);
-  }
-
-  return streamGroundedAnswer({
-    client: dependencies.ollama,
-    model,
-    request,
-    language,
-    cards
-  });
-}
-
-async function* once(text: string): AsyncGenerator<string> {
-  yield text;
 }

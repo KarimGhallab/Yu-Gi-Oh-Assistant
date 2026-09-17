@@ -24,6 +24,7 @@ const createCard = (overrides: Partial<Card> = {}): Card => ({
   atk: 2500,
   def: 2100,
   linkMarkers: [],
+  archetype: 'Dark Magician',
   effect: "''Mage suprême en termes d'attaque et de défense.''",
   imageUrl: 'https://images.ygoprodeck.com/images/cards/46986414.jpg',
   sourceUrl: 'https://ygoprodeck.com/card/dark-magician-4003',
@@ -31,22 +32,17 @@ const createCard = (overrides: Partial<Card> = {}): Card => ({
 });
 
 describe('composeCardDocument', () => {
-  it('lays out the name, type, attribute, race, level, stats, and effect', () => {
+  it('lays out the name, the archetype, and the effect', () => {
     expect(composeCardDocument(createCard())).toBe(
       [
         'Magicien Sombre',
-        'Type: Spellcaster / Normal',
-        'Attribute: DARK',
-        'Race: Spellcaster',
-        'Level: 7',
-        'ATK: 2500',
-        'DEF: 2100',
-        "Effect: ''Mage suprême en termes d'attaque et de défense.''"
+        'Archetype: Dark Magician',
+        "''Mage suprême en termes d'attaque et de défense.''"
       ].join('\n')
     );
   });
 
-  it('falls back to the card type when there is no type line, and omits absent stats', () => {
+  it('leaves the archetype out when the card has none', () => {
     const document = composeCardDocument(
       createCard({
         name: 'Pot of Greed',
@@ -58,53 +54,36 @@ describe('composeCardDocument', () => {
         level: undefined,
         atk: undefined,
         def: undefined,
+        archetype: undefined,
         effect: 'Draw 2 cards.'
       })
     );
 
-    expect(document).toBe(
-      [
-        'Pot of Greed',
-        'Type: Spell Card',
-        'Race: Normal',
-        'Effect: Draw 2 cards.'
-      ].join('\n')
-    );
+    expect(document).toBe(['Pot of Greed', 'Draw 2 cards.'].join('\n'));
   });
 
-  it('adds the link rating and markers for a link monster', () => {
-    const document = composeCardDocument(
-      createCard({
-        name: 'Decode Talker',
-        type: CardType.LinkMonster,
-        frameType: FrameType.Link,
-        typeLine: ['Cyberse', 'Link', 'Effect'],
-        race: 'Cyberse',
-        level: undefined,
-        atk: 2300,
-        def: undefined,
-        linkVal: 3,
-        linkMarkers: [
-          LinkMarker.Top,
-          LinkMarker.BottomLeft,
-          LinkMarker.BottomRight
-        ],
-        effect: 'Gains 500 ATK for each monster it points to.'
-      })
-    );
+  it('ignores every field retrieval filters on', () => {
+    const name = 'Decode Talker';
+    const archetype = 'Code Talker';
+    const effect = 'Gains 500 ATK for each monster it points to.';
 
-    expect(document).toBe(
-      [
-        'Decode Talker',
-        'Type: Cyberse / Link / Effect',
-        'Attribute: DARK',
-        'Race: Cyberse',
-        'Link Rating: 3',
-        'Link Markers: Top, Bottom-Left, Bottom-Right',
-        'ATK: 2300',
-        'Effect: Gains 500 ATK for each monster it points to.'
-      ].join('\n')
-    );
+    const link = createCard({
+      name,
+      archetype,
+      effect,
+      type: CardType.LinkMonster,
+      frameType: FrameType.Link,
+      typeLine: ['Cyberse', 'Link', 'Effect'],
+      race: 'Cyberse',
+      level: undefined,
+      atk: 2300,
+      def: undefined,
+      linkVal: 3,
+      linkMarkers: [LinkMarker.Top]
+    });
+    const normal = createCard({ name, archetype, effect });
+
+    expect(composeCardDocument(link)).toBe(composeCardDocument(normal));
   });
 
   it('normalizes Windows line endings in the effect text', () => {
@@ -112,6 +91,6 @@ describe('composeCardDocument', () => {
       createCard({ effect: 'Line one.\r\nLine two.' })
     );
 
-    expect(document).toContain('Effect: Line one.\nLine two.');
+    expect(document).toContain('Line one.\nLine two.');
   });
 });

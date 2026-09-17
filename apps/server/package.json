@@ -11,6 +11,7 @@
     "watch": "tsc -b --watch --preserveWatchOutput",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "db:populate": "tsc -b && tsx --env-file-if-exists=.env src/populate/populateCommand.ts",
+    "rag:ask": "tsc -b && tsx --env-file-if-exists=.env src/rag/ragCommand.ts",
     "clean-all": "rm -rf dist && rm -rf node_modules",
     "clean": "rm -rf dist"
   },

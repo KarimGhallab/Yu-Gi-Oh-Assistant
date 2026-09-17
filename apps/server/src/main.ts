@@ -14,6 +14,15 @@ async function main(): Promise<void> {
   const config = loadConfig(process.env);
   const logger = createServerLogger(config);
 
+  logger.info('Configuration loaded', {
+    nodeEnv: config.nodeEnv,
+    host: config.host,
+    port: config.port,
+    dataDir: config.dataDir,
+    logLevel: config.logLevel
+  });
+
+  logger.debug('Checking the card index', { dataDir: config.dataDir });
   try {
     await ensureIndexMatchesConfig(config);
   } catch (error) {
@@ -23,12 +32,17 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  logger.debug('Card index is usable', { dataDir: config.dataDir });
 
   const ollama = createOllamaClient(config.ollama);
+  logger.debug('Ollama client ready', { baseUrl: config.ollama.baseUrl });
+
+  const storePath = databasePath(config.dataDir);
+  logger.debug('Opening the conversation store', { databasePath: storePath });
 
   let store: IAppStore;
   try {
-    store = await openAppStore(databasePath(config.dataDir));
+    store = await openAppStore(storePath);
   } catch (error) {
     logger.error('The conversation store is not usable', {
       message: describeError(error)
@@ -36,6 +50,7 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  logger.debug('Conversation store is open', { databasePath: storePath });
 
   const app = createServer({ config, logger, ollama, store });
 

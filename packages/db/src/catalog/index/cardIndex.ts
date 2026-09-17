@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { connect } from '@lancedb/lancedb';
 
 import type { Card } from '@ygo-assistant/cards';
+import type { ILogger } from '@ygo-assistant/logger';
 import {
   type IOllamaClient,
   OllamaInvalidResponseError,
@@ -52,7 +53,8 @@ export async function buildCardIndex(
   const vectors = await embedDocuments(
     options.embedder,
     documents,
-    options.batchSize ?? DEFAULT_EMBEDDING_BATCH_SIZE
+    options.batchSize ?? DEFAULT_EMBEDDING_BATCH_SIZE,
+    options.logger
   );
   if (vectors.length !== options.cards.length) {
     throw new Error(
@@ -204,18 +206,31 @@ function cosineSimilarity(row: Record<string, unknown>): number {
 
 /**
  * Embeds the documents in bounded batches, so a large dump does not become one
- * enormous request.
+ * enormous request, recording each batch as it lands so a long ingestion shows
+ * its progress rather than going quiet.
  */
 async function embedDocuments(
   embedder: IOllamaClient,
   documents: string[],
-  batchSize: number
+  batchSize: number,
+  logger: ILogger | undefined
 ): Promise<number[][]> {
   const vectors: number[][] = [];
-  for (let start = 0; start < documents.length; start += batchSize) {
-    const batch = documents.slice(start, start + batchSize);
-    vectors.push(...(await embedBatch(embedder, batch)));
+  const batches = Math.ceil(documents.length / batchSize);
+
+  for (let batch = 0; batch < batches; batch++) {
+    const start = batch * batchSize;
+    const slice = documents.slice(start, start + batchSize);
+    vectors.push(...(await embedBatch(embedder, slice)));
+
+    logger?.info('Embedded card batch', {
+      batch: batch + 1,
+      batches,
+      embedded: vectors.length,
+      total: documents.length
+    });
   }
+
   return vectors;
 }
 

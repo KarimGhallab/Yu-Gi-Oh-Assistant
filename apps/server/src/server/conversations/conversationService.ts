@@ -44,18 +44,32 @@ export async function createConversation(
   const model =
     request.model ?? defaultModel(await installedModels(dependencies));
 
-  return dependencies.store.conversations.create({
+  const conversation = await dependencies.store.conversations.create({
     title: request.title,
     language: request.language ?? Language.English,
     model
   });
+
+  dependencies.logger.info('Conversation started', {
+    conversationId: conversation.id,
+    model: conversation.model,
+    language: conversation.language
+  });
+
+  return conversation;
 }
 
 /** The conversations that can be reopened, newest first. */
 export async function listConversations(
   dependencies: ServerDependencies
 ): Promise<Conversation[]> {
-  return dependencies.store.conversations.list();
+  const conversations = await dependencies.store.conversations.list();
+
+  dependencies.logger.debug('Conversations listed', {
+    count: conversations.length
+  });
+
+  return conversations;
 }
 
 /**
@@ -76,6 +90,11 @@ export async function openConversation(
     conversation.id
   );
 
+  dependencies.logger.debug('Conversation opened', {
+    conversationId: conversation.id,
+    messages: messages.length
+  });
+
   return {
     conversation,
     messages: await projectMessages(
@@ -95,11 +114,28 @@ export async function updateConversation(
   id: string,
   request: UpdateConversationRequest
 ): Promise<Conversation> {
-  return dependencies.store.conversations.update(id, {
+  const conversation = await dependencies.store.conversations.update(id, {
     title: request.title,
     language: request.language,
     model: request.model
   });
+
+  dependencies.logger.info('Conversation updated', {
+    conversationId: id,
+    fields: namedFields(request)
+  });
+
+  return conversation;
+}
+
+/**
+ * The fields a request names, so a trace can record what changed without
+ * putting what the player wrote into the log.
+ */
+function namedFields(request: UpdateConversationRequest): string[] {
+  return Object.entries(request)
+    .filter(([, value]) => value !== undefined)
+    .map(([field]) => field);
 }
 
 /** Removes a conversation and everything said in it. */
@@ -108,6 +144,8 @@ export async function deleteConversation(
   id: string
 ): Promise<void> {
   await dependencies.store.conversations.delete(id);
+
+  dependencies.logger.info('Conversation deleted', { conversationId: id });
 }
 
 /**
@@ -135,14 +173,31 @@ export async function startTurn(
   const language = request.language ?? conversation.language;
   const selected = await requireInstalledModel(dependencies, model);
 
+  dependencies.logger.debug('Turn started', {
+    conversationId: conversation.id,
+    model,
+    language,
+    editedFilters: request.filters !== undefined
+  });
+
   if (model !== conversation.model || language !== conversation.language) {
     await dependencies.store.conversations.update(id, { model, language });
+    dependencies.logger.debug('Conversation settings settled by the turn', {
+      conversationId: conversation.id,
+      model,
+      language
+    });
   }
 
   const userMessage = await dependencies.store.messages.append({
     conversationId: conversation.id,
     role: MessageRole.User,
     content: request.text
+  });
+
+  dependencies.logger.debug('Player message stored', {
+    conversationId: conversation.id,
+    messageId: userMessage.id
   });
 
   return runTurn(dependencies, {

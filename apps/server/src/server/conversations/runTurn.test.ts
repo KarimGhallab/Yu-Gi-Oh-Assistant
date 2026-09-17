@@ -198,6 +198,10 @@ const statusEvents = (frames: Frame[]): TurnEvent[] =>
     .filter(frame => frame.event.type === TurnEventName.Status)
     .map(frame => frame.event);
 
+/** The failure records, told apart from the request log by the stage they name. */
+const turnRecords = (records: LogRecord[]): LogRecord[] =>
+  records.filter(record => record.context?.stage !== undefined);
+
 describe('turn routes', () => {
   let dataDir: string;
   let store: IAppStore;
@@ -749,8 +753,9 @@ describe('turn routes', () => {
       stage: TurnStage.Answer,
       message: expect.stringContaining('unreachable')
     });
-    expect(records).toHaveLength(1);
-    expect(records[0]).toMatchObject({
+    const failures = turnRecords(records);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatchObject({
       level: 'warn',
       context: { conversationId, stage: TurnStage.Answer }
     });
@@ -788,7 +793,7 @@ describe('turn routes', () => {
       stage: TurnStage.Answer,
       message: 'The turn failed'
     });
-    expect(records[0]).toMatchObject({
+    expect(turnRecords(records)[0]).toMatchObject({
       level: 'error',
       context: { conversationId, stage: TurnStage.Answer }
     });
@@ -818,12 +823,13 @@ describe('turn routes', () => {
       stage: TurnStage.Parse,
       message: 'The turn failed'
     });
-    expect(records).toHaveLength(1);
-    expect(records[0]).toMatchObject({
+    const failures = turnRecords(records);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatchObject({
       level: 'error',
       context: { conversationId, stage: TurnStage.Parse }
     });
-    expect(records[0]?.context?.message).toContain('connection refused');
+    expect(failures[0]?.context?.message).toContain('connection refused');
 
     const messages = await store.messages.list(conversationId);
     expect(messages.map(message => message.role)).toEqual([MessageRole.User]);
@@ -853,7 +859,7 @@ describe('turn routes', () => {
       stage: TurnStage.Search,
       message: expect.stringContaining('unreachable')
     });
-    expect(records[0]).toMatchObject({
+    expect(turnRecords(records)[0]).toMatchObject({
       level: 'warn',
       context: { conversationId, stage: TurnStage.Search }
     });

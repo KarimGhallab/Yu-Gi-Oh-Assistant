@@ -175,7 +175,7 @@ export default function PromptSurface({
         <textarea
           id="prompt"
           ref={field}
-          rows={5}
+          rows={4}
           value={text}
           onChange={event => setText(event.target.value)}
           onKeyDown={keyDown}
