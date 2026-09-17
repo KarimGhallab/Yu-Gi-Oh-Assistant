@@ -1,6 +1,9 @@
 import { Link, useParams } from 'react-router';
 
-import { MessageRole } from '@ygo-assistant/contracts';
+import {
+  type ConversationWithMessages,
+  MessageRole
+} from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/client.js';
 import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
@@ -11,7 +14,7 @@ import Composer from './Composer.js';
 import ExamplePrompts from './ExamplePrompts.js';
 import MessageHistory, { type ChatTurn } from './MessageHistory.js';
 import { failureAnnouncement, runningAnnouncement } from './turnCopy.js';
-import { useTurn } from './useTurn.js';
+import { type SearchInterpretation, useTurn } from './useTurn.js';
 
 /**
  * The conversation the address names. An address that names none says so and
@@ -35,7 +38,7 @@ interface ConversationSurfaceProps {
 
 function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const conversation = useConversation(conversationId);
-  const { send, turn, isRunning } = useTurn(conversationId);
+  const { send, turn, isRunning, interpretation } = useTurn(conversationId);
 
   if (conversationId.length === 0) {
     return <MissingConversation message="The address names no conversation." />;
@@ -130,6 +133,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         onSend={text => void send(text)}
         running={isRunning}
         announcement={isRunning ? runningAnnouncement(turn?.status) : undefined}
+        readout={interpretation ?? lastSearch(conversation.data.messages)}
         failure={
           turn?.failure === undefined
             ? undefined
@@ -150,6 +154,22 @@ interface MissingConversationProps {
  */
 const ASKING = 'asking';
 const ANSWERING = 'answering';
+
+/**
+ * What the last stored search was understood as. A reply a turn stored keeps the
+ * filters it ran with and nothing about how it came by them, so a conversation
+ * opened again shows what it searched and says nothing about why a search
+ * carried no filters at all.
+ */
+function lastSearch(
+  messages: ConversationWithMessages['messages']
+): SearchInterpretation | undefined {
+  const searched = messages.findLast(message => message.filters !== undefined);
+
+  return searched?.filters === undefined
+    ? undefined
+    : { filters: searched.filters };
+}
 
 function MissingConversation({ message }: MissingConversationProps) {
   return (

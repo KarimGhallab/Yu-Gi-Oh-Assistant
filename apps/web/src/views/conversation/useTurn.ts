@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
+  type CardFilters,
   TurnEventName,
   type TurnStage,
   type TurnStatus
@@ -54,6 +55,20 @@ export interface UseTurnResult {
   send(text: string): Promise<void>;
   turn?: TurnInFlight;
   isRunning: boolean;
+  interpretation?: SearchInterpretation;
+}
+
+/**
+ * How a turn's search was understood: the filters it reported, the words it
+ * searched on when it had none, and what the server said about how it got
+ * there. It is kept past the end of the turn, because a turn that gave way to
+ * free text says so only while it is running, and the reply the server stores
+ * keeps the filters and not the reason there were none.
+ */
+export interface SearchInterpretation {
+  filters: CardFilters;
+  query?: string;
+  status?: TurnStatus;
 }
 
 /**
@@ -70,6 +85,12 @@ export interface UseTurnResult {
 export function useTurn(conversationId: string): UseTurnResult {
   const client = useQueryClient();
   const [turn, setTurn] = useState<TurnInFlight | undefined>(undefined);
+  // What the last search was understood as outlives the turn that reported it:
+  // the reply the server stores keeps the filters but not the words a turn fell
+  // back on, so the readout is what a conversation was last asked.
+  const [interpretation, setInterpretation] = useState<
+    SearchInterpretation | undefined
+  >(undefined);
   const running = useRef<AbortController | undefined>(undefined);
 
   // Leaving the conversation stops the turn: a reply that arrives after the
@@ -132,6 +153,15 @@ export function useTurn(conversationId: string): UseTurnResult {
         running: true
       });
 
+      // How the last search was arrived at is not how this one will be: whether
+      // it comes down to words alone is this turn's to report, so the last
+      // turn's answer to that goes and the filters it found are kept.
+      setInterpretation(current =>
+        current === undefined
+          ? undefined
+          : { filters: current.filters, query: current.query }
+      );
+
       const controller = new AbortController();
       running.current = controller;
       let confirmed = false;
@@ -153,6 +183,11 @@ export function useTurn(conversationId: string): UseTurnResult {
               break;
             case TurnEventName.Status:
               change(current => ({ ...current, status: event.status }));
+              setInterpretation(current => ({
+                filters: current?.filters ?? [],
+                query: current?.query,
+                status: event.status
+              }));
               break;
             case TurnEventName.Cards:
               change(current => ({ ...current, cards: event.cards }));
@@ -181,8 +216,18 @@ export function useTurn(conversationId: string): UseTurnResult {
               });
               return;
             case TurnEventName.Filters:
+              // The search the turn is about to run, taken from its own report
+              // rather than read back from the stored turn, so what the readout
+              // shows is right while the turn is still running. A status this
+              // turn reported arrived just before it and is carried along.
+              setInterpretation(current => ({
+                filters: event.filters,
+                query: event.query,
+                status: current?.status
+              }));
+              break;
             case TurnEventName.AnswerEnd:
-              // Read and validated, and nothing this client renders yet.
+              // The prose is complete; the stored turn is what turn.end carries.
               break;
           }
         }
@@ -205,7 +250,7 @@ export function useTurn(conversationId: string): UseTurnResult {
     [change, conversationId, giveWay, settle, turn?.running]
   );
 
-  return { send, turn, isRunning: turn?.running ?? false };
+  return { send, turn, isRunning: turn?.running ?? false, interpretation };
 }
 
 function messageOf(error: unknown): string {

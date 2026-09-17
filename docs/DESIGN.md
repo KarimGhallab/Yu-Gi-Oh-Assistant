@@ -97,6 +97,15 @@ components:
     typography: '{typography.body}'
   composer-field-placeholder:
     textColor: '{colors.ink-faint}'
+  search-readout-field:
+    textColor: '{colors.ink-faint}'
+    typography: '{typography.mono}'
+  search-readout-ask:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
+  search-readout-note:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
   nav-row-action:
     textColor: '{colors.ink-muted}'
     typography: '{typography.body}'
@@ -122,8 +131,9 @@ between the player and the cards.
 The bench is a direction rather than a finished expression. The incumbent
 implementation carries the surfaces, the amber, the density, and the flatness;
 the conversation surface, which is where the bench actually shows, is being
-built: its history and its grid of framed cards are in place, and the amber rail
-around the active turn and the model's reading set as marginalia follow.
+built: its history, its grid of framed cards, and the readout of what a search
+was understood as are in place, and the amber rail around the active turn and the
+model's reading set as marginalia follow.
 
 Flatness is deliberate and the system has no motion yet. Depth is tonal: three
 steps of near-black do the work shadows would do elsewhere, and the only
@@ -393,8 +403,16 @@ level deep.
   arrow. It is out of action while a turn runs, while the field stays usable so
   the next request can be written as the answer arrives.
 - **Status:** Body, Ash Grey, sitting beside the Send control as a live region.
-  It says the turn is running, and what the search was understood as; it is empty
-  when nothing is running.
+  It says the turn is running, and how the search was arrived at when the request
+  could not be turned into filters; it is empty when nothing is running.
+- **Readout:** what the last search was understood as, on its own line above the
+  field, in 12px mono. One fact per filter: the field it constrains in Dust Grey
+  and what it asks of that field in Ash Grey, set apart by space and nothing
+  else, because a filter is a machine fact rather than a control. A search that
+  carried no filters says only that, and a turn that reported it could not
+  understand the request says so and repeats the words it fell back on. It is not
+  a second live region: the status line is what announces a turn, and the readout
+  is what is left on screen once the turn is over.
 - **Failure:** the alert line above the field, because the composer is the control
   the failed turn came from. The field stays usable, so the player can ask again.
 
@@ -458,3 +476,5 @@ level deep.
   real object and keeps its printed proportions.
 - **Don't** use a box, a card container, or a nested rectangle where a hairline
   and a spacing step would do.
+- **Don't** put a filter in a chip, a pill, or a tag. The readout is mono facts
+  set apart by space, and a filter is not something the player presses.

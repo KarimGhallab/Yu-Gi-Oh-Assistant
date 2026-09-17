@@ -12,6 +12,10 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CardAttribute,
+  type CardFilter,
+  CardFilterField,
+  FilterOperator,
   type TurnEvent,
   TurnEventName,
   TurnStage,
@@ -91,6 +95,7 @@ interface MessageFixture {
   conversationId: number;
   role: string;
   content: string;
+  filters?: CardFilter[];
   cards?: CardFixture[];
   createdAt: string;
 }
@@ -124,6 +129,24 @@ const assistantMessage = (
 const BLUE_EYES = createCard(89631139, 'Blue-Eyes White Dragon');
 const DARK_MAGICIAN = createCard(46986414, 'Dark Magician');
 const RED_EYES = createCard(10000, 'Red-Eyes Black Dragon');
+
+const LIGHT_ATTRIBUTE: CardFilter = {
+  field: CardFilterField.Attribute,
+  operator: FilterOperator.Eq,
+  value: CardAttribute.Light
+};
+
+const DARK_ATTRIBUTE: CardFilter = {
+  field: CardFilterField.Attribute,
+  operator: FilterOperator.Eq,
+  value: CardAttribute.Dark
+};
+
+const LEVEL_AT_LEAST_7: CardFilter = {
+  field: CardFilterField.Level,
+  operator: FilterOperator.Gte,
+  value: 7
+};
 
 const GRAVEYARD = createConversation(2, { title: 'Graveyard toolbox' });
 const UNTITLED = createConversation(1, { title: null });
@@ -720,13 +743,16 @@ describe('the chat', () => {
         .map(card => card.textContent)
     ).toEqual(['Blue-Eyes White Dragon', 'Dark Magician']);
 
-    // The filters a parse found are read and validated, and nothing this client
-    // renders yet: showing them is feature 09.
     await arrives(turn, {
       type: TurnEventName.Filters,
       filters: [],
       query: 'I want a dragon'
     });
+
+    // A search no filter was found for says so, in the words it ran on.
+    expect(
+      screen.getByText('Searched as written: I want a dragon')
+    ).toBeInTheDocument();
 
     await arrives(turn, {
       type: TurnEventName.AnswerDelta,
@@ -747,6 +773,96 @@ describe('the chat', () => {
     await act(async () => {
       turn.close();
     });
+
+    // What a turn said about how it searched outlives the turn: the reply the
+    // server stores keeps the filters and not the reason a search had none.
+    expect(
+      screen.getByText('Searched as written: I want a dragon')
+    ).toBeInTheDocument();
+  });
+
+  it('shows the filters a turn was searched with', async () => {
+    const turn = turnStream();
+    vi.stubGlobal(
+      'fetch',
+      stubFetch((url, init) =>
+        init?.method === 'POST'
+          ? turn.response
+          : json(withMessages(GRAVEYARD, []))
+      )
+    );
+
+    renderApp('/c/2');
+    await send('light monsters of level 7 or more');
+
+    await arrives(turn, { type: TurnEventName.TurnStart, userMessageId: 11 });
+    await arrives(turn, {
+      type: TurnEventName.Filters,
+      filters: [LIGHT_ATTRIBUTE, LEVEL_AT_LEAST_7]
+    });
+
+    const readout = screen.getByRole('list', {
+      name: 'What the search was understood as'
+    });
+
+    expect(
+      within(readout)
+        .getAllByRole('listitem')
+        .map(fact => fact.textContent)
+    ).toEqual(['attribute is LIGHT', 'level at least 7']);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('opens a conversation on the filters it was last searched with', async () => {
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE],
+        cards: [DARK_MAGICIAN]
+      })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp('/c/2');
+
+    const readout = await screen.findByRole('list', {
+      name: 'What the search was understood as'
+    });
+
+    expect(
+      within(readout)
+        .getAllByRole('listitem')
+        .map(fact => fact.textContent)
+    ).toEqual(['attribute is DARK']);
+  });
+
+  it('says the last search of a conversation carried no filters', async () => {
+    const stored = [
+      playerMessage(10, 'something that stops attacks'),
+      said(11, 'assistant', 'Searched by meaning.', { filters: [] })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp('/c/2');
+
+    expect(await screen.findByText('No filters')).toBeInTheDocument();
   });
 
   it('replaces the turn it built with the one the server stored', async () => {

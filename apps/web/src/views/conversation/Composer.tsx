@@ -2,6 +2,9 @@ import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 
 import SendIcon from '../../shared/components/icons/SendIcon.js';
 
+import SearchReadout from './SearchReadout.js';
+import type { SearchInterpretation } from './useTurn.js';
+
 const FIELD_CLASS =
   'w-full resize-none rounded border border-amber-500/25 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
@@ -13,13 +16,15 @@ interface ComposerProps {
   running: boolean;
   announcement?: string;
   failure?: string;
+  readout?: SearchInterpretation;
 }
 
 /**
  * Where the player asks for cards. It is docked at the bottom of the
  * conversation, because the conversation surface is the one that has one, and it
- * holds the two things that are about the request rather than about the history:
- * the turn that is running, and the turn that gave way.
+ * holds the things that are about the request rather than about the history:
+ * what the last search was understood as, the turn that is running, and the turn
+ * that gave way.
  *
  * The send control is out of action while a turn runs, and the announcement
  * says so, so a second request cannot be started by mistake. The field itself
@@ -36,7 +41,8 @@ export default function Composer({
   onSend,
   running,
   announcement,
-  failure
+  failure,
+  readout
 }: ComposerProps) {
   const [text, setText] = useState('');
   const field = useRef<HTMLTextAreaElement>(null);
@@ -63,6 +69,10 @@ export default function Composer({
     <form
       onSubmit={submit}
       className="flex flex-col gap-3 border-t border-neutral-800 p-6">
+      {readout === undefined ? null : (
+        <SearchReadout interpretation={readout} />
+      )}
+
       {failure === undefined ? null : (
         <p role="alert" className="text-sm text-red-400">
           {failure}
