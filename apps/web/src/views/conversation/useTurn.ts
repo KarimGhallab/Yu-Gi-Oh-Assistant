@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type CardFilters,
   TurnEventName,
+  type TurnRequest,
   type TurnStage,
   type TurnStatus
 } from '@ygo-assistant/contracts';
@@ -56,6 +57,8 @@ export interface UseTurnResult {
   turn?: TurnInFlight;
   isRunning: boolean;
   interpretation?: SearchInterpretation;
+  correction?: CardFilters;
+  correct(filters: CardFilters): void;
 }
 
 /**
@@ -91,6 +94,14 @@ export function useTurn(conversationId: string): UseTurnResult {
   const [interpretation, setInterpretation] = useState<
     SearchInterpretation | undefined
   >(undefined);
+  // The set the player has corrected, which is what the next turn is searched
+  // with instead of the request being read again. It is undefined until they
+  // touch a filter, which is the whole difference between a search they asked
+  // for and one that was read out of their words, and an empty set is a
+  // correction like any other: it asks for no constraints at all.
+  const [correction, setCorrection] = useState<CardFilters | undefined>(
+    undefined
+  );
   const running = useRef<AbortController | undefined>(undefined);
 
   // Leaving the conversation stops the turn: a reply that arrives after the
@@ -107,6 +118,15 @@ export function useTurn(conversationId: string): UseTurnResult {
     },
     []
   );
+
+  /**
+   * What the player has corrected a search to. It replaces nothing on screen:
+   * the readout is showing the same thing already, and the correction is what
+   * the next send carries.
+   */
+  const correct = useCallback((filters: CardFilters): void => {
+    setCorrection(filters);
+  }, []);
 
   const settle = useCallback(
     (): Promise<boolean> => refreshConversations(client),
@@ -165,11 +185,16 @@ export function useTurn(conversationId: string): UseTurnResult {
       const controller = new AbortController();
       running.current = controller;
       let confirmed = false;
+      // Sending the corrected set is what tells the server not to read the
+      // request again. A player who left the readout alone sends no filters at
+      // all, which is what asks for the request to be parsed as usual.
+      const request: TurnRequest =
+        correction === undefined ? { text } : { text, filters: correction };
 
       try {
         for await (const event of streamTurn(
           conversationId,
-          { text },
+          request,
           controller.signal
         )) {
           switch (event.type) {
@@ -225,6 +250,14 @@ export function useTurn(conversationId: string): UseTurnResult {
                 query: event.query,
                 status: current?.status
               }));
+              // What the turn reports is the set the search is running with, so
+              // a correction it matches has been used and is done with. One the
+              // player made since it was sent is not, and stays.
+              setCorrection(current =>
+                current !== undefined && sameFilters(current, event.filters)
+                  ? undefined
+                  : current
+              );
               break;
             case TurnEventName.AnswerEnd:
               // The prose is complete; the stored turn is what turn.end carries.
@@ -247,10 +280,38 @@ export function useTurn(conversationId: string): UseTurnResult {
         running.current = undefined;
       }
     },
-    [change, conversationId, giveWay, settle, turn?.running]
+    [change, conversationId, correction, giveWay, settle, turn?.running]
   );
 
-  return { send, turn, isRunning: turn?.running ?? false, interpretation };
+  return {
+    send,
+    turn,
+    isRunning: turn?.running ?? false,
+    interpretation,
+    correction,
+    correct
+  };
+}
+
+/**
+ * Whether two filter sets say the same thing. A turn reports the set it ran with
+ * as freshly built filters, so whether a correction has been used is decided by
+ * what the filters say rather than by the two arrays being the same one.
+ */
+function sameFilters(left: CardFilters, right: CardFilters): boolean {
+  return (
+    left.length === right.length &&
+    left.every((filter, index) => {
+      const other = right[index];
+
+      return (
+        other !== undefined &&
+        filter.field === other.field &&
+        filter.operator === other.operator &&
+        filter.value === other.value
+      );
+    })
+  );
 }
 
 function messageOf(error: unknown): string {

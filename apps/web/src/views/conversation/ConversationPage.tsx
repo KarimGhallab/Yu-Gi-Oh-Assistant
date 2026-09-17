@@ -38,7 +38,8 @@ interface ConversationSurfaceProps {
 
 function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const conversation = useConversation(conversationId);
-  const { send, turn, isRunning, interpretation } = useTurn(conversationId);
+  const { send, turn, isRunning, interpretation, correction, correct } =
+    useTurn(conversationId);
 
   if (conversationId.length === 0) {
     return <MissingConversation message="The address names no conversation." />;
@@ -133,7 +134,12 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         onSend={text => void send(text)}
         running={isRunning}
         announcement={isRunning ? runningAnnouncement(turn?.status) : undefined}
-        readout={interpretation ?? lastSearch(conversation.data.messages)}
+        readout={
+          correction === undefined
+            ? (interpretation ?? lastSearch(conversation.data.messages))
+            : { filters: correction }
+        }
+        onCorrect={correct}
         failure={
           turn?.failure === undefined
             ? undefined

@@ -865,6 +865,154 @@ describe('the chat', () => {
     expect(await screen.findByText('No filters')).toBeInTheDocument();
   });
 
+  it('re-runs the search on a corrected chip rather than reading the request', async () => {
+    const turns: TurnStream[] = [];
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE]
+      })
+    ];
+    const fetchMock = stubFetch((url, init) => {
+      if (init?.method === 'POST') {
+        const turn = turnStream();
+        turns.push(turn);
+        return turn.response;
+      }
+
+      return json(withMessages(GRAVEYARD, stored));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Change attribute is DARK' })
+    );
+    await userEvent.selectOptions(screen.getByLabelText('Value'), 'LIGHT');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Change attribute is LIGHT' })
+    ).toBeInTheDocument();
+
+    await send('a dark monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({
+          text: 'a dark monster',
+          filters: [{ field: 'attribute', operator: 'eq', value: 'LIGHT' }]
+        })
+      })
+    );
+
+    // The turn reports the set it is running with, and that report is what the
+    // readout shows from then on.
+    const corrected = turns[0];
+    await arrives(corrected, {
+      type: TurnEventName.TurnStart,
+      userMessageId: 12
+    });
+    await arrives(corrected, {
+      type: TurnEventName.Filters,
+      filters: [LIGHT_ATTRIBUTE]
+    });
+
+    expect(
+      screen.getByRole('button', { name: 'Change attribute is LIGHT' })
+    ).toBeInTheDocument();
+
+    // The correction has been used, so the next request goes back to being read
+    // out of the words rather than searched with it again.
+    await act(async () => {
+      corrected.close();
+    });
+    await send('another request');
+
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({ text: 'another request' })
+      })
+    );
+
+    await act(async () => {
+      turns[turns.length - 1]?.close();
+    });
+  });
+
+  it('runs a search with no constraints when every chip is taken away', async () => {
+    const turn = turnStream();
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE]
+      })
+    ];
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, stored))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Change attribute is DARK' })
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+    expect(await screen.findByText('No filters')).toBeInTheDocument();
+
+    await send('a dark monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({ text: 'a dark monster', filters: [] })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('parses a request sent without touching the chips on screen', async () => {
+    const turn = turnStream();
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE]
+      })
+    ];
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : json(withMessages(GRAVEYARD, stored))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp('/c/2');
+
+    await screen.findByRole('button', { name: 'Change attribute is DARK' });
+    await send('a light monster');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/conversations/2/messages',
+      expect.objectContaining({
+        body: JSON.stringify({ text: 'a light monster' })
+      })
+    );
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
   it('replaces the turn it built with the one the server stored', async () => {
     const turn = turnStream();
     let title: string | null = null;

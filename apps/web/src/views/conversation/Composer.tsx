@@ -1,5 +1,7 @@
 import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 
+import type { CardFilters } from '@ygo-assistant/contracts';
+
 import SendIcon from '../../shared/components/icons/SendIcon.js';
 
 import SearchReadout from './SearchReadout.js';
@@ -17,6 +19,7 @@ interface ComposerProps {
   announcement?: string;
   failure?: string;
   readout?: SearchInterpretation;
+  onCorrect(filters: CardFilters): void;
 }
 
 /**
@@ -42,7 +45,8 @@ export default function Composer({
   running,
   announcement,
   failure,
-  readout
+  readout,
+  onCorrect
 }: ComposerProps) {
   const [text, setText] = useState('');
   const field = useRef<HTMLTextAreaElement>(null);
@@ -70,7 +74,7 @@ export default function Composer({
       onSubmit={submit}
       className="flex flex-col gap-3 border-t border-neutral-800 p-6">
       {readout === undefined ? null : (
-        <SearchReadout interpretation={readout} />
+        <SearchReadout interpretation={readout} onCorrect={onCorrect} />
       )}
 
       {failure === undefined ? null : (

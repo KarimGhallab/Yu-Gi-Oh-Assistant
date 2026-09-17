@@ -45,7 +45,13 @@ export interface FilterInWords {
   says: string;
 }
 
+export const filterFieldName = (field: CardFilterField): string =>
+  FIELD_NAMES[field];
+
+export const describeOperator = (operator: FilterOperator): string =>
+  OPERATOR_NAMES[operator];
+
 export const describeFilter = (filter: CardFilter): FilterInWords => ({
-  field: FIELD_NAMES[filter.field],
-  says: `${OPERATOR_NAMES[filter.operator]} ${String(filter.value)}`
+  field: filterFieldName(filter.field),
+  says: `${describeOperator(filter.operator)} ${String(filter.value)}`
 });

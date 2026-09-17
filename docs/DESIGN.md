@@ -106,6 +106,16 @@ components:
   search-readout-note:
     textColor: '{colors.ink-muted}'
     typography: '{typography.mono}'
+  search-readout-control:
+    backgroundColor: '{colors.surface-panel}'
+    textColor: '{colors.ink}'
+    borderColor: 'oklch(76.9% 0.188 70.08 / 0.25)'
+    rounded: '{rounded.base}'
+    padding: '4px 6px'
+    typography: '{typography.body}'
+  search-readout-action:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
   nav-row-action:
     textColor: '{colors.ink-muted}'
     typography: '{typography.body}'
@@ -408,11 +418,22 @@ level deep.
 - **Readout:** what the last search was understood as, on its own line above the
   field, in 12px mono. One fact per filter: the field it constrains in Dust Grey
   and what it asks of that field in Ash Grey, set apart by space and nothing
-  else, because a filter is a machine fact rather than a control. A search that
-  carried no filters says only that, and a turn that reported it could not
-  understand the request says so and repeats the words it fell back on. It is not
-  a second live region: the status line is what announces a turn, and the readout
-  is what is left on screen once the turn is over.
+  else, so a filter never becomes a pill or a box. Each fact is also the control
+  that corrects it, lifting to Bone White on hover and taking the focus ring,
+  because the player is the one who knows what they asked for, and the set they
+  correct is what the next turn is searched with instead of the request being
+  read again. A search that carried no filters says only that, and a turn that
+  reported it could not understand the request says so and repeats the words it
+  fell back on. It is not a second live region: the status line is what announces
+  a turn, and the readout is what is left on screen once the turn is over.
+- **A filter being corrected:** the fact becomes the controls that say it: the
+  same field name, then the operator and the value, gathered the way that field
+  takes them, a fixed set where the domain has one and a number where the field
+  is a stat. They wear the recorded field treatment at 14px, because a control is
+  read by a person rather than by the parser, and they are one group with Save,
+  Remove, and Cancel in plain text beside them. Escape calls the whole thing off.
+  The keyboard comes back to the fact that took the corrected one's place, or to
+  the request field when the last filter was the one taken away.
 - **Failure:** the alert line above the field, because the composer is the control
   the failed turn came from. The field stays usable, so the player can ask again.
 
@@ -476,5 +497,6 @@ level deep.
   real object and keeps its printed proportions.
 - **Don't** use a box, a card container, or a nested rectangle where a hairline
   and a spacing step would do.
-- **Don't** put a filter in a chip, a pill, or a tag. The readout is mono facts
-  set apart by space, and a filter is not something the player presses.
+- **Don't** put a filter in a pill, a tag, or a box. A filter is a mono fact set
+  apart by space, and where it is a control it is the fact itself rather than a
+  container drawn around it.
