@@ -39,6 +39,7 @@ client provides the chat experience.
 - The server binds to loopback by default. Never expose conversation history
   without an explicit decision.
 - Never use em dashes in generated text.
+- Don't run prettier manually, the prettify is triggered automatically
 
 ## Agent skills
 
