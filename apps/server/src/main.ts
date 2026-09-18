@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server';
 
 import type { IAppStore } from '@ygo-assistant/db';
 import { CardCatalog, databasePath, openAppStore } from '@ygo-assistant/db';
-import { hasErrorMessage } from '@ygo-assistant/utils';
+import { describeError } from '@ygo-assistant/utils';
 
 import { loadConfig } from './config/index.js';
 import { createServerLogger } from './createServerLogger.js';
@@ -63,10 +63,6 @@ async function main(): Promise<void> {
       logger.info('Server listening', { port: info.port, host: config.host });
     }
   );
-}
-
-function describeError(error: unknown): string {
-  return hasErrorMessage(error) ? error.message : String(error);
 }
 
 await main();

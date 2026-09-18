@@ -7,7 +7,7 @@ import {
   createLogger
 } from '@ygo-assistant/logger';
 import type { OllamaModel } from '@ygo-assistant/ollama';
-import { hasErrorMessage } from '@ygo-assistant/utils';
+import { describeError } from '@ygo-assistant/utils';
 
 import {
   type AppConfig,
@@ -190,10 +190,6 @@ async function readPrompt(): Promise<string> {
 function fail(message: string): void {
   process.stderr.write(`${message}\n\n${USAGE}\n`);
   process.exitCode = 2;
-}
-
-function describeError(error: unknown): string {
-  return hasErrorMessage(error) ? error.message : String(error);
 }
 
 await main();

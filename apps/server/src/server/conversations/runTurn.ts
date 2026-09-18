@@ -5,7 +5,7 @@ import {
   TurnStage
 } from '@ygo-assistant/contracts';
 import { MessageRole } from '@ygo-assistant/db';
-import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
+import { DomainError, describeError } from '@ygo-assistant/utils';
 
 import {
   PipelineError,
@@ -231,8 +231,4 @@ function logFailure(
   }
 
   dependencies.logger.error('Turn failed unexpectedly', context);
-}
-
-function describeError(error: unknown): string {
-  return hasErrorMessage(error) ? error.message : String(error);
 }

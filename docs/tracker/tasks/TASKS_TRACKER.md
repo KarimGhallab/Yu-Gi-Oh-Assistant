@@ -122,5 +122,7 @@ landed: 68 and 69 are resolved, the listing carries the server's default, and
 the client reads one policy for how a model is offered. Spec 17 (One reader for a
 stored value) is the current review's first candidate, ticketed as 70 through
 72: 70 lands the reader and moves the store onto it, 71 moves the catalog onto
-it, and 72 moves the store's JSON reads onto it. 70 through 72 are all resolved. The review's remaining candidates are not yet
-ticketed.
+it, and 72 moves the store's JSON reads onto it. 70 through 72 are all resolved.
+The review's second candidate, narrowing the `utils` leaf and deleting its
+broken error predicate, was pruned directly. Its pipeline-dependencies candidate
+is not yet ticketed.
