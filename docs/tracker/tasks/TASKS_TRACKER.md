@@ -64,7 +64,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 54  | [The architecture and the product doc are written down](./54-the-architecture-and-the-product-doc-are-written-down.md)                      | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 55  | [The platform decisions are recorded](./55-the-platform-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 56  | [The pipeline decisions are recorded](./56-the-pipeline-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
-| 57  | [The conversation and testing decisions are recorded](./57-the-conversation-and-testing-decisions-are-recorded.md)                          | ready-for-agent       | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 57  | [The conversation and testing decisions are recorded](./57-the-conversation-and-testing-decisions-are-recorded.md)                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 
 ## Frontier
 
@@ -79,14 +79,12 @@ reads, the chips that show, correct, and extend a parse, the language a
 conversation is in, the reply an empty search gives, the marker on a card that is
 not in that language, and the model chooser. No ticket of it is left.
 
-Spec 10 (Local run, CI, and documentation) is the frontier and is ticketed as 52
-through 57: the runbook and environment template, the containers for the client
+Spec 10 (Local run, CI, and documentation) is fully landed: 52 through 57 are
+resolved, the runbook and environment template, the containers for the client
 and the server, the architecture and product docs, and the three groups of ADRs
-(the platform, the pipeline, and the conversation and testing decisions). The
-runbook, the containers, the docs, the platform ADRs, and the pipeline ADRs are
-resolved; the conversation and testing ADRs are free to start. The CI shape the
-spec called for already landed under specs 01 and 11. Spec 11 (End-to-end tests)
-is fully landed: 45 through 51 are
+(the platform, the pipeline, and the conversation and testing decisions). The CI
+shape the spec called for already landed under specs 01 and 11. Spec 11
+(End-to-end tests) is fully landed: 45 through 51 are
 resolved, from the fake Ollama's public surface and the harness that stands the
 stack up to the suite in CI behind the pipeline gate. Ticket 11 supersedes the
 single-origin setup in ticket 06 and spec 01.

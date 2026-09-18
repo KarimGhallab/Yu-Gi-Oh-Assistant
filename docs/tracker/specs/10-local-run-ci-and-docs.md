@@ -1,6 +1,6 @@
 # 10 - Local run, CI, and documentation
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** 01 (CI); 07 (runbook)
 - **Source:** architecture grilling, 2026-09-15

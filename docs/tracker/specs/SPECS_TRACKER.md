@@ -21,7 +21,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 07  | [Grounded answer and streamed turn](./07-grounded-answer-streamed-turn.md) | Resolved (2026-09-16) | 04, 05, 06 |
 | 08  | [Chat client](./08-chat-client.md)                                         | Resolved (2026-09-16) | 07         |
 | 09  | [Transparent controls](./09-transparent-controls.md)                       | Resolved (2026-09-18) | 08         |
-| 10  | [Local run, CI, and documentation](./10-local-run-ci-and-docs.md)          | `ready-for-agent`     | 01, 07     |
+| 10  | [Local run, CI, and documentation](./10-local-run-ci-and-docs.md)          | Resolved (2026-09-18) | 01, 07     |
 | 11  | [End-to-end tests](./11-end-to-end-tests.md)                               | Resolved (2026-09-18) | 09         |
 
 ## Critical path
