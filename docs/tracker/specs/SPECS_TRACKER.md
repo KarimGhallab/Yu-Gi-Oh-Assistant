@@ -23,7 +23,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 09  | [Transparent controls](./09-transparent-controls.md)                       | Resolved (2026-09-18) | 08         |
 | 10  | [Local run, CI, and documentation](./10-local-run-ci-and-docs.md)          | Resolved (2026-09-18) | 01, 07     |
 | 11  | [End-to-end tests](./11-end-to-end-tests.md)                               | Resolved (2026-09-18) | 09         |
-| 12  | [Card catalog port](./12-card-catalog-port.md)                             | `ready-for-agent`     | 03, 04     |
+| 12  | [Card catalog port](./12-card-catalog-port.md)                             | Resolved (2026-09-18) | 03, 04     |
 | 13  | [Turn pipeline](./13-turn-pipeline.md)                                     | `ready-for-agent`     | 12         |
 | 14  | [Filter predicate](./14-filter-predicate.md)                               | `ready-for-agent`     | 12         |
 
@@ -33,8 +33,8 @@ in order; the `Blocked by` column is the dependency edge.
 after 01/02 and join at 07. Feature 10 spans from 01 (CI) to 07 (runbook) and no
 longer owns the end-to-end suite; feature 11 builds it and turns the CI into
 reusable workflows with one gate job. Feature 12 depends on 03 and 04 and
-refactors the catalog read behind a port; it is not on the critical path.
-Feature 13 depends on 12 and extracts the turn pipeline into one module behind
+refactors the catalog read behind a port; it is not on the critical path. It is
+resolved. Feature 13 depends on 12 and extracts the turn pipeline into one module behind
 two adapters; it is not on the critical path either. Feature 14 depends on 12 and
 makes the schema's field kinds the one source both filter predicates render from;
 it is not on the critical path.

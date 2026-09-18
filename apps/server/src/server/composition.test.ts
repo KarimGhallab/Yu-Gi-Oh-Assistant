@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { databasePath, openAppStore } from '@ygo-assistant/db';
 import type { IAppStore } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
 
@@ -50,7 +51,8 @@ describe('composition root with test doubles', () => {
       config: loadConfig({ DATA_DIR: dataDir.path }),
       logger: silentLogger,
       ollama,
-      store
+      store,
+      catalog: new InMemoryCardCatalog({ rows: [] })
     });
 
     const response = await app.request('/health');

@@ -6,12 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { type Card, CardType, FrameType, Language } from '@ygo-assistant/cards';
 import { archetypeListSchema } from '@ygo-assistant/contracts';
-import {
-  type IAppStore,
-  buildCardIndex,
-  databasePath,
-  openAppStore
-} from '@ygo-assistant/db';
+import { type IAppStore, databasePath, openAppStore } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 import { FakeOllamaClient } from '@ygo-assistant/test-support';
@@ -20,9 +16,6 @@ import { loadConfig } from '../../config/index.js';
 import { createServer } from '../createServer.js';
 
 const BASE_URL = 'http://127.0.0.1:11434';
-const DIMENSIONS = 3;
-const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
-const DATASET_VERSION = 'ygoprodeck-2026-09-17';
 
 const silentLogger: ILogger = {
   debug: () => {},
@@ -50,26 +43,15 @@ const createCard = (id: number, archetype?: string): Card => ({
   sourceUrl: `https://ygoprodeck.com/card/card-${id}`
 });
 
-/**
- * Building an index needs a vector per card, and nothing about the vectors
- * matters here.
- */
-const embedder = (cards: number): IOllamaClient =>
-  new FakeOllamaClient({
-    embeddings: Array.from({ length: cards }, (_, index) => [
-      index + 1,
-      index,
-      1
-    ])
-  });
-
 describe('the archetype routes', () => {
   let dataDir: string;
   let store: IAppStore;
+  let catalog: InMemoryCardCatalog;
 
   beforeEach(async () => {
     dataDir = await mkdtemp(join(tmpdir(), 'ygo-assistant-archetypes-'));
     store = await openAppStore(databasePath(dataDir));
+    catalog = new InMemoryCardCatalog({ rows: [] });
   });
 
   afterEach(async () => {
@@ -82,22 +64,18 @@ describe('the archetype routes', () => {
       config: loadConfig({ OLLAMA_BASE_URL: BASE_URL, DATA_DIR: dataDir }),
       logger: silentLogger,
       ollama,
-      store
+      store,
+      catalog
     });
 
-  const build = async (cards: Card[]): Promise<void> => {
-    await buildCardIndex({
-      dataDir,
-      cards,
-      embedder: embedder(cards.length),
-      embeddingModel: EMBEDDING_MODEL,
-      dimensions: DIMENSIONS,
-      datasetVersion: DATASET_VERSION
+  const build = (cards: Card[]): void => {
+    catalog = new InMemoryCardCatalog({
+      rows: cards.map(card => ({ ...card, vector: [1, 0, 0] }))
     });
   };
 
   it('lists the archetypes the catalog carries, once each and sorted', async () => {
-    await build([
+    build([
       createCard(1, 'Dark Magician'),
       createCard(2, 'Dark Magician'),
       createCard(3, 'Blue-Eyes'),
@@ -117,7 +95,7 @@ describe('the archetype routes', () => {
   });
 
   it('answers with no archetype at all when the catalog carries none', async () => {
-    await build([createCard(1), createCard(2)]);
+    build([createCard(1), createCard(2)]);
 
     const response = await app(new FakeOllamaClient()).request(
       '/api/archetypes'

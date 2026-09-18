@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 
 import type { IAppStore } from '@ygo-assistant/db';
-import { databasePath, openAppStore } from '@ygo-assistant/db';
+import { databasePath, openAppStore, openCardCatalog } from '@ygo-assistant/db';
 import { hasErrorMessage } from '@ygo-assistant/utils';
 
 import { loadConfig } from './config/index.js';
@@ -22,9 +22,11 @@ async function main(): Promise<void> {
     logLevel: config.logLevel
   });
 
+  const catalog = openCardCatalog(config.dataDir);
+
   logger.debug('Checking the card index', { dataDir: config.dataDir });
   try {
-    await ensureIndexMatchesConfig(config);
+    await ensureIndexMatchesConfig(catalog, config);
   } catch (error) {
     logger.error('The card index is not usable', {
       message: describeError(error)
@@ -52,7 +54,7 @@ async function main(): Promise<void> {
   }
   logger.debug('Conversation store is open', { databasePath: storePath });
 
-  const app = createServer({ config, logger, ollama, store });
+  const app = createServer({ config, logger, ollama, store, catalog });
 
   logBinding(logger, config.host);
   serve(

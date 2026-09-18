@@ -1,5 +1,6 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
 import type { TurnStatus } from '@ygo-assistant/contracts';
+import type { CardCatalog } from '@ygo-assistant/db';
 import type { ParseOutcome, RankedCard } from '@ygo-assistant/rag';
 import { retrieveCards, selectCards } from '@ygo-assistant/rag';
 
@@ -32,11 +33,11 @@ export interface RagQueryInput {
 }
 
 /**
- * What the query needs to reach: the index to search and the instance to embed
+ * What the query needs to reach: the catalog to search and the instance to embed
  * and answer with, plus the logger the search traces through.
  */
 export interface RagQueryDependencies extends OllamaDependencies {
-  dataDir: string;
+  catalog: CardCatalog;
 }
 
 /**
@@ -80,7 +81,7 @@ export async function* runRagQuery(
   };
 
   const ranked = await retrieveCards({
-    dataDir: dependencies.dataDir,
+    catalog: dependencies.catalog,
     embedder: dependencies.ollama,
     query: {
       text: search.text,

@@ -1,3 +1,4 @@
+import { openCardCatalog } from '@ygo-assistant/db';
 import {
   type ILogger,
   type LogDestination,
@@ -77,9 +78,10 @@ async function main(): Promise<void> {
 
   const config = loadConfig(process.env);
   const logger = createRagLogger(args, config);
+  const catalog = openCardCatalog(config.dataDir);
 
   try {
-    await ensureIndexMatchesConfig(config);
+    await ensureIndexMatchesConfig(catalog, config);
   } catch (error) {
     logger.error('The card index is not usable', {
       message: describeError(error)
@@ -97,7 +99,7 @@ async function main(): Promise<void> {
   const dependencies: RagQueryDependencies = {
     logger,
     ollama: createOllamaClient(config.ollama),
-    dataDir: config.dataDir
+    catalog
   };
 
   let model: OllamaModel;

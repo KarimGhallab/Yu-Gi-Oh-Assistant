@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   type Card,
@@ -12,11 +12,11 @@ import {
   Language
 } from '@ygo-assistant/cards';
 import { TurnStatus } from '@ygo-assistant/contracts';
-import { buildCardIndex } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient, OllamaModel } from '@ygo-assistant/ollama';
 import { ParseOutcome } from '@ygo-assistant/rag';
-import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
+import { FakeOllamaClient } from '@ygo-assistant/test-support';
 
 import {
   type RagQueryDependencies,
@@ -24,10 +24,6 @@ import {
   type RagQueryInput,
   runRagQuery
 } from './runRagQuery.js';
-
-const DIMENSIONS = 3;
-const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
-const DATASET_VERSION = 'ygoprodeck-2026-09-17';
 
 const CHAT_MODEL: OllamaModel = {
   name: 'canned:1b',
@@ -92,21 +88,6 @@ const silentLogger: ILogger = {
   error: () => {}
 };
 
-const createIndexEmbedder = (vectors: number[][]): IOllamaClient => {
-  let cursor = 0;
-  return {
-    listModels: async () => [],
-    embed: async inputs => {
-      const batch = vectors.slice(cursor, cursor + inputs.length);
-      cursor += inputs.length;
-      return batch;
-    },
-    chat: () => {
-      throw new Error('Building the index never streams chat completions');
-    }
-  };
-};
-
 async function collect(
   events: AsyncGenerator<RagQueryEvent>
 ): Promise<RagQueryEvent[]> {
@@ -154,31 +135,17 @@ function answerTextOf(events: RagQueryEvent[]): string {
 }
 
 describe('runRagQuery', () => {
-  let dataDir: TempDataDir;
-
-  beforeEach(async () => {
-    dataDir = await TempDataDir.create();
-    await buildCardIndex({
-      dataDir: dataDir.path,
-      cards: [DRAGON, REBORN],
-      embedder: createIndexEmbedder([
-        [1, 0, 0],
-        [0, 1, 0]
-      ]),
-      embeddingModel: EMBEDDING_MODEL,
-      dimensions: DIMENSIONS,
-      datasetVersion: DATASET_VERSION
-    });
-  });
-
-  afterEach(async () => {
-    await dataDir.cleanup();
+  const catalog = new InMemoryCardCatalog({
+    rows: [
+      { ...DRAGON, vector: [1, 0, 0] },
+      { ...REBORN, vector: [0, 1, 0] }
+    ]
   });
 
   const dependencies = (ollama: IOllamaClient): RagQueryDependencies => ({
     logger: silentLogger,
     ollama,
-    dataDir: dataDir.path
+    catalog
   });
 
   const defaultInput: RagQueryInput = {

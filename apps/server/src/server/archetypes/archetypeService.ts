@@ -1,5 +1,3 @@
-import { listCardArchetypes } from '@ygo-assistant/db';
-
 import type { ServerDependencies } from '../types.js';
 
 /**
@@ -10,7 +8,7 @@ import type { ServerDependencies } from '../types.js';
 export async function catalogArchetypes(
   dependencies: ServerDependencies
 ): Promise<string[]> {
-  const archetypes = await listCardArchetypes(dependencies.config.dataDir);
+  const archetypes = await dependencies.catalog.archetypes();
 
   dependencies.logger.debug('Catalog archetypes listed', {
     count: archetypes.length

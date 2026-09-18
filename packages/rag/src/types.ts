@@ -1,4 +1,5 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
+import type { CardCatalog } from '@ygo-assistant/db';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 /**
@@ -34,11 +35,11 @@ export interface RankedCard {
 }
 
 /**
- * Everything a retrieval needs: where the index lives, how to embed the
- * request, what to look for, and how to rank it.
+ * Everything a retrieval needs: the catalog to read, how to embed the request,
+ * what to look for, and how to rank it.
  */
 export interface RetrieveCardsOptions {
-  dataDir: string;
+  catalog: CardCatalog;
   embedder: IOllamaClient;
   query: RetrievalQuery;
   ranking: RetrievalRanking;

@@ -24,16 +24,16 @@ the product intent and constraints are in [`PRODUCT.md`](./PRODUCT.md).
 
 ### The packages
 
-| Package                 | Responsibility                                                                                                                  | May depend on                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `packages/cards`        | The card domain and the filter schema, the vocabulary parsing, retrieval, and the interface share.                              | (leaf)                           |
-| `packages/contracts`    | The endpoint and turn-stream schemas, re-exporting the card vocabulary so the client names fields without importing the domain. | cards, utils                     |
-| `packages/ollama`       | The client to Ollama: chat, embeddings, and model listing.                                                                      | logger, utils                    |
-| `packages/db`           | The LanceDB catalog, the SQLite application state, and the ingestion path.                                                      | cards, logger, ollama, utils     |
-| `packages/rag`          | Retrieval and the two-stage pipeline: parse, retrieve, choose, answer.                                                          | cards, db, logger, ollama, utils |
-| `packages/logger`       | The pino wrapper and the log levels.                                                                                            | utils                            |
-| `packages/utils`        | Retained cross-cutting helpers and the typed domain error.                                                                      | (leaf)                           |
-| `packages/test-support` | Fakes and fixtures for tests. Importable from test files only, never from an app.                                               | other packages, never an app     |
+| Package                 | Responsibility                                                                                                                    | May depend on                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `packages/cards`        | The card domain and the filter schema, the vocabulary parsing, retrieval, and the interface share.                                | (leaf)                           |
+| `packages/contracts`    | The endpoint and turn-stream schemas, re-exporting the card vocabulary so the client names fields without importing the domain.   | cards, utils                     |
+| `packages/ollama`       | The client to Ollama: chat, embeddings, and model listing.                                                                        | logger, utils                    |
+| `packages/db`           | The read-only catalog port (a LanceDB adapter and an in-memory substitute), the SQLite application state, and the ingestion path. | cards, logger, ollama, utils     |
+| `packages/rag`          | Retrieval and the two-stage pipeline: parse, retrieve, choose, answer.                                                            | cards, db, logger, ollama, utils |
+| `packages/logger`       | The pino wrapper and the log levels.                                                                                              | utils                            |
+| `packages/utils`        | Retained cross-cutting helpers and the typed domain error.                                                                        | (leaf)                           |
+| `packages/test-support` | Fakes and fixtures for tests. Importable from test files only, never from an app.                                                 | other packages, never an app     |
 
 Cross-package imports go through a package's entry point, enforced by its
 `exports` map, so a package's internals stay its own.
@@ -44,7 +44,11 @@ Cross-package imports go through a package's entry point, enforced by its
   `DATA_DIR/index`. It is built once by `populateCardIndex`, is read-only while
   the server runs, and holds one row per card entry per language partition. Its
   metadata records the dataset version, the embedding model, and the dimensions
-  it was built with.
+  it was built with. Callers read it through one read-only `CardCatalog` port:
+  production opens the LanceDB adapter with `openCardCatalog`, tests substitute
+  the in-memory adapter at `@ygo-assistant/db/testing`, and the two are held to
+  one contract test. Ingestion stays direct and is not on the port: a build
+  replaces the whole table and runs before the server starts.
 - **The application state** lives in SQLite at `DATA_DIR/app.db`. It holds
   conversations and messages, including the filters a turn searched with, the
   rewrite a parse recorded, and the ids of the cards a turn suggested. The store
@@ -117,9 +121,10 @@ one is an error rather than a warning:
 - **`test-support` is test-only.** Only `*.test.*` and `*.spec.*` files may import
   it.
 
-The data layer follows the same spirit: `rag` reads the catalog through `db` and
-never through LanceDB directly, and the client reads the API through the
-`contracts` schemas rather than restating a shape.
+The data layer follows the same spirit: `rag` reads the catalog through the
+`CardCatalog` port that `db` exposes and never through LanceDB directly, and the
+client reads the API through the `contracts` schemas rather than restating a
+shape.
 
 ## Where things live
 

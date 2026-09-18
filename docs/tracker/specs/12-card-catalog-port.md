@@ -1,6 +1,6 @@
 # 12 - Card catalog port
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** 03, 04
 - **Source:** architecture review, 2026-09-18

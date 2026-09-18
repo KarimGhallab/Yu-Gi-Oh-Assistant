@@ -1,4 +1,4 @@
-import { readCardIndexMetadata } from '@ygo-assistant/db';
+import type { CardCatalog } from '@ygo-assistant/db';
 
 import type { AppConfig } from '../config/index.js';
 
@@ -18,14 +18,14 @@ export class StaleIndexError extends Error {
 /**
  * Verifies that the local card index was built with the configured embedding
  * model and dimensions, aborting startup otherwise. The embedding contract is
- * durable, so a mismatch would otherwise return silently wrong results.
+ * durable, so a mismatch would otherwise return silently wrong results. The
+ * directory is named only to tell whoever reads the failure where to rebuild.
  */
 export async function ensureIndexMatchesConfig(
+  catalog: CardCatalog,
   config: AppConfig
 ): Promise<void> {
-  const metadata = await readCardIndexMetadata(config.dataDir).catch(
-    () => undefined
-  );
+  const metadata = await catalog.metadata();
 
   if (metadata === undefined) {
     throw new StaleIndexError(

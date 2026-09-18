@@ -26,10 +26,10 @@ import {
 import {
   type IAppStore,
   MessageRole,
-  buildCardIndex,
   databasePath,
   openAppStore
 } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type {
   ChatChunk,
@@ -215,34 +215,11 @@ const turnRecords = (records: LogRecord[]): LogRecord[] =>
 describe('turn routes', () => {
   let dataDir: string;
   let store: IAppStore;
+  let catalog: InMemoryCardCatalog;
 
   const createDataDir = async (): Promise<string> => {
     dataDir = await mkdtemp(join(tmpdir(), 'ygo-assistant-turn-'));
     return dataDir;
-  };
-
-  const seedIndex = async (directory: string): Promise<void> => {
-    let cursor = 0;
-    const embedder: IOllamaClient = {
-      listModels: async () => [],
-      embed: async inputs => {
-        const batch = SEED_VECTORS.slice(cursor, cursor + inputs.length);
-        cursor += inputs.length;
-        return batch;
-      },
-      chat: () => {
-        throw new Error('Building the index never streams chat completions');
-      }
-    };
-
-    await buildCardIndex({
-      dataDir: directory,
-      cards: CREATED_IDS,
-      embedder,
-      embeddingModel: EMBEDDING_MODEL,
-      dimensions: DIMENSIONS,
-      datasetVersion: 'ygoprodeck-2026-09-16'
-    });
   };
 
   const createClient = (
@@ -277,7 +254,8 @@ describe('turn routes', () => {
       }),
       logger,
       ollama: client,
-      store
+      store,
+      catalog
     });
 
   const postTurn = async (
@@ -308,7 +286,12 @@ describe('turn routes', () => {
   beforeEach(async () => {
     await createDataDir();
     store = await openAppStore(databasePath(dataDir));
-    await seedIndex(dataDir);
+    catalog = new InMemoryCardCatalog({
+      rows: CREATED_IDS.map((card, index) => ({
+        ...card,
+        vector: SEED_VECTORS[index]
+      }))
+    });
   });
 
   afterEach(async () => {

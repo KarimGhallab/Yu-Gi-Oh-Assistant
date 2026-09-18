@@ -1,8 +1,5 @@
 import type { Card, Language } from '@ygo-assistant/cards';
-import {
-  type Message as StoredMessage,
-  readCardsByIds
-} from '@ygo-assistant/db';
+import type { Message as StoredMessage } from '@ygo-assistant/db';
 
 import type { ServerDependencies } from '../types.js';
 
@@ -27,7 +24,7 @@ export async function projectMessages(
   language: Language,
   messages: StoredMessage[]
 ): Promise<ProjectedMessage[]> {
-  const cards = await readCardsByIds(dependencies.config.dataDir, {
+  const cards = await dependencies.catalog.readByIds({
     ids: messages.flatMap(message => message.cardIds ?? []),
     language
   });

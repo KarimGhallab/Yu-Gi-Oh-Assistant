@@ -52,30 +52,25 @@ export interface CardIndexContents {
 }
 
 /**
- * What every query over the index is scoped by: the language partition to stay
- * inside, the optional structured pre-filters, and how many rows to return.
+ * The read-only view of the card index. It is what every caller above the data
+ * layer reaches, so a caller never knows the catalog is LanceDB. Ingestion is
+ * not on it: a build replaces the whole table and runs before the server starts.
  */
-export interface CardQueryOptions {
-  language: Language;
-  filters?: CardFilters;
-  limit: number;
-}
-
-/**
- * A vector search over the index: the query vector on top of the shared query
- * scope.
- */
-export interface SearchCardIndexOptions extends CardQueryOptions {
-  vector: number[];
-}
-
-/**
- * A read of specific cards: which ids to read, and the language to prefer when a
- * card exists in more than one, since the language partitions share their ids.
- */
-export interface ReadCardsByIdsOptions {
-  ids: number[];
-  language: Language;
+export interface CardCatalog {
+  search(options: {
+    vector: number[];
+    language: Language;
+    filters: CardFilters;
+    limit: number;
+  }): Promise<ScoredCard[]>;
+  scan(options: {
+    language: Language;
+    filters: CardFilters;
+    limit: number;
+  }): Promise<Card[]>;
+  readByIds(options: { ids: number[]; language: Language }): Promise<Card[]>;
+  archetypes(): Promise<string[]>;
+  metadata(): Promise<IndexMetadata | undefined>;
 }
 
 /**

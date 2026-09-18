@@ -22,10 +22,10 @@ import {
 import type { IAppStore } from '@ygo-assistant/db';
 import {
   MessageRole as StoredMessageRole,
-  buildCardIndex,
   databasePath,
   openAppStore
 } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 import { delay } from '@ygo-assistant/utils';
@@ -38,8 +38,6 @@ const CHAT_MODEL = 'llama3.1:8b';
 /** An id no conversation has, in the shape the API hands out. */
 const MISSING_ID = '00000000-0000-4000-8000-000000000000';
 
-const DIMENSIONS = 3;
-const EMBEDDING_MODEL = 'nomic-embed-text:latest';
 const MAGICIAN_ID = 46986414;
 const GREED_ID = 55144522;
 
@@ -116,10 +114,12 @@ const ollamaStub: IOllamaClient = {
 describe('conversation routes', () => {
   let dataDir: string;
   let store: IAppStore;
+  let catalog: InMemoryCardCatalog;
 
   beforeEach(async () => {
     dataDir = await mkdtemp(join(tmpdir(), 'ygo-assistant-api-'));
     store = await openAppStore(databasePath(dataDir));
+    catalog = new InMemoryCardCatalog({ rows: [] });
   });
 
   afterEach(async () => {
@@ -132,7 +132,8 @@ describe('conversation routes', () => {
       config: loadConfig({ DATA_DIR: dataDir }),
       logger: silentLogger,
       ollama,
-      store
+      store,
+      catalog
     });
 
   it('starts a conversation on the first model that can answer', async () => {
@@ -167,22 +168,9 @@ describe('conversation routes', () => {
     expect(conversationSchema.parse(created).model).toBe('mistral:7b');
   });
 
-  const seedIndex = async (cards: Card[]): Promise<void> => {
-    const embedder: IOllamaClient = {
-      listModels: async () => [],
-      embed: async inputs => inputs.map((_, index) => [index + 1, 0, 0]),
-      chat: () => {
-        throw new Error('Building the index never streams chat completions');
-      }
-    };
-
-    await buildCardIndex({
-      dataDir,
-      cards,
-      embedder,
-      embeddingModel: EMBEDDING_MODEL,
-      dimensions: DIMENSIONS,
-      datasetVersion: 'ygoprodeck-2026-09-16'
+  const seedIndex = (cards: Card[]): void => {
+    catalog = new InMemoryCardCatalog({
+      rows: cards.map(card => ({ ...card, vector: [1, 0, 0] }))
     });
   };
 
@@ -350,7 +338,7 @@ describe('conversation routes', () => {
 
     it('carries the filters and the cards a reply suggested', async () => {
       const created = await startConversation();
-      await seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN]);
+      seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN]);
       await store.messages.append({
         conversationId: created.id,
         role: StoredMessageRole.Assistant,
@@ -373,7 +361,7 @@ describe('conversation routes', () => {
         language: Language.French,
         model: CHAT_MODEL
       });
-      await seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN, ENGLISH_GREED]);
+      seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN, ENGLISH_GREED]);
       await store.messages.append({
         conversationId: created.id,
         role: StoredMessageRole.User,

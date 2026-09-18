@@ -1,4 +1,4 @@
-import type { IAppStore } from '@ygo-assistant/db';
+import type { CardCatalog, IAppStore } from '@ygo-assistant/db';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -21,4 +21,5 @@ export interface OllamaDependencies {
 export interface ServerDependencies extends OllamaDependencies {
   config: AppConfig;
   store: IAppStore;
+  catalog: CardCatalog;
 }

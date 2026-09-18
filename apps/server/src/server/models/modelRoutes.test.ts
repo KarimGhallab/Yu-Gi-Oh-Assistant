@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { modelListSchema } from '@ygo-assistant/contracts';
 import type { IAppStore } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import {
   type IOllamaClient,
@@ -73,7 +74,8 @@ const app = (ollama: IOllamaClient) =>
     config: loadConfig({ OLLAMA_BASE_URL: BASE_URL }),
     logger: silentLogger,
     ollama,
-    store: unusedStore
+    store: unusedStore,
+    catalog: new InMemoryCardCatalog({ rows: [] })
   });
 
 describe('the model routes', () => {

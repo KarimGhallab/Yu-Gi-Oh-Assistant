@@ -1,23 +1,12 @@
+export { openCardCatalog } from './catalog/cardCatalog.js';
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
-export {
-  buildCardIndex,
-  listCardArchetypes,
-  readCardIndex,
-  readCardIndexMetadata,
-  readCardsByIds,
-  scanCardIndex,
-  searchCardIndex
-} from './catalog/index/cardIndex.js';
-export { indexDirectory } from './catalog/indexPaths.js';
+export { buildCardIndex } from './catalog/index/cardIndex.js';
 export type {
   BuildCardIndexOptions,
-  CardIndexContents,
-  CardQueryOptions,
+  CardCatalog,
   IndexedCardRow,
   IndexMetadata,
-  ReadCardsByIdsOptions,
-  ScoredCard,
-  SearchCardIndexOptions
+  ScoredCard
 } from './catalog/types.js';
 export { populateCardIndex } from './populateCardIndex.js';
 export type {

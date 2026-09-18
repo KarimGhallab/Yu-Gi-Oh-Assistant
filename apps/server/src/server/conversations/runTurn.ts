@@ -77,7 +77,7 @@ export async function* runTurn(
 
     stage = TurnStage.Search;
     const ranked = await retrieveCards({
-      dataDir: dependencies.config.dataDir,
+      catalog: dependencies.catalog,
       embedder: dependencies.ollama,
       query: { text: search.text, filters: search.filters, language },
       ranking: {

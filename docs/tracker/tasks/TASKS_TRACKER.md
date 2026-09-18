@@ -65,6 +65,9 @@ numbering across specs, so blocking edges stay legible across features.
 | 55  | [The platform decisions are recorded](./55-the-platform-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 56  | [The pipeline decisions are recorded](./56-the-pipeline-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 57  | [The conversation and testing decisions are recorded](./57-the-conversation-and-testing-decisions-are-recorded.md)                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 58  | [The catalog is read behind a port](./58-the-catalog-is-read-behind-a-port.md)                                                              | Resolved (2026-09-18) | None       | [12](../specs/12-card-catalog-port.md)                                                |
+| 59  | [The callers and the suites move onto the port](./59-the-callers-and-the-suites-move-onto-the-port.md)                                      | Resolved (2026-09-18) | 58         | [12](../specs/12-card-catalog-port.md)                                                |
+| 60  | [The db entry narrows and the architecture doc follows](./60-the-db-entry-narrows-and-the-architecture-doc-follows.md)                      | Resolved (2026-09-18) | 59         | [12](../specs/12-card-catalog-port.md)                                                |
 
 ## Frontier
 
@@ -88,3 +91,10 @@ shape the spec called for already landed under specs 01 and 11. Spec 11
 resolved, from the fake Ollama's public surface and the harness that stands the
 stack up to the suite in CI behind the pipeline gate. Ticket 11 supersedes the
 single-origin setup in ticket 06 and spec 01.
+
+Spec 12 (Card catalog port) is fully landed: 58 through 60 are resolved, the
+port and its in-memory substitute, the callers and the suites moved onto it, and
+the db entry narrowed with the architecture doc updated. The port is the
+architecture review's first candidate, recorded in ADR 0011. Specs 13 (Turn
+pipeline) and 14 (Filter predicate) both depended on 12 and are now unblocked;
+neither has tickets yet.

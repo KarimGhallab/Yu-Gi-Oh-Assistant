@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IAppStore } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import { LogLevel } from '@ygo-assistant/logger';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
@@ -72,7 +73,8 @@ const createDependencies = (env: Record<string, string | undefined> = {}) => ({
   config: loadConfig(env),
   logger: new RecordingLogger(),
   ollama: ollamaStub,
-  store: storeStub
+  store: storeStub,
+  catalog: new InMemoryCardCatalog({ rows: [] })
 });
 
 describe('createServer', () => {
