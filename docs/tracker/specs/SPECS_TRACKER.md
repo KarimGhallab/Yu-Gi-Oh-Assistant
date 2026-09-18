@@ -32,7 +32,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md)   | Resolved (2026-09-18) | -          |
 | 19  | [Turn recovery and the empty bench](./19-turn-recovery-and-the-empty-bench.md) | Resolved (2026-09-18) | -          |
 | 20  | [Readable and reachable controls](./20-readable-and-reachable-controls.md)     | Resolved (2026-09-18) | -          |
-| 21  | [One lamp and honest chrome](./21-one-lamp-and-honest-chrome.md)               | ready-for-agent       | -          |
+| 21  | [One lamp and honest chrome](./21-one-lamp-and-honest-chrome.md)               | Resolved (2026-09-18) | -          |
 
 ## Critical path
 
@@ -59,5 +59,4 @@ spec dependency. 19 is resolved: it carried the turn recovery, the empty-answer
 copy, and the empty bench. 20 is resolved: it carried the contrast, focus, and
 reachability fixes, ticketed as 79 through 82, all landed. 21 resolves the One
 Lamp Rule and the chrome around an empty conversation, which now starts with the
-bench 19 landed. It is not on the critical path; it is the remaining work of the
-design track.
+bench 19 landed; it is ticketed as 83 and resolved. The design track is complete.

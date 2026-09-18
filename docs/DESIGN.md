@@ -234,13 +234,13 @@ the accent and failure.
 
 **The One Lamp Rule.** Amber marks what is actionable, chosen, or focused, and
 nothing else. No amber headings, no amber decoration, no amber dividers. Its
-rarity is what makes it read as light. The conversation screen is where the rule
-is under the most pressure, because it shows the sidebar's New fill and the
-composer's Send fill at once: the primary action of two different regions, and
-whether one screen should carry two filled controls at all is undecided. Until it
-is, two fills in two regions is the limit. A dialog that has taken the room is a
+rarity is what makes it read as light. A screen carries one filled control, and
+it is the action the screen is for: the composer's Send is the lamp of the asking
+surface, on the home surface and in a conversation alike, and the sidebar's New
+is a quiet action beside it, because starting a conversation is not the act a
+screen built around a prompt is asking for. A dialog that has taken the room is a
 region of its own and the only one being read while it is open, so the lamp it
-carries is not a third lamp on the screen: the fills behind it are not being
+carries is not a second lamp on the screen: the fills behind it are not being
 looked at. The prompt's field carries no amber and no border of its own, because
 it is a surface rather than an outlined bench, and the focus ring is the only line
 ever drawn around it.
@@ -290,11 +290,12 @@ The main region is the only thing that scrolls vertically, and a
 conversation surface holds one header, one content area, and one prompt docked at
 its bottom edge. Until it has anything to say, that prompt stands in the middle
 of the region with the requests that can be asked above it, because a
-conversation that was started but not spoken in is still the start it was; the
-prompt moves down to the foot as the first request is asked. The home surface
-draws the same bench under its own title, because typing a request is how a
-conversation begins: sending it starts the conversation and asks the request in
-it. The header carries
+conversation that was started but not spoken in is still the start it was, and it
+carries no name of its own yet: the header arrives with the first message, and
+until then the sidebar is what identifies the conversation. The prompt moves down
+to the foot as the first request is asked. The home surface draws the same bench
+under its own title, because typing a request is how a conversation begins:
+sending it starts the conversation and asks the request in it. The header carries
 the conversation's name and nothing else, because the language its cards are read
 in and the model that answers belong to the act of asking: they live on the
 prompt's own surface, beside the field they are sent with. That surface is the
@@ -797,9 +798,10 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   then the prompt. The prompt keeps the width it has at the foot of a
   conversation, because the two are one card and the move between them is what
   says so; only the words and the tools are held to a 28rem measure and centred.
-- **Title:** Title scale in Bone White on the home surface. A conversation names
-  itself in its header, so its bench leaves the title out and the words stand
-  under that name instead.
+- **Title:** Title scale in Bone White. The home surface carries it, and so does a
+  conversation with nothing in it: a conversation has no name until it has
+  something to name, so its header holds off and the bench keeps its own title
+  instead. The sidebar still names the conversation while it is empty.
 - **Words:** Body in Ash Grey, one line: they say what to do, not what the tool
   is.
 - **Tools:** the requests themselves, as plain text in Ash Grey, stepping to Bone

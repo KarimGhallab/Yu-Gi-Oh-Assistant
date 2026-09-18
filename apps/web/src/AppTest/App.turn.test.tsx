@@ -711,8 +711,10 @@ describe('running a turn', () => {
       await screen.findByRole('link', { name: 'New conversation' })
     );
 
+    // The conversation opened holds nothing, so it draws the bench and carries
+    // no title; the sidebar is what names it.
     expect(
-      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
+      await screen.findByRole('heading', { name: 'Start a conversation' })
     ).toBeInTheDocument();
     expect(signalled?.aborted).toBe(true);
   });

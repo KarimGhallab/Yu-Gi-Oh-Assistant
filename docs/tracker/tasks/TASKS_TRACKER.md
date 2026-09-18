@@ -90,6 +90,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 80  | [Searched as is readable without a pointer](./80-searched-as-is-readable-without-a-pointer.md)                                              | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
 | 81  | [The dialog shows the region that took the room](./81-the-dialog-shows-the-region-that-took-the-room.md)                                    | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
 | 82  | [The model control is readable and its rows explain themselves](./82-the-model-control-is-readable-and-explains-itself.md)                  | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 83  | [Send is the lamp and an empty conversation carries no title](./83-send-is-the-lamp.md)                                                     | Resolved (2026-09-18) | None       | [21](../specs/21-one-lamp-and-honest-chrome.md)                                       |
 
 ## Frontier
 
@@ -159,6 +160,11 @@ small machine facts are set in to `oklch(65% 0 none)`, measured clear on Room
 Black, Bench Slate, and Rail Grey. 80 makes `Searched as` readable without a
 pointer, 81 makes a dialog show the region that took the room, and 82 makes the
 model control's rows and its chosen name readable. Spec 20 is complete.
+
+Spec 21 (One lamp and honest chrome) is ticketed as 83 and resolved: Send is the
+one filled control of the asking surface, the sidebar's New is a quiet action,
+and a conversation with nothing in it draws the bench rather than a header title
+it has not earned. The design track has no ticket left.
 
 A follow-on change to the filter readout, asked for while 80 through 82 landed:
 the chip editor's field, operator, and value controls are now the same picker the

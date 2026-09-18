@@ -267,18 +267,19 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
     </header>
   );
 
-  // A conversation with nothing in it is the start it was, so its content is
-  // the bench the home surface draws, under the name the header gives it. The
-  // bench holds the prompt, so the foot has none while the bench is up.
+  // A conversation with nothing in it is the start it was, so it draws the bench
+  // the home surface draws rather than carrying a title it has not earned: the
+  // name is in the sidebar, and it reaches the header when the conversation has
+  // something to name. The bench holds the prompt, so the foot has none while it
+  // is up.
   if (restful) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        {header}
-        <section
-          aria-label="Messages"
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <Bench onChoose={ask} prompt={composer} />
-        </section>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <Bench
+          heading="Start a conversation"
+          onChoose={ask}
+          prompt={composer}
+        />
       </div>
     );
   }

@@ -273,11 +273,15 @@ describe('reading a conversation', () => {
     renderApp(`/c/${uuid(2)}`);
 
     // An empty conversation is the start it was, so it draws the same bench the
-    // home surface does: the words, the request field, and the requests that can
-    // be asked. Its own header names it, so the bench holds no second title.
+    // home surface does: the title, the words, the request field, and the
+    // requests that can be asked. It carries no name of its own yet, because it
+    // has nothing to name; the sidebar is where it is identified.
     expect(
-      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
+      await screen.findByRole('heading', { name: 'Start a conversation' })
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Graveyard toolbox' })
+    ).not.toBeInTheDocument();
     expect(
       screen.getByText('Describe the cards you are looking for.')
     ).toBeInTheDocument();

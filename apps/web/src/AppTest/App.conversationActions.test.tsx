@@ -7,11 +7,26 @@ import {
   UNTITLED,
   createConversation,
   json,
+  playerMessage,
   renderApp,
+  said,
   stubFetch,
   uuid,
   withMessages
 } from './appTestHarness.js';
+
+/**
+ * One stored turn, so the conversation carries the header its name lives in. A
+ * conversation with nothing in it draws the bench instead and has no title,
+ * which is the truth these tests are not about.
+ */
+const spoken = (
+  conversation: ReturnType<typeof createConversation>
+): ReturnType<typeof withMessages> =>
+  withMessages(conversation, [
+    playerMessage(11, 'I want a dragon'),
+    said(12, 'assistant', 'Blue-Eyes is the biggest body.')
+  ]);
 
 describe('renaming and deleting a conversation', () => {
   afterEach(() => {
@@ -30,7 +45,7 @@ describe('renaming and deleting a conversation', () => {
 
       return url === '/api/conversations'
         ? json([conversation])
-        : json(withMessages(conversation));
+        : json(spoken(conversation));
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -109,7 +124,7 @@ describe('renaming and deleting a conversation', () => {
 
       return url === '/api/conversations'
         ? json(listed)
-        : json(withMessages(GRAVEYARD));
+        : json(spoken(GRAVEYARD));
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -154,7 +169,7 @@ describe('renaming and deleting a conversation', () => {
           ? json({ error: 'The conversation is in use' }, 409)
           : url === '/api/conversations'
             ? json([GRAVEYARD])
-            : json(withMessages(GRAVEYARD))
+            : json(spoken(GRAVEYARD))
       )
     );
 
@@ -187,7 +202,7 @@ describe('renaming and deleting a conversation', () => {
 
         return url === '/api/conversations'
           ? json([conversation])
-          : json(withMessages(conversation));
+          : json(spoken(conversation));
       })
     );
 
@@ -224,7 +239,7 @@ describe('renaming and deleting a conversation', () => {
       stubFetch(url =>
         url === '/api/conversations'
           ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+          : json(spoken(GRAVEYARD))
       )
     );
 
@@ -261,9 +276,7 @@ describe('renaming and deleting a conversation', () => {
 
   it('leaves a rename alone when it is called off', async () => {
     const fetchMock = stubFetch(url =>
-      url === '/api/conversations'
-        ? json([GRAVEYARD])
-        : json(withMessages(GRAVEYARD))
+      url === '/api/conversations' ? json([GRAVEYARD]) : json(spoken(GRAVEYARD))
     );
     vi.stubGlobal('fetch', fetchMock);
 
@@ -288,7 +301,7 @@ describe('renaming and deleting a conversation', () => {
         ? new Response(null, { status: 204 })
         : url === '/api/conversations'
           ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+          : json(spoken(GRAVEYARD))
     );
     vi.stubGlobal('fetch', fetchMock);
 
@@ -319,7 +332,7 @@ describe('renaming and deleting a conversation', () => {
 
         return url === '/api/conversations'
           ? json(listed)
-          : json(withMessages(GRAVEYARD));
+          : json(spoken(GRAVEYARD));
       })
     );
 
@@ -341,7 +354,7 @@ describe('renaming and deleting a conversation', () => {
       stubFetch(url =>
         url === '/api/conversations'
           ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+          : json(spoken(GRAVEYARD))
       )
     );
 
@@ -375,9 +388,7 @@ describe('renaming and deleting a conversation', () => {
 
   it('calls a deletion off from the keyboard, and from the room outside it', async () => {
     const fetchMock = stubFetch(url =>
-      url === '/api/conversations'
-        ? json([GRAVEYARD])
-        : json(withMessages(GRAVEYARD))
+      url === '/api/conversations' ? json([GRAVEYARD]) : json(spoken(GRAVEYARD))
     );
     vi.stubGlobal('fetch', fetchMock);
 
@@ -419,7 +430,7 @@ describe('renaming and deleting a conversation', () => {
 
         return url === '/api/conversations'
           ? json([conversation])
-          : json(withMessages(conversation));
+          : json(spoken(conversation));
       })
     );
 

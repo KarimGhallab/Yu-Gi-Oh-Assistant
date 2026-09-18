@@ -47,7 +47,7 @@ const FOLD_CLASS =
  * row that scrolls sideways on a narrow one.
  */
 const RAIL_CLASS =
-  'flex min-h-0 gap-1 overflow-x-auto px-2 pt-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pt-2 md:pb-0';
+  'flex min-h-0 gap-2 overflow-x-auto px-2 pt-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pt-2 md:pb-0';
 
 /**
  * One conversation, folded: the first letter of its name, and its whole name for
@@ -354,7 +354,7 @@ export default function Sidebar({ withHeader = true }: SidebarProps) {
       ) : null}
       {withHeader ? (
         <div
-          className={`flex items-center gap-1 p-4 ${
+          className={`flex items-center gap-2 p-4 ${
             folded ? 'md:flex-col md:items-start' : ''
           }`}>
           <button
