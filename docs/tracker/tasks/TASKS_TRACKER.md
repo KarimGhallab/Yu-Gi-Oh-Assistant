@@ -73,6 +73,8 @@ numbering across specs, so blocking edges stay legible across features.
 | 63  | [The suites rebalance and the docs follow](./63-the-suites-rebalance-and-the-docs-follow.md)                                                | Resolved (2026-09-18) | 61, 62     | [13](../specs/13-turn-pipeline.md)                                                    |
 | 64  | [The predicate renders from the schema's field kinds](./64-the-predicate-renders-from-the-schema-kinds.md)                                  | Resolved (2026-09-18) | None       | [14](../specs/14-filter-predicate.md)                                                 |
 | 65  | [The shipped predicate is pinned to the tested one](./65-the-shipped-predicate-is-pinned-to-the-tested-one.md)                              | Resolved (2026-09-18) | 64         | [14](../specs/14-filter-predicate.md)                                                 |
+| 66  | [The reply carries one search record](./66-the-reply-carries-one-search-record.md)                                                          | Resolved (2026-09-18) | None       | [15](../specs/15-search-interpretation.md)                                            |
+| 67  | [The readout and history read the stored record](./67-the-readout-and-history-read-the-stored-record.md)                                    | Resolved (2026-09-18) | 66         | [15](../specs/15-search-interpretation.md)                                            |
 
 ## Frontier
 
@@ -106,5 +108,9 @@ the sequence behind its neutral events, the RAG command calls it directly, and
 the suites and docs follow. Spec 14 (Filter predicate) is fully landed: 64 and 65
 are resolved, the schema's field kinds are the one source the shipped SQL renders
 from, and the adapter contract test pins the shipped predicate to the tested one.
-The architecture review's first three candidates are done; candidates four
-through six are not yet ticketed.
+The first architecture review's three candidates are done (specs 12 to 14). A
+second review surfaced six more, and its first is fully landed as spec 15 (Search
+interpretation): 66 and 67 are resolved, the reply carries one search record of
+the filters, the free text, and the status, the client reads it live and stored,
+and the old message fields are gone. The second review's remaining candidates are
+not yet ticketed.

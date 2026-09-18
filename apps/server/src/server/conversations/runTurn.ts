@@ -5,7 +5,6 @@ import {
   TurnStage
 } from '@ygo-assistant/contracts';
 import { MessageRole } from '@ygo-assistant/db';
-import { ParseOutcome } from '@ygo-assistant/rag';
 import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
 
 import {
@@ -74,7 +73,6 @@ export async function* runTurn(
       switch (event.type) {
         case 'search':
           search = event;
-          await storeQuery(dependencies, input, event);
 
           if (event.status !== undefined) {
             yield { type: TurnEventName.Status, status: event.status };
@@ -123,7 +121,7 @@ export async function* runTurn(
       conversationId: input.conversationId,
       role: MessageRole.Assistant,
       content: answer,
-      filters: search?.filters ?? [],
+      search: storedSearch(search),
       cardIds: cards.map(card => card.id)
     });
 
@@ -179,37 +177,23 @@ function pipelineInput(
 }
 
 /**
- * Keeps the free text the turn's search actually ran on. The parse is the only
- * stage that rewrites the request, so a parse that produced nothing usable, and
- * every path that skipped the parse, leave the message with the player's own
- * words and nothing else. A store that will not take it is worth a warning
- * rather than a failed turn: the search has already run, and the rewrite is only
- * how the player gets to see what it ran on.
+ * The search a turn ran, as the reply stores it: the filters that were
+ * understood, the free text the search ranked, and the status the turn
+ * reported. A turn whose pipeline never reported a search stores none, which is
+ * the same as a turn that gave way before it searched.
  */
-async function storeQuery(
-  dependencies: ServerDependencies,
-  input: TurnInput,
-  search: { outcome?: ParseOutcome; query?: string }
-): Promise<void> {
-  if (
-    search.outcome !== ParseOutcome.Parsed ||
-    search.query === undefined ||
-    search.query === input.text
-  ) {
-    return;
+function storedSearch(
+  search: Extract<PipelineEvent, { type: 'search' }> | undefined
+): { filters: CardFilters; query?: string; status?: string } | undefined {
+  if (search === undefined) {
+    return undefined;
   }
 
-  try {
-    await dependencies.store.messages.setQuery(
-      input.userMessageId,
-      search.query
-    );
-  } catch (error) {
-    dependencies.logger.warn('The rewritten query could not be stored', {
-      conversationId: input.conversationId,
-      message: describeError(error)
-    });
-  }
+  return {
+    filters: search.filters,
+    query: search.query,
+    status: search.status
+  };
 }
 
 /**

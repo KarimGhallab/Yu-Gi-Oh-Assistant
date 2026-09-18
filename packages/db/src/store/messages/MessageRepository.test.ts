@@ -1,6 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -168,7 +169,7 @@ describe('app store messages', () => {
     expect(reopened?.title).toBe('First request');
   });
 
-  it('round-trips the filters and card ids a reply carried', async () => {
+  it('round-trips the search record and card ids a reply carried', async () => {
     const conversation = await createConversation();
 
     await store.messages.append({
@@ -180,15 +181,23 @@ describe('app store messages', () => {
       conversationId: conversation.id,
       role: MessageRole.Assistant,
       content: 'Try these',
-      filters: FILTERS,
+      search: {
+        filters: FILTERS,
+        query: 'a light monster',
+        status: 'free-text-only'
+      },
       cardIds: [46986414, 89631139]
     });
 
     const messages = await store.messages.list(conversation.id);
 
-    expect(messages[1].filters).toEqual(FILTERS);
+    expect(messages[1].search).toEqual({
+      filters: FILTERS,
+      query: 'a light monster',
+      status: 'free-text-only'
+    });
     expect(messages[1].cardIds).toEqual([46986414, 89631139]);
-    expect(messages[0].filters).toBeUndefined();
+    expect(messages[0].search).toBeUndefined();
     expect(messages[0].cardIds).toBeUndefined();
   });
 
@@ -199,43 +208,37 @@ describe('app store messages', () => {
       conversationId: conversation.id,
       role: MessageRole.Assistant,
       content: 'Anything goes',
-      filters: [],
+      search: { filters: [] },
       cardIds: []
     });
 
     const messages = await store.messages.list(conversation.id);
 
-    expect(messages[0].filters).toEqual([]);
+    expect(messages[0].search).toEqual({ filters: [] });
     expect(messages[0].cardIds).toEqual([]);
   });
 
-  it('attaches the free text a turn searched on to the message it answered', async () => {
+  it('raises a stored search whose filters no longer satisfy the vocabulary', async () => {
+    const path = databasePath(dataDir);
     const conversation = await createConversation();
-    const asked = await store.messages.append({
+
+    await store.messages.append({
       conversationId: conversation.id,
-      role: MessageRole.User,
-      content: 'a card that gets a spell back from the graveyard'
+      role: MessageRole.Assistant,
+      content: 'Try these',
+      search: { filters: FILTERS }
     });
+    await store.close();
 
-    expect(asked.query).toBeUndefined();
-
-    await store.messages.setQuery(
-      asked.id,
-      'add 1 Spell from your GY to your hand'
+    const database = new DatabaseSync(path);
+    database.exec(
+      `UPDATE messages SET search_json = '{"filters":[{"field":"nonsense","operator":"eq","value":1}]}'`
     );
+    database.close();
 
-    const messages = await store.messages.list(conversation.id);
+    store = await openAppStore(path);
 
-    expect(messages[0].query).toBe('add 1 Spell from your GY to your hand');
-  });
-
-  it('refuses to attach a query to a message that does not exist', async () => {
-    await expect(
-      store.messages.setQuery(
-        'f0000000-0000-4000-8000-000000000000',
-        'anything'
-      )
-    ).rejects.toThrow(/No message has id/);
+    await expect(store.messages.list(conversation.id)).rejects.toThrow();
   });
 
   it('keeps the messages of one conversation out of another', async () => {

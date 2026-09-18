@@ -45,7 +45,7 @@ describe('the conversation settings', () => {
         withMessages(createConversation(2, { language }), [
           playerMessage(10, 'a dark monster'),
           said(11, 'assistant', 'Here it is.', {
-            filters: [],
+            search: { filters: [] },
             cards: [language === 'fr' ? french : english]
           })
         ])
@@ -98,7 +98,7 @@ describe('the conversation settings', () => {
               withMessages(createConversation(2, { language: 'fr' }), [
                 playerMessage(10, 'un monstre sombre'),
                 said(11, 'assistant', 'Le voici.', {
-                  filters: [],
+                  search: { filters: [] },
                   cards: [
                     createCard(46986414, 'Magicien Sombre', { language: 'fr' })
                   ]

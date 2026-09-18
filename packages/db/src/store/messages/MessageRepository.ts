@@ -3,7 +3,6 @@ import type { DatabaseSync } from 'node:sqlite';
 
 import { z } from 'zod';
 
-import type { CardFilters } from '@ygo-assistant/cards';
 import { cardFiltersSchema } from '@ygo-assistant/cards';
 import { NotFoundError } from '@ygo-assistant/utils';
 
@@ -11,12 +10,13 @@ import { toMessageRole, toOptionalString, toString } from '../storedValues.js';
 import type {
   AppendMessageInput,
   IMessageRepository,
-  Message
+  Message,
+  StoredSearch
 } from '../types.js';
 import { MessageRole } from '../types.js';
 
 const COLUMNS =
-  'id, conversation_id, role, content, filters_json, card_ids_json, query, created_at';
+  'id, conversation_id, role, content, search_json, card_ids_json, created_at';
 
 const cardIdsSchema = z.array(z.number().int().positive());
 
@@ -66,16 +66,6 @@ export class MessageRepository implements IMessageRepository {
 
     return rows.map(row => toMessage(row));
   }
-
-  async setQuery(messageId: string, query: string): Promise<void> {
-    const result = this._database
-      .prepare('UPDATE messages SET query = ? WHERE id = ?')
-      .run(query, messageId);
-
-    if (Number(result.changes) === 0) {
-      throw new NotFoundError(`No message has id ${messageId}`);
-    }
-  }
 }
 
 /**
@@ -106,7 +96,7 @@ function insert(
   const id = randomUUID();
   database
     .prepare(
-      `INSERT INTO messages (id, conversation_id, role, content, filters_json, card_ids_json, created_at)
+      `INSERT INTO messages (id, conversation_id, role, content, search_json, card_ids_json, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
@@ -114,7 +104,7 @@ function insert(
       input.conversationId,
       input.role,
       input.content,
-      storeJson(input.filters),
+      storeJson(input.search),
       storeJson(input.cardIds),
       timestamp
     );
@@ -124,7 +114,7 @@ function insert(
     conversationId: input.conversationId,
     role: input.role,
     content: input.content,
-    filters: input.filters,
+    search: input.search,
     cardIds: input.cardIds,
     createdAt: timestamp
   };
@@ -152,26 +142,32 @@ function toMessage(row: Record<string, unknown>): Message {
     conversationId: toString(row.conversation_id, 'conversation_id'),
     role: toMessageRole(row.role),
     content: toString(row.content, 'content'),
-    filters: toFilters(row.filters_json),
+    search: toSearch(row.search_json),
     cardIds: toCardIds(row.card_ids_json),
-    query: toOptionalString(row.query, 'query') ?? undefined,
     createdAt: toString(row.created_at, 'created_at')
   };
 }
 
 /**
- * The JSON columns are validated on the way back out, so a row that no longer
- * satisfies the filter vocabulary is raised rather than reaching retrieval.
+ * The search record is validated on the way back out, so a row whose filters no
+ * longer satisfy the vocabulary is raised rather than reaching retrieval. The
+ * free text and the status are carried as they were written; the status is a
+ * code the turn vocabulary owns, and the server is where it becomes one.
  */
-function toFilters(value: unknown): CardFilters | undefined {
-  const stored = toOptionalString(value, 'filters_json');
+function toSearch(value: unknown): StoredSearch | undefined {
+  const stored = toOptionalString(value, 'search_json');
 
   if (stored === null) {
     return undefined;
   }
 
-  const parsed: unknown = JSON.parse(stored);
-  return cardFiltersSchema.parse(parsed);
+  const record = JSON.parse(stored) as Record<string, unknown>;
+
+  return {
+    filters: cardFiltersSchema.parse(record.filters),
+    query: typeof record.query === 'string' ? record.query : undefined,
+    status: typeof record.status === 'string' ? record.status : undefined
+  };
 }
 
 function toCardIds(value: unknown): number[] | undefined {

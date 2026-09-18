@@ -78,6 +78,28 @@ const MIGRATIONS: Migration[] = [
     // request. It is written after the user message is appended, because it is
     // not known until the parse has run, so it arrives as a later column.
     statements: [`ALTER TABLE messages ADD COLUMN query TEXT`]
+  },
+  {
+    id: 5,
+    name: 'message-search',
+    // A turn's search is one record: the filters, the free text, and the status
+    // the turn reported. The old per-message columns cannot express that, and
+    // SQLite cannot change a table's columns in place, so the table is rebuilt.
+    // What it held was written under the old shape, which has no record to read,
+    // so the table comes back empty and a fresh data dir is expected.
+    statements: [
+      `DROP TABLE messages`,
+      `CREATE TABLE messages (
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL REFERENCES conversations (id) ON DELETE CASCADE,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        search_json TEXT,
+        card_ids_json TEXT,
+        created_at TEXT NOT NULL
+      )`,
+      `CREATE INDEX messages_by_conversation ON messages (conversation_id)`
+    ]
   }
 ];
 

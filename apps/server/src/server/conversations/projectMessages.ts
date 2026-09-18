@@ -7,6 +7,7 @@ import type { ServerDependencies } from '../types.js';
  * A message as the API represents it: what was said, and what the turn behind it
  * was searched with and suggested. A stored turn keeps the ids of the cards it
  * showed rather than the cards themselves, so the two are not the same shape.
+ * The reply's search is the record the turn stored, carried through as it is.
  */
 export interface ProjectedMessage extends Omit<StoredMessage, 'cardIds'> {
   cards?: Card[];

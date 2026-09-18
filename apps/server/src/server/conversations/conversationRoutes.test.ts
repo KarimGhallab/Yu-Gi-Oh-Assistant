@@ -336,14 +336,18 @@ describe('conversation routes', () => {
       ]);
     });
 
-    it('carries the filters and the cards a reply suggested', async () => {
+    it('carries the search record and the cards a reply suggested', async () => {
       const created = await startConversation();
       seedIndex([ENGLISH_MAGICIAN, FRENCH_MAGICIAN]);
       await store.messages.append({
         conversationId: created.id,
         role: StoredMessageRole.Assistant,
         content: 'Try these',
-        filters: FILTERS,
+        search: {
+          filters: FILTERS,
+          query: 'a light monster',
+          status: 'free-text-only'
+        },
         cardIds: [MAGICIAN_ID]
       });
 
@@ -352,7 +356,11 @@ describe('conversation routes', () => {
       const reopened = conversationWithMessagesSchema.parse(
         await response.json()
       );
-      expect(reopened.messages[0].filters).toEqual(FILTERS);
+      expect(reopened.messages[0].search).toEqual({
+        filters: FILTERS,
+        query: 'a light monster',
+        status: 'free-text-only'
+      });
       expect(reopened.messages[0].cards).toEqual([ENGLISH_MAGICIAN]);
     });
 

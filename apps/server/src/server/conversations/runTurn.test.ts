@@ -349,7 +349,7 @@ describe('turn routes', () => {
     expect(messages[1]).toMatchObject({
       conversationId,
       content: 'Blue-Eyes fits.',
-      filters: LIGHT_FILTERS,
+      search: { filters: LIGHT_FILTERS, query: 'banish cards' },
       cardIds: [CREATED_IDS[0]?.id]
     });
   });
@@ -375,7 +375,7 @@ describe('turn routes', () => {
     expect(conversation.messages[1]).toMatchObject({
       role: 'assistant',
       content: 'Blue-Eyes fits.',
-      filters: LIGHT_FILTERS,
+      search: { filters: LIGHT_FILTERS, query: 'banish cards' },
       cards: [
         {
           id: CREATED_IDS[0]?.id,
@@ -408,11 +408,14 @@ describe('turn routes', () => {
     expect(conversation.messages[1]).toMatchObject({
       role: 'assistant',
       content: 'Blue-Eyes fits.',
-      filters: [],
+      search: { filters: [], status: 'free-text-only' },
       cards: [{ id: CREATED_IDS[0]?.id, name: 'Blue-Eyes White Dragon' }]
     });
-    // The search ran on the player's own words, so there is no rewrite to keep.
-    expect(conversation.messages[0]?.query).toBeUndefined();
+    // The search ran on the player's own words, so the record carries the
+    // request and says the search fell back to it, and the player's message
+    // carries nothing.
+    expect(conversation.messages[1]?.search?.query).toBe(REQUEST);
+    expect(conversation.messages[0]?.search).toBeUndefined();
   });
 
   it('keeps the free text the parse rewrote the request into', async () => {
@@ -430,9 +433,10 @@ describe('turn routes', () => {
 
     expect(conversation.messages[0]).toMatchObject({
       role: 'user',
-      content: REQUEST,
-      query: 'banish cards'
+      content: REQUEST
     });
+    // The rewrite belongs to the turn's search, which the reply carries.
+    expect(conversation.messages[1]?.search?.query).toBe('banish cards');
   });
 
   it('searches the language the player chose and keeps it on the conversation', async () => {

@@ -44,19 +44,29 @@ export interface UpdateConversationInput {
 }
 
 /**
- * A stored message. The parsed filters and the suggested card ids are filled by
- * the turn that produced the reply, so a message that carried neither has
- * neither. A user message carries the free text the turn searched on when the
- * parse rewrote it, which is written once the turn has worked it out.
+ * The search a turn ran, as the store keeps it. The filters are the ones the
+ * schema knows, and the free text and the status are carried as they were
+ * reported; the store validates only what it can name, and the server is where
+ * the status code becomes the turn's own.
+ */
+export interface StoredSearch {
+  filters: CardFilters;
+  query?: string;
+  status?: string;
+}
+
+/**
+ * A stored message. The search a reply ran and the suggested card ids are
+ * filled by the turn that produced it, so a message that carried neither has
+ * neither.
  */
 export interface Message {
   id: string;
   conversationId: string;
   role: MessageRole;
   content: string;
-  filters?: CardFilters;
+  search?: StoredSearch;
   cardIds?: number[];
-  query?: string;
   createdAt: string;
 }
 
@@ -67,7 +77,7 @@ export interface AppendMessageInput {
   conversationId: string;
   role: MessageRole;
   content: string;
-  filters?: CardFilters;
+  search?: StoredSearch;
   cardIds?: number[];
 }
 
@@ -87,14 +97,12 @@ export interface IConversationRepository {
 
 /**
  * Reads and appends the messages of a conversation, in the order they were
- * written. Appending is the seam the turn writes through. The query a turn
- * searched on is set after the message exists, because the parse that produces
- * it runs after the player's message has been appended.
+ * written. Appending is the seam the turn writes through: the reply carries the
+ * search the turn ran, and nothing is written to a message after it exists.
  */
 export interface IMessageRepository {
   append(input: AppendMessageInput): Promise<Message>;
   list(conversationId: string): Promise<Message[]>;
-  setQuery(messageId: string, query: string): Promise<void>;
 }
 
 /**

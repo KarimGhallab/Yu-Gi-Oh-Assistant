@@ -32,12 +32,14 @@ describe('reading a conversation', () => {
       stubFetch(() =>
         json(
           withMessages(GRAVEYARD, [
-            said(11, 'user', 'A card that lets me get a spell back', {
-              query: 'add 1 Spell from your GY to your hand'
-            }),
-            assistantMessage(12, 'Try Magical Stone Excavation', [
-              DARK_MAGICIAN
-            ])
+            playerMessage(11, 'A card that lets me get a spell back'),
+            said(12, 'assistant', 'Try Magical Stone Excavation', {
+              search: {
+                filters: [],
+                query: 'add 1 Spell from your GY to your hand'
+              },
+              cards: [DARK_MAGICIAN]
+            })
           ])
         )
       )
@@ -372,7 +374,7 @@ describe('reading a conversation', () => {
               withMessages(createConversation(2, { language: 'fr' }), [
                 playerMessage(10, 'un monstre sombre'),
                 said(11, 'assistant', 'Voici.', {
-                  filters: [],
+                  search: { filters: [] },
                   cards: [french, english]
                 })
               ])

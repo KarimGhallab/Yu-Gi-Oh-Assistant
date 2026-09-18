@@ -61,10 +61,7 @@ const unusedStore: IAppStore = {
     append: async () => {
       throw new Error('Listing models never stores a message');
     },
-    list: async () => [],
-    setQuery: async () => {
-      throw new Error('Listing models never stores a query');
-    }
+    list: async () => []
   },
   close: async () => {}
 };

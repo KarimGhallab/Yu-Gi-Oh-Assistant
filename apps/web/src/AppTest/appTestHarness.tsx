@@ -99,9 +99,12 @@ export interface MessageFixture {
   conversationId: string;
   role: string;
   content: string;
-  filters?: CardFilter[];
+  search?: {
+    filters: CardFilter[];
+    query?: string;
+    status?: string;
+  };
   cards?: CardFixture[];
-  query?: string;
   createdAt: string;
 }
 

@@ -102,8 +102,8 @@ Monster` or `Spell Card`. A filter field.
 - **Query** (or **free text**): the words a search actually ranks. It may be the
   player's request or the parse's own rewrite.
 - **Rewrite** (or **rephrased query**): the parse's wording of the request, in
-  the request's language, when it kept one. It is what the player's message
-  records as its `query`, so a reopened turn shows what was searched.
+  the request's language, when it kept one. It is what the turn's search records
+  as its `query`, so a reopened conversation shows what was searched.
 - **Bounds**: the game's own limits on a numeric filter, level 1 to 12 and ATK
   and DEF 0 to 9000. Declared once in the filter schema, so the prompt, the
   parser, the search, and the controls all refuse the same values.
@@ -199,7 +199,9 @@ Monster` or `Spell Card`. A filter field.
   a chip in the implementation.
 - **Interpretation** (`SearchInterpretation`): how a turn's search was
   understood: the filters it reported, the words it fell back on, and what the
-  server said about how it got there.
+  server said about how it got there. It is one record, stored with the reply,
+  so a reopened conversation reads what a turn searched rather than rebuilding it
+  from the filters alone. The readout is where it is shown.
 - **Correction**: the edited filters the player submits with the next turn
   (`correct`).
 - **Request prompt** (or **composer**): the input a request is typed into

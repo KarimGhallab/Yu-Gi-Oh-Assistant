@@ -55,9 +55,9 @@ Cross-package imports go through a package's entry point, enforced by its
   LanceDB predicate renders its SQL from those kinds, the in-process matcher is
   the specification, and the adapter contract test pins the two together.
 - **The application state** lives in SQLite at `DATA_DIR/app.db`. It holds
-  conversations and messages, including the filters a turn searched with, the
-  rewrite a parse recorded, and the ids of the cards a turn suggested. The store
-  is injected, never reached as a singleton.
+  conversations and messages, including, on a reply, the search a turn ran as
+  one record of the filters, the free text, and the status, and the ids of the
+  cards it suggested. The store is injected, never reached as a singleton.
 
 ### Ollama
 
@@ -102,9 +102,9 @@ frames are the server's adapter over that stream.
    The cards are the whole of what it is given to talk about, which is what makes
    a suggested card impossible to invent.
 7. **Store the reply.** When the answer is complete, the assistant's message is
-   appended with the filters the turn searched with and the ids of the cards it
-   offered. A turn that fails partway stores no reply: the question stays and the
-   stream says what stage gave way.
+   appended with the search record the turn ran, the filters and the free text
+   and the status, and the ids of the cards it offered. A turn that fails partway
+   stores no reply: the question stays and the stream says what stage gave way.
 8. **The frames.** The stream names its frames so the client can tell them apart
    by name rather than order: `turn.start`, `status`, `filters`, `cards`,
    `answer.delta`, `answer.end`, `turn.end`, and `error`. The suggested cards are

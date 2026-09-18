@@ -26,6 +26,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 12  | [Card catalog port](./12-card-catalog-port.md)                             | Resolved (2026-09-18) | 03, 04     |
 | 13  | [Turn pipeline](./13-turn-pipeline.md)                                     | Resolved (2026-09-18) | 12         |
 | 14  | [Filter predicate](./14-filter-predicate.md)                               | Resolved (2026-09-18) | 12         |
+| 15  | [Search interpretation](./15-search-interpretation.md)                     | Resolved (2026-09-18) | 05, 07, 13 |
 
 ## Critical path
 
@@ -38,3 +39,6 @@ resolved. Feature 13 depends on 12 and extracts the turn pipeline into one modul
 two adapters; it is not on the critical path either. It is resolved. Feature 14
 depends on 12 and makes the schema's field kinds the one source both filter
 predicates render from; it is not on the critical path. It is resolved.
+Feature 15 depends on 05, 07, and 13 and makes the turn's search
+interpretation one record owned by the reply; it is not on the critical path. It
+is resolved.

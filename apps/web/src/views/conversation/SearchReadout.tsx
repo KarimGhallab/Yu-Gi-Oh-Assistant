@@ -5,6 +5,7 @@ import {
   CardFilterField,
   type CardFilters,
   type FilterOperator,
+  type SearchInterpretation,
   TurnStatus,
   cardFilterSchema
 } from '@ygo-assistant/contracts';
@@ -27,7 +28,6 @@ import {
   filterFields,
   takesNumber
 } from './filterFields.js';
-import type { SearchInterpretation } from './useTurn.js';
 
 const ROW_CLASS = 'flex flex-wrap items-center gap-x-4 gap-y-1';
 const LIST_CLASS =

@@ -1,14 +1,14 @@
 import {
   type CardFilters,
   Language,
-  type Model
+  type Model,
+  type SearchInterpretation
 } from '@ygo-assistant/contracts';
 
 import PromptSurface from '../../shared/components/PromptSurface.js';
 
 import SearchReadout from './SearchReadout.js';
 import type { RunningAnnouncement } from './turnAnnouncements.js';
-import type { SearchInterpretation } from './useTurn.js';
 
 /**
  * A turn that is still running, with a light passing through what it says. The

@@ -4,7 +4,9 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import {
   type ConversationWithMessages,
   Language,
-  MessageRole
+  type Message,
+  MessageRole,
+  type SearchInterpretation
 } from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/apiClient.js';
@@ -25,7 +27,7 @@ import {
   failureAnnouncement,
   runningAnnouncement
 } from './turnAnnouncements.js';
-import { type SearchInterpretation, useTurn } from './useTurn.js';
+import { useTurn } from './useTurn.js';
 
 /**
  * The conversation the address names. An address that names none says so and
@@ -122,12 +124,12 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
     held.has(turn.userMessageId);
 
   const turns: ChatTurn[] = [
-    ...stored.map(message => ({
+    ...stored.map((message, index) => ({
       key: message.id,
       role: message.role,
       content: message.content,
       cards: message.cards,
-      query: message.query
+      query: rewrittenQuery(stored, index)
     })),
     ...(turn === undefined || turn.question.length === 0 || askingTwice
       ? []
@@ -228,19 +230,38 @@ const ASKING = 'asking';
 const ANSWERING = 'answering';
 
 /**
- * What the last stored search was understood as. A reply a turn stored keeps the
- * filters it ran with and nothing about how it came by them, so a conversation
- * opened again shows what it searched and says nothing about why a search
- * carried no filters at all.
+ * The last search the conversation stored, which is the record its reply
+ * carries. A turn the client is still running keeps its own interpretation, so
+ * this is only for a conversation opened again.
  */
 function lastSearch(
   messages: ConversationWithMessages['messages']
 ): SearchInterpretation | undefined {
-  const searched = messages.findLast(message => message.filters !== undefined);
+  return messages.findLast(message => message.search !== undefined)?.search;
+}
 
-  return searched?.filters === undefined
-    ? undefined
-    : { filters: searched.filters };
+/**
+ * The words a request was searched as when the turn rewrote it for the cards:
+ * the reply that follows the request carries the rewrite. A search that ran on
+ * the request itself has nothing to say here, because the request above it is
+ * already those words.
+ */
+function rewrittenQuery(
+  messages: Message[],
+  index: number
+): string | undefined {
+  const message = messages[index];
+  const rewritten = messages[index + 1]?.search?.query;
+
+  if (
+    message?.role !== MessageRole.User ||
+    rewritten === undefined ||
+    rewritten === message.content
+  ) {
+    return undefined;
+  }
+
+  return rewritten;
 }
 
 function MissingConversation({ message }: MissingConversationProps) {
