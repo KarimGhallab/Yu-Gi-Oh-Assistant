@@ -92,7 +92,7 @@ function MessageTurn({ message, language }: MessageTurnProps) {
         {fromPlayer ? PLAYER : ASSISTANT}
       </p>
       {message.pieces === undefined ? (
-        <div className="flex flex-col gap-1">
+        <div className="relative flex flex-col gap-1">
           <p className={prose}>{message.content}</p>
           {message.query === undefined ? null : (
             <SearchedAs query={message.query} />
