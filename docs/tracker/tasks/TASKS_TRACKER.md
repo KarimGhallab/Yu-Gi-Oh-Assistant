@@ -52,7 +52,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 42  | [A turn that finds nothing answers in the conversation's language](./42-a-turn-that-finds-nothing-answers-in-the-conversations-language.md) | Resolved (2026-09-17) | -          | [09](../specs/09-transparent-controls.md)                                             |
 | 43  | [A card that is not in the conversation's language says so](./43-a-card-that-is-not-in-the-conversations-language-says-so.md)               | Resolved (2026-09-17) | 41         | [09](../specs/09-transparent-controls.md)                                             |
 | 44  | [The player picks the model](./44-the-player-picks-the-model.md)                                                                            | Resolved (2026-09-17) | 37, 41     | [09](../specs/09-transparent-controls.md)                                             |
-| 45  | [The fake Ollama server is importable](./45-the-fake-ollama-server-is-importable.md)                                                        | `ready-for-agent`     | -          | [11](../specs/11-end-to-end-tests.md)                                                 |
+| 45  | [The fake Ollama server is importable](./45-the-fake-ollama-server-is-importable.md)                                                        | Resolved (2026-09-18) | -          | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 46  | [The stack runs under the suite's control](./46-the-stack-runs-under-the-suites-control.md)                                                 | `ready-for-agent`     | 45         | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 47  | [A request answers end to end](./47-a-request-answers-end-to-end.md)                                                                        | `ready-for-agent`     | 46         | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 48  | [The readout shows the parse and re-runs on a correction](./48-the-readout-shows-the-parse-and-re-runs-on-a-correction.md)                  | `ready-for-agent`     | 47         | [11](../specs/11-end-to-end-tests.md)                                                 |
@@ -75,7 +75,8 @@ not in that language, and the model chooser. No ticket of it is left.
 
 Spec 10 (Local run, CI, and documentation) is the frontier and is free to be
 ticketed; it keeps the runbook, the containers, and the docs. Spec 11 (End-to-end
-tests) is ticketed as 45 through 51: 45 makes the fake Ollama a public surface, 46
-stands the stack up under the suite, and 47 proves a turn end to end. 48, 49, and
-50 follow in parallel, and 51 puts the suite in CI behind the pipeline gate.
-Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.
+tests) is ticketed as 45 through 51: 45, which made the fake Ollama a public
+surface, is resolved, so 46 is next, standing the stack up under the suite. 47
+then proves a turn end to end, 48, 49, and 50 follow, and 51 puts the suite in CI
+behind the pipeline gate. Ticket 11 supersedes the single-origin setup in ticket
+06 and spec 01.

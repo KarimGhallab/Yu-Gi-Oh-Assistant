@@ -9,7 +9,7 @@ import {
   type FakeOllamaHandler,
   type FakeOllamaRequest,
   FakeOllamaServer
-} from '../testing/FakeOllamaServer.js';
+} from '../testing/index.js';
 import { ChatRole } from '../types.js';
 import { OllamaClient } from './OllamaClient.js';
 
