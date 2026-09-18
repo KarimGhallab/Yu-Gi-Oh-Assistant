@@ -55,6 +55,51 @@ export enum CardType {
 }
 
 /**
+ * Races reported by YGOPRODeck, verbatim. The dump carries both halves of the
+ * field under this one name: a monster's race, and a Spell or Trap's property.
+ * Both are enumerated here rather than split into two vocabularies the data does
+ * not separate, and the values a card can never carry, such as the character
+ * names the dump puts in this field for a handful of promotional cards, are left
+ * out so the filter offers a real choice.
+ */
+export enum CardRace {
+  Aqua = 'Aqua',
+  Beast = 'Beast',
+  BeastWarrior = 'Beast-Warrior',
+  Cyberse = 'Cyberse',
+  Dinosaur = 'Dinosaur',
+  DivineBeast = 'Divine-Beast',
+  Dragon = 'Dragon',
+  Fairy = 'Fairy',
+  Fiend = 'Fiend',
+  Fish = 'Fish',
+  Illusion = 'Illusion',
+  Insect = 'Insect',
+  Machine = 'Machine',
+  Plant = 'Plant',
+  Psychic = 'Psychic',
+  Pyro = 'Pyro',
+  Reptile = 'Reptile',
+  Rock = 'Rock',
+  SeaSerpent = 'Sea Serpent',
+  Spellcaster = 'Spellcaster',
+  Thunder = 'Thunder',
+  Warrior = 'Warrior',
+  WingedBeast = 'Winged Beast',
+  Wyrm = 'Wyrm',
+  Zombie = 'Zombie',
+
+  // The Spell and Trap properties, which the same field carries.
+  Normal = 'Normal',
+  Continuous = 'Continuous',
+  Equip = 'Equip',
+  QuickPlay = 'Quick-Play',
+  Field = 'Field',
+  Ritual = 'Ritual',
+  Counter = 'Counter'
+}
+
+/**
  * Frame types reported by YGOPRODeck, verbatim.
  */
 export enum FrameType {

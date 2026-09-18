@@ -3,6 +3,12 @@ import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const sharedRules = {
+  '@typescript-eslint/no-explicit-any': 'warn',
+  '@typescript-eslint/no-unused-vars': 'warn',
+  curly: ['error', 'all']
+};
+
 export default defineConfig([
   {
     ignores: ['**/dist/**', '**/node_modules/**', '**/*.js', '**/*.cjs']
@@ -12,10 +18,11 @@ export default defineConfig([
   {
     files: ['**/*.{mjs,cjs,ts}'],
     languageOptions: { globals: globals.node },
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
-      curly: ['error', 'all']
-    }
+    rules: sharedRules
+  },
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    languageOptions: { globals: globals.browser },
+    rules: sharedRules
   }
 ]);

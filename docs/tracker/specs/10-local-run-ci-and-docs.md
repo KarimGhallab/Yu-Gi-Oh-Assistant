@@ -33,15 +33,13 @@ architecture docs with their ADRs.
    caught.
 7. As a developer, I want CI to need neither Ollama nor the internet, so that it
    is fast and stable.
-8. As a developer, I want the end-to-end suite to run locally, so that I can
-   verify the full flow before merging.
-9. As a developer, I want the product intent documented, so that scope decisions
+8. As a developer, I want the product intent documented, so that scope decisions
    have a reference.
-10. As a developer, I want the architecture documented, so that new code follows
-    the intended boundaries.
-11. As a developer, I want the decisions recorded as ADRs, so that future work
+9. As a developer, I want the architecture documented, so that new code follows
+   the intended boundaries.
+10. As a developer, I want the decisions recorded as ADRs, so that future work
     inherits the reasoning.
-12. As a developer, I want the docs and tracker conventions to match the
+11. As a developer, I want the docs and tracker conventions to match the
     reference layout, so that I can work consistently across projects.
 
 ## Implementation Decisions
@@ -55,8 +53,9 @@ architecture docs with their ADRs.
   the deployment guidelines. Ollama stays on the host, reached via
   `host.containers.internal`. Primary run path remains pnpm scripts.
 - CI: GitHub Actions running lint, typecheck, unit, and integration tests with
-  the stubbed Ollama. No model downloads, no network. The Playwright suite is
-  local-only.
+  the stubbed Ollama. No model downloads, no network. The end-to-end suite, its
+  browser engines, the reusable workflows, and the gate the pipeline ends on are
+  spec 11's.
 - Docs authored here: `docs/PRODUCT.md` (intent, single user, local-only,
   portfolio link, constraints) and `docs/ARCHITECTURE.md` (component map, data
   flow, layer boundaries).
@@ -77,8 +76,8 @@ architecture docs with their ADRs.
 - CI runs: lint, typecheck, package unit tests, and server integration tests
   with the stubbed Ollama. It must pass on a clean checkout with no Ollama and
   no network.
-- The Playwright suite runs locally against the built app and the fake Ollama
-  server.
+- End-to-end coverage, its browser engines, and its fake Ollama server are spec
+  11's; this spec's CI runs the vitest suites only.
 - Prior art: the CI workflow is new; the test commands come from the earlier
   features.
 

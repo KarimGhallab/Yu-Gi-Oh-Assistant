@@ -1,4 +1,4 @@
-export { createLogger } from './logger.js';
+export { createLogger } from './PinoLogger.js';
 export { LogLevel } from './types.js';
 export type {
   FileLoggingOptions,

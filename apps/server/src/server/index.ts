@@ -1,3 +1,3 @@
-export { isLoopbackHost, logBinding } from './binding.js';
-export { createServer } from './server.js';
+export { isLoopbackHost, logBinding } from './logBinding.js';
+export { createServer } from './createServer.js';
 export type { ServerDependencies } from './types.js';

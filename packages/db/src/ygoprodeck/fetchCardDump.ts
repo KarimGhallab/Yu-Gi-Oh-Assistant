@@ -3,7 +3,7 @@ import { dirname } from 'node:path';
 
 import { Language } from '@ygo-assistant/cards';
 
-import { rawDumpPath } from './paths.js';
+import { rawDumpPath } from './dumpPaths.js';
 
 const DEFAULT_BASE_URL = 'https://db.ygoprodeck.com';
 const CARD_INFO_PATH = '/api/v7/cardinfo.php';

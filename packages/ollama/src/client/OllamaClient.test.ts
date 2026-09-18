@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   OllamaInvalidResponseError,
@@ -59,6 +59,7 @@ describe('OllamaClient', () => {
   afterEach(async () => {
     await Promise.all(servers.map(server => server.stop()));
     servers.length = 0;
+    vi.restoreAllMocks();
   });
 
   const startServer = async (handler: FakeOllamaHandler): Promise<string> => {
@@ -82,7 +83,7 @@ describe('OllamaClient', () => {
   };
 
   describe('listModels', () => {
-    it('lists installed models and flags structured-output support from reported capabilities', async () => {
+    it('lists each installed model with the capabilities it reports', async () => {
       const requests: FakeOllamaRequest[] = [];
       const client = await clientFor(request => {
         requests.push(request);
@@ -103,8 +104,16 @@ describe('OllamaClient', () => {
       const models = await client.listModels();
 
       expect(models).toEqual([
-        { name: 'qwen3:4b', supportsStructuredOutput: true },
-        { name: 'nomic-embed-text', supportsStructuredOutput: false }
+        {
+          name: 'qwen3:4b',
+          supportsCompletion: true,
+          supportsStructuredOutput: true
+        },
+        {
+          name: 'nomic-embed-text',
+          supportsCompletion: false,
+          supportsStructuredOutput: false
+        }
       ]);
       expect(
         requests.map(request => `${request.method} ${request.path}`)
@@ -112,7 +121,7 @@ describe('OllamaClient', () => {
       expect(requests[1].body).toEqual({ model: 'qwen3:4b' });
     });
 
-    it('treats a model without reported capabilities as not supporting structured output', async () => {
+    it('treats a model that reports no capabilities as able to do neither', async () => {
       const client = await clientFor(request => {
         if (request.path === '/api/tags') {
           return { json: { models: [{ name: 'mystery:latest' }] } };
@@ -121,7 +130,11 @@ describe('OllamaClient', () => {
       });
 
       await expect(client.listModels()).resolves.toEqual([
-        { name: 'mystery:latest', supportsStructuredOutput: false }
+        {
+          name: 'mystery:latest',
+          supportsCompletion: false,
+          supportsStructuredOutput: false
+        }
       ]);
     });
 
@@ -343,7 +356,8 @@ describe('OllamaClient', () => {
       const client = await clientFor(() => ({
         stream: [
           '{"message":{"role":"assistant","content":"He',
-          'llo"},"done":false}\n'
+          'llo"},"done":false}\n',
+          '{"message":{"role":"assistant","content":""},"done":true}\n'
         ]
       }));
 
@@ -351,7 +365,10 @@ describe('OllamaClient', () => {
         client.chat({ model: CHAT_MODEL, messages: [] })
       );
 
-      expect(chunks).toEqual([{ content: 'Hello', done: false }]);
+      expect(chunks).toEqual([
+        { content: 'Hello', done: false },
+        { content: '', done: true }
+      ]);
     });
 
     it('reports an unknown model as a typed error', async () => {
@@ -368,7 +385,40 @@ describe('OllamaClient', () => {
       expect(error.message).toContain('ollama pull ghost:4b');
     });
 
-    it('reports a malformed stream line as a typed error', async () => {
+    it('reports a failure the server names mid-stream as a typed error', async () => {
+      const client = await clientFor(() => ({
+        stream: [
+          '{"message":{"role":"assistant","content":"Suggested "},"done":false}\n',
+          '{"error":"model runner has crashed"}\n'
+        ]
+      }));
+
+      const error = await captureError(
+        collect(client.chat({ model: CHAT_MODEL, messages: [] }))
+      );
+
+      expect(error).toBeInstanceOf(OllamaInvalidResponseError);
+      expect(error.message).toContain('model runner has crashed');
+    });
+
+    it('reports a stream that ends without a done marker as a typed error', async () => {
+      const client = await clientFor(() => ({
+        stream: [
+          '{"message":{"role":"assistant","content":"truncated"},"done":false}\n'
+        ]
+      }));
+
+      const error = await captureError(
+        collect(client.chat({ model: CHAT_MODEL, messages: [] }))
+      );
+
+      expect(error).toBeInstanceOf(OllamaInvalidResponseError);
+    });
+
+    it('skips a stream line that is not JSON and still reports the missing done marker', async () => {
+      // The library skips a line it cannot parse, warning as it goes; the
+      // warning is noise here, the outcome is what this test is about.
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const client = await clientFor(() => ({
         stream: ['this is not json\n']
       }));

@@ -137,3 +137,9 @@ dist
 .pnp.*
 
 dependency-graph.svg
+
+# Impeccable: .impeccable/design.json and .impeccable/config.json are project
+# source and stay tracked; the rest is per-developer or ephemeral session state.
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/live/

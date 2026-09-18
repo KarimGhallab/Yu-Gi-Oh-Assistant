@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+/* The app is dark-only for now, so the browser paints its own chrome to match. */
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /*
+   * A scrollbar that is thin, without a track, and only ever the thumb body, for
+   * the request field and the list a setting opens above it.
+   *
+   * This deliberately uses the two standard properties and nothing else. Styling
+   * `::-webkit-scrollbar` at all puts Chrome back on its legacy scrollbar path,
+   * and that path is what draws the up and down arrow buttons at the ends:
+   * hiding them with `::-webkit-scrollbar-button` is fighting the very thing that
+   * brought them. Left to the standard properties, Chrome and Firefox both
+   * render a thin bar that is thumb and nothing else.
+   */
+  .quiet-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #404040 transparent;
+  }
+
+  /*
+   * A picker: the platform draws a button with its own frame, and the frame does
+   * not belong in the prompt, where the control is one more quiet word on the
+   * surface. The frame and the fill go, and the caret is an icon of the set rather
+   * than a background, so it can be turned over while the list it opens is open.
+   */
+  .composer-picker {
+    appearance: none;
+    padding: 0.25rem 0.375rem;
+    background-color: transparent;
+  }
+
+  /*
+   * The prompt is the one thing in this system that moves. Sending the first
+   * request of a conversation carries it from where it stood on the home surface
+   * to the foot of the conversation that request just started, because it is the
+   * same surface in both places and the player should see that it is: a shared
+   * element in a view transition, with everything else cross-fading around it.
+   * The name is what pairs the two surfaces, so it is set on the one card they
+   * both draw and on nothing else.
+   */
+  .prompt-surface {
+    view-transition-name: prompt;
+  }
+
+  /*
+   * The docking is timed rather than left to whatever the browser does by
+   * default. The prompt travels to the foot of the conversation over 420ms on the
+   * system's decelerating curve, while the room around it settles faster (180ms
+   * out, 260ms in) so the conversation is already there when the prompt lands on
+   * it. The prompt keeps its size on the way because it is one card in both
+   * places: only its position changes, and the words that were in it are the
+   * message that appears above it.
+   */
+  ::view-transition-group(prompt) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /*
+   * A card opening: the tile the player pressed and the centred face are one
+   * object in two states, so the tile is what travels and grows into the face
+   * and shrinks back to the tile when the face is closed. It takes the same
+   * 420ms on the system's decelerating curve as the prompt docking, while the
+   * room settles faster, and reduced motion gets the face where it lands with no
+   * travel.
+   */
+  ::view-transition-group(card-detail) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  ::view-transition-old(root) {
+    animation-duration: 180ms;
+    animation-timing-function: ease-out;
+  }
+
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /*
+   * The status line while a turn runs: a light passes through what it says. The
+   * line is written twice, the second time in Bone White behind a mask, so the
+   * resting line is the Ash Grey it always was and the travelling band is the
+   * app's own second colour rather than a gradient filled into its text. One pass
+   * every 1.8s, linear, with the band crossing in the middle so the line reads as
+   * busy without anything about it blinking. It is the only loop in the system,
+   * alive only while the work it reports is.
+   */
+  .working-line {
+    position: relative;
+    display: inline-block;
+  }
+
+  .working-line-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: oklch(97% 0 none);
+    mask-image: linear-gradient(
+      100deg,
+      transparent 33%,
+      black 50%,
+      transparent 67%
+    );
+    mask-size: 250% 100%;
+    mask-repeat: no-repeat;
+    animation: working-sweep 1.3s linear infinite;
+  }
+
+  @keyframes working-sweep {
+    from {
+      mask-position: 100% 0;
+    }
+
+    to {
+      mask-position: 0% 0;
+    }
+  }
+
+  /*
+   * Motion is not for everyone, and the system's answer to that is to keep it
+   * rather than to remove it: with reduced motion asked for, the prompt is where
+   * it lands, the cross-fade is what carries the change, and the light on a
+   * running turn is not there at all rather than parked midway through a pass.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(prompt),
+    ::view-transition-group(card-detail),
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.01ms;
+    }
+
+    .working-line-glow {
+      animation: none;
+      display: none;
+    }
+  }
+}

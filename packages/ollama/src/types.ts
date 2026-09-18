@@ -16,10 +16,14 @@ export enum OllamaCapability {
 }
 
 /**
- * A model available on the configured Ollama instance.
+ * A model available on the configured Ollama instance, with what it can do. The
+ * completion capability is the one Ollama reports for it; whether it can be held
+ * to a shape is the application's own answer, since Ollama reports no capability
+ * for that at all.
  */
 export interface OllamaModel {
   name: string;
+  supportsCompletion: boolean;
   supportsStructuredOutput: boolean;
 }
 

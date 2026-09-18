@@ -9,5 +9,12 @@
     "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/test-setup.ts",
+    "src/AppTest"
+  ],
+  "references": [{ "path": "../../packages/contracts/tsconfig.build.json" }]
 }

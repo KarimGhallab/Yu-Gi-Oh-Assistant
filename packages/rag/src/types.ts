@@ -89,11 +89,54 @@ export type ParseResult = ParsedRequest | DegradedRequest;
 
 /**
  * Everything a parse needs: the model to ask, whether that model can be
- * constrained by a schema, and the request to parse.
+ * constrained by a schema, the request to parse, and the language the request
+ * and its rewrite are written in.
  */
 export interface ParseCardRequestOptions {
   client: IOllamaClient;
   model: string;
   supportsStructuredOutput: boolean;
   request: string;
+  language: Language;
+}
+
+/**
+ * Everything a filter needs: the model to ask, whether that model can be
+ * constrained by a schema, the player's own request, and the candidates the
+ * search found. The request is deliberately not the text the search ran on: a
+ * card has to answer what the player asked for.
+ */
+export interface FilterCandidatesOptions {
+  client: IOllamaClient;
+  model: string;
+  supportsStructuredOutput: boolean;
+  request: string;
+  pool: Card[];
+}
+
+/**
+ * Everything the choice of what to show needs: the search's ranking, how many
+ * candidates the model may judge, how many cards may be shown, and whether the
+ * model judges at all.
+ */
+export interface SelectCardsOptions {
+  client: IOllamaClient;
+  model: string;
+  supportsStructuredOutput: boolean;
+  request: string;
+  ranked: RankedCard[];
+  pool: number;
+  shown: number;
+  filter: boolean;
+}
+
+/**
+ * What choosing the cards came to: the cards themselves, how many candidates
+ * the model was asked about, and whether its judgement failed and left the
+ * search's own ranking in place.
+ */
+export interface CardSelection {
+  cards: Card[];
+  pool: number;
+  fellBack: boolean;
 }

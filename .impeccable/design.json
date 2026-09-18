@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-18T08:32:57.952Z",
+  "title": "Design System: Yu-Gi-Oh Assistant",
+  "extensions": {
+    "colorMeta": {
+      "surface": {
+        "role": "neutral",
+        "displayName": "Room Black",
+        "canonical": "oklch(14.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "surface-panel": {
+        "role": "neutral",
+        "displayName": "Bench Slate",
+        "canonical": "oklch(20.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail Grey",
+        "canonical": "oklch(26.9% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Bone White",
+        "canonical": "oklch(97% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ash Grey",
+        "canonical": "oklch(70.8% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Dust Grey",
+        "canonical": "oklch(55.6% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(37% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(60% 0 none)",
+          "oklch(71% 0 none)",
+          "oklch(83% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Lamp Amber",
+        "canonical": "oklch(76.9% 0.188 70.08)",
+        "tonalRamp": [
+          "oklch(20% 0.05 70.08)",
+          "oklch(30% 0.09 70.08)",
+          "oklch(41% 0.12 70.08)",
+          "oklch(52% 0.15 70.08)",
+          "oklch(63% 0.17 70.08)",
+          "oklch(76.9% 0.188 70.08)",
+          "oklch(86% 0.17 70.08)",
+          "oklch(94% 0.1 70.08)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Lampglow",
+        "canonical": "oklch(82.8% 0.189 84.429)",
+        "tonalRamp": [
+          "oklch(20% 0.05 84.429)",
+          "oklch(30% 0.09 84.429)",
+          "oklch(41% 0.12 84.429)",
+          "oklch(52% 0.15 84.429)",
+          "oklch(63% 0.17 84.429)",
+          "oklch(76.9% 0.188 84.429)",
+          "oklch(82.8% 0.189 84.429)",
+          "oklch(94% 0.1 84.429)"
+        ]
+      },
+      "accent-ring": {
+        "role": "primary",
+        "displayName": "Halo Amber",
+        "canonical": "oklch(87.9% 0.169 91.605)",
+        "tonalRamp": [
+          "oklch(20% 0.05 91.605)",
+          "oklch(30% 0.09 91.605)",
+          "oklch(41% 0.12 91.605)",
+          "oklch(52% 0.15 91.605)",
+          "oklch(63% 0.16 91.605)",
+          "oklch(76% 0.17 91.605)",
+          "oklch(87.9% 0.169 91.605)",
+          "oklch(95% 0.09 91.605)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Ember Ink",
+        "canonical": "oklch(27.9% 0.077 45.635)",
+        "tonalRamp": [
+          "oklch(27.9% 0.077 45.635)",
+          "oklch(36% 0.09 45.635)",
+          "oklch(46% 0.11 45.635)",
+          "oklch(56% 0.13 45.635)",
+          "oklch(66% 0.15 45.635)",
+          "oklch(76% 0.15 45.635)",
+          "oklch(86% 0.1 45.635)",
+          "oklch(94% 0.05 45.635)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Signal Red",
+        "canonical": "oklch(70.4% 0.191 22.216)",
+        "tonalRamp": [
+          "oklch(20% 0.06 22.216)",
+          "oklch(31% 0.1 22.216)",
+          "oklch(42% 0.13 22.216)",
+          "oklch(53% 0.16 22.216)",
+          "oklch(62% 0.18 22.216)",
+          "oklch(70.4% 0.191 22.216)",
+          "oklch(82% 0.14 22.216)",
+          "oklch(93% 0.07 22.216)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Title",
+        "purpose": "The conversation header and a notice heading. The system ceiling at 18px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Answers, messages, navigation rows, and controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons and the brand mark, at 14px and medium weight."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Machine facts only: the interpretation readout, counts, card stats, identifiers."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "48rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only filled control in the app. Normally one per screen, for the one action that matters.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">New conversation</button>",
+      "css": ".ds-btn-primary { background: oklch(76.9% 0.188 70.08); color: oklch(27.9% 0.077 45.635); border: 0; border-radius: 4px; padding: 6px 10px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; cursor: default; white-space: nowrap; } .ds-btn-primary:hover { background: oklch(82.8% 0.189 84.429); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; }"
+    },
+    {
+      "name": "Primary Action (link)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The same skin on a link, for the single action a notice offers.",
+      "html": "<a class=\"ds-btn-primary ds-action-link\" href=\"#\">Back to the conversations</a>",
+      "css": ".ds-action-link { display: inline-block; text-decoration: none; padding: 6px 12px; }"
+    },
+    {
+      "name": "Sidebar Row",
+      "kind": "nav",
+      "refersTo": "nav-row",
+      "description": "One conversation in the list, its name and its own controls on the one surface. The name truncates rather than wrapping, so the list keeps its rhythm.",
+      "html": "<span class=\"ds-nav-row\"><a class=\"ds-nav-row-name\" href=\"#\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Rename Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z\"/></svg></button><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Delete Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 4h16\"/><path d=\"M10 4V2h4v2\"/><path d=\"M5.5 4v18h13V4\"/></svg></button></span>",
+      "css": ".ds-nav-row { display: flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 4px; color: oklch(70.8% 0 none); } .ds-nav-row:hover { background: color-mix(in oklab, oklch(26.9% 0 none) 60%, transparent); color: oklch(97% 0 none); } .ds-nav-row:has(a:focus-visible) { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-nav-row-name { min-width: 0; flex: 1; padding: 6px 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-nav-row-name:focus-visible { outline: none; }"
+    },
+    {
+      "name": "Sidebar Row (open)",
+      "kind": "nav",
+      "refersTo": "nav-row-active",
+      "description": "The conversation the address names, its fill at full strength and its name marked with aria-current.",
+      "html": "<span class=\"ds-nav-row ds-nav-row-active\"><a class=\"ds-nav-row-name\" href=\"#\" aria-current=\"page\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Rename Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z\"/></svg></button><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Delete Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 4h16\"/><path d=\"M10 4V2h4v2\"/><path d=\"M5.5 4v18h13V4\"/></svg></button></span>",
+      "css": ".ds-nav-row-active { background: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-nav-row-active:hover { background: oklch(26.9% 0 none); color: oklch(97% 0 none); }"
+    },
+    {
+      "name": "Brand Mark",
+      "kind": "custom",
+      "refersTo": "brand-mark",
+      "description": "The product name standing in for a logo, and the way back to the empty state. Where there is only room for a mark, the name gives way to the monogram: the letter drawn the way the rest of the icon set is drawn, at its 1.5px stroke, with the control named for what it stands for. A phone's bar carries the monogram with the name beside it; a folded sidebar carries the monogram alone.",
+      "html": "<a class=\"ds-brand\" href=\"#\">Yu-Gi-Oh Assistant</a> <a class=\"ds-brand\" href=\"#\" aria-label=\"Yu-Gi-Oh Assistant\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 4l7 8 7-8M12 12v8\"/></svg></a>",
+      "css": ".ds-brand { color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.025em; line-height: 20px; text-decoration: none; } .ds-brand:hover { color: oklch(97% 0 none); } .ds-brand:focus-visible { outline: 2px solid oklch(82.8% 0.189 84.429); outline-offset: 2px; border-radius: 4px; }"
+    },
+    {
+      "name": "Pane Header",
+      "kind": "custom",
+      "refersTo": "pane-header",
+      "description": "The strip above a surface's content: what this pane is, separated from the content by one hairline. It carries the name and nothing else, because what the request will be run with belongs to the act of asking and now lives on the prompt's own surface.",
+      "html": "<header class=\"ds-pane-header\"><h1 class=\"ds-pane-title\">Graveyard toolbox</h1></header>",
+      "css": ".ds-pane-header { background: oklch(14.5% 0 none); padding: 16px 24px; border-bottom: 1px solid oklch(26.9% 0 none); } .ds-pane-title { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 28px; }"
+    },
+    {
+      "name": "Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "The question a row's own control asks when it needs the room: a deletion, and a name. The row is what the question is about, so the row goes on being a row while the question stands over the list; a question answered in the row would change the list under the eye that is still reading it. The room is dimmed a step further and the question is centred in it on a Bench Slate surface, capped at 28rem, with no shadow: the dimmed room is what says the dialog is above it. The heading is the question itself. The body is what the question needs: the words of a deletion, with the name in Bone White and the irreversibility said there rather than in the color of a control, since this system has no red fill; or the field a new name is typed in, holding the name it has, offered selected. Its two actions sit together at its right: the answer that changes nothing is a plain text button, and the answer that acts is the lamp, which it may carry because a dialog that has taken the room is the only region being read while it is open. The keyboard is put on the first thing the dialog offers, the field of a name or the safe answer of a deletion, and stays among what the dialog offers; Escape and a press in the room outside call it off, and focus goes back to the row that asked.",
+      "html": "<div class=\"ds-dialog-room\"><div class=\"ds-dialog\" role=\"alertdialog\" aria-modal=\"true\" aria-labelledby=\"ds-dialog-title\" aria-describedby=\"ds-dialog-body\"><h2 class=\"ds-dialog-title\" id=\"ds-dialog-title\">Rename this conversation?</h2><div class=\"ds-dialog-body\" id=\"ds-dialog-body\"><input class=\"ds-dialog-field\" value=\"Graveyard toolbox\" aria-label=\"Conversation name\"></div><div class=\"ds-dialog-actions\"><button class=\"ds-dialog-quiet ds-icon-label\" type=\"button\">Cancel</button><button class=\"ds-dialog-lamp ds-icon-label\" type=\"button\">Save</button></div></div></div>",
+      "css": ".ds-dialog-room { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: oklch(14.5% 0 none / 0.7); padding: 24px; } .ds-dialog { width: 100%; max-width: 448px; border-radius: 4px; background: oklch(20.5% 0 none); padding: 24px; } .ds-dialog-title { margin: 0; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 28px; } .ds-dialog-body { margin: 8px 0 0; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-dialog-name { color: oklch(97% 0 none); } .ds-dialog-field { width: 100%; border: 1px solid oklch(76.9% 0.188 70.08 / 0.25); border-radius: 4px; background: oklch(20.5% 0 none); padding: 6px 8px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-dialog-field:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 24px; } .ds-dialog-quiet { display: inline-flex; align-items: center; border: 0; border-radius: 4px; background: none; padding: 6px 10px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; } .ds-dialog-quiet:hover { background: oklch(26.9% 0 none); } .ds-dialog-quiet:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-dialog-lamp { display: inline-flex; align-items: center; border: 0; border-radius: 4px; background: oklch(76.9% 0.188 70.08); padding: 6px 10px; color: oklch(27.9% 0.077 45.635); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; } .ds-dialog-lamp:hover { background: oklch(82.8% 0.189 84.429); } .ds-dialog-lamp:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Notice Panel",
+      "kind": "custom",
+      "refersTo": "notice-panel",
+      "description": "Stands in for content that is not there: the empty state, a conversation that does not exist, a request that failed.",
+      "html": "<div class=\"ds-notice\"><h2 class=\"ds-notice-title\">Start a conversation</h2><p class=\"ds-notice-body\">Your conversations are listed in the sidebar. Start a new one and ask for the cards you are looking for.</p></div>",
+      "css": ".ds-notice { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; background: oklch(14.5% 0 none); } .ds-notice-title { margin: 0; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 28px; } .ds-notice-body { margin: 0; max-width: 28rem; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Example Prompt",
+      "kind": "custom",
+      "refersTo": "example-prompt",
+      "description": "A request the player could make, offered as something to press so the app can be used without typing one. Fifty of them are kept and four are drawn without repeating, once per surface, so a player who comes back meets a different handful and the list stays short enough to read. Plain text in Ash Grey, stepping to Bone White when pointed at or reached, because four requests beside each other as fills would be four lamps. A conversation with nothing in it offers them inside a notice, under the heading and a line of explanation; the home surface offers the same list directly under its own words, because there it is the content rather than something standing in for content.",
+      "html": "<ul class=\"ds-examples\"><li><button class=\"ds-example\" type=\"button\">A cheap way to stop my opponent attacking</button></li><li><button class=\"ds-example\" type=\"button\">Something to support a Red-Eyes deck</button></li></ul>",
+      "css": ".ds-examples { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; } .ds-example { border: 0; border-radius: 4px; background: none; padding: 0; text-align: left; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-example:hover { color: oklch(97% 0 none); } .ds-example:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Alert Line",
+      "kind": "custom",
+      "refersTo": "alert-line",
+      "description": "The server's own message, verbatim, beside the control that failed. The only non-amber color, and text only.",
+      "html": "<p class=\"ds-alert\" role=\"alert\">The card index is not ready</p>",
+      "css": ".ds-alert { margin: 0; padding: 0 16px 8px; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Answer Prose",
+      "kind": "custom",
+      "refersTo": "message-prose",
+      "description": "The assistant's answer, rendered from the Markdown a model writes rather than shown as it typed it. What a model may use is asked for in its prompt and what it uses anyway is mapped here, so an answer cannot reach a size, a colour, or a container the system does not have. Hierarchy comes from weight rather than scale, a list is a list and not a box, a link is the only action the prose carries, and raw HTML or an image is dropped rather than rendered.",
+      "html": "<div class=\"ds-prose\"><p><strong>Dark Magician</strong> fits, because its effect returns a Spell from the Graveyard.</p><ul><li>it is a Spellcaster</li><li>it needs no tribute</li></ul><p><a class=\"ds-prose-link\" href=\"https://example.com/card\" target=\"_blank\" rel=\"noreferrer\">Read more</a></p></div>",
+      "css": ".ds-prose { display: flex; flex-direction: column; gap: 20px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-prose p { margin: 0; } .ds-prose strong { font-weight: 600; } .ds-prose em { font-style: italic; } .ds-prose h1, .ds-prose h2, .ds-prose h3, .ds-prose h4, .ds-prose h5, .ds-prose h6 { margin: 0; font-size: 14px; font-weight: 600; line-height: 20px; } .ds-prose ul, .ds-prose ol { margin: 0; padding-left: 16px; } .ds-prose li + li { margin-top: 4px; } .ds-prose li::marker { color: oklch(55.6% 0 none); } .ds-prose code, .ds-prose pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; color: oklch(70.8% 0 none); } .ds-prose pre { margin: 0; white-space: pre-wrap; } .ds-prose blockquote { margin: 0; border-left: 1px solid oklch(26.9% 0 none); padding-left: 16px; color: oklch(70.8% 0 none); } .ds-prose hr { border: 0; border-top: 1px solid oklch(26.9% 0 none); } .ds-prose-link { color: oklch(97% 0 none); text-decoration: underline; text-decoration-color: oklch(26.9% 0 none); text-underline-offset: 2px; } .ds-prose-link:hover { text-decoration-color: oklch(76.9% 0.188 70.08); } .ds-prose-link:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card Tile",
+      "kind": "custom",
+      "refersTo": "card-tile",
+      "description": "One card an answer was built from: its printed face in a rail-bordered frame at the card's own ratio, its name under it, the whole tile a button that opens the face in the middle of the room. A tile whose image will not load keeps the frame and the name, with a quiet note in the frame. A card the conversation's language has no printing of still appears, saying which language it is in under its name as text of its own rather than as part of the button, so the card is still announced by its name and the note is read after it.",
+      "html": "<div class=\"ds-card-tile\"><button class=\"ds-card\" type=\"button\"><span class=\"ds-card-frame\"><img class=\"ds-card-image\" src=\"cards/89631139.jpg\" alt=\"\"></span><span class=\"ds-card-name\">Blue-Eyes White Dragon</span></button><span class=\"ds-card-language\">EN only</span></div>",
+      "css": ".ds-card-tile { display: flex; flex-direction: column; gap: 4px; } .ds-card { display: flex; flex-direction: column; gap: 8px; border: 0; background: none; padding: 0; text-align: left; cursor: default; } .ds-card:focus-visible .ds-card-frame { border-color: oklch(76.9% 0.188 70.08); } .ds-card-frame { display: flex; align-items: center; justify-content: center; aspect-ratio: 421 / 614; border: 1px solid oklch(26.9% 0 none); background: oklch(20.5% 0 none); } .ds-card:hover .ds-card-frame { border-color: oklch(76.9% 0.188 70.08); } .ds-card-image { width: 100%; height: 100%; object-fit: contain; } .ds-card-name { color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-card-language { color: oklch(55.6% 0 none); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-card-missing { color: oklch(55.6% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; padding: 0 8px; text-align: center; }"
+    },
+    {
+      "name": "Card Detail",
+      "kind": "custom",
+      "refersTo": "card-detail",
+      "description": "The printed face of one suggested card, in the middle of the room, large enough to read. The card is the whole of the content: the facts the tile cannot make legible are on the face itself, so nothing is drawn over it and nothing restates it. The room is dimmed a step further behind it, the face keeps its printed ratio uncropped and unrounded, and the dialog carries only a close mark and the card's source, a quiet 12px mono link underlined in Rail Grey. It introduces no second accent, its own name is the card's name visually hidden, the close mark takes the keyboard as the face opens with Tab staying between it and the source, Escape and a press in the room outside call it off, focus goes back to the tile that asked, and the tile grows into the face and back over 420ms on cubic-bezier(0.16, 1, 0.3, 1) with reduced motion getting the face where it lands.",
+      "html": "<div class=\"ds-card-detail-room\"><div class=\"ds-card-detail\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"card-detail-title\"><h2 class=\"ds-visually-hidden\" id=\"card-detail-title\">Blue-Eyes White Dragon</h2><button class=\"ds-card-detail-close\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 7l10 10M17 7L7 17\"/></svg><span class=\"ds-visually-hidden\">Close the card</span></button><img class=\"ds-card-detail-image\" src=\"cards/89631139.jpg\" alt=\"\"><a class=\"ds-card-detail-source\" href=\"#\">View on YGOPRODeck</a></div></div>",
+      "css": ".ds-card-detail-room { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: oklch(14.5% 0 none / 0.7); padding: 24px; } .ds-card-detail { display: flex; flex-direction: column; align-items: center; gap: 16px; } .ds-card-detail-close { position: absolute; right: 24px; top: 24px; border: 0; border-radius: 4px; background: none; padding: 8px; color: oklch(70.8% 0 none); } .ds-card-detail-close:hover { background: oklch(20.5% 0 none); color: oklch(97% 0 none); } .ds-card-detail-close:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-card-detail-image { max-height: 78vh; max-width: 92vw; object-fit: contain; view-transition-name: card-detail; } .ds-card-detail-source { color: oklch(70.8% 0 none); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; text-decoration: underline; text-decoration-color: oklch(26.9% 0 none); text-underline-offset: 2px; } .ds-card-detail-source:hover { color: oklch(97% 0 none); text-decoration-color: oklch(76.9% 0.188 70.08); } .ds-card-detail-source:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Composer",
+      "kind": "form",
+      "refersTo": "composer-field",
+      "description": "Where the player asks for cards, in one surface. Above it: what the last search was understood as, the alert lines, and the live status line, through which a band of Bone White travels while the work runs, one pass every 1.8s, the sentence drawn twice so the light can pass through it and only for as long as the work lasts. On it: the field, five lines tall before it scrolls with a thin thumb-only scrollbar, and under the field everything the request is run with, the language at its left edge and the model beside the Send at its right. Nothing is outlined until the keyboard is in the field, and then the whole surface takes the ring, and there is no hairline between the prompt and the messages above it: the surface step is what separates them. Enter sends and Shift+Enter is a line. Opening the app, as much as opening a conversation, puts the keyboard in the field. A setting shows what it is set to and opens the rest of its choices above itself, one row each, the row in force filled a step further, a model's note in mono after its name, no shadow, Escape and picking both closing it and coming back to the control. The same prompt stands on the home surface, nearer the middle of an otherwise empty screen, and there the model control starts on the first model the machine can answer with, the first of the list the server sorts by name, so what will answer is read before the request is sent. The request typed there starts a conversation, with the settings it was given, and is asked in it; a start that failed leaves the words in the field, because until the conversation exists the field is the only place they are. Sending it is the app's one authored moment: the card is named in a view transition that carries it from the middle of the home surface to the foot of the conversation it just started, over 420ms on cubic-bezier(0.16, 1, 0.3, 1) while the room around it settles faster (180ms out, 260ms in), so the conversation has arrived by the time the prompt lands. It keeps its size on the way, being one card in both places, and the words that were in it are the message that appears above it.",
+      "html": "<form class=\"ds-composer\"><ul class=\"ds-readout\" aria-label=\"What the search was understood as\"><li><button class=\"ds-chip\" type=\"button\" aria-label=\"Change attribute is DARK\"><span>attribute</span> <span class=\"ds-chip-ask\">is DARK</span></button></li></ul><p class=\"ds-composer-status\" role=\"status\"><span class=\"ds-working-line\"><span class=\"ds-working-glow\" aria-hidden=\"true\">The assistant is working…</span>The assistant is working…</span></p><div class=\"ds-prompt\"><textarea class=\"ds-prompt-field\" rows=\"5\" placeholder=\"Ask for the cards you are looking for\"></textarea><div class=\"ds-prompt-actions\"><button class=\"ds-prompt-picker\" type=\"button\" aria-haspopup=\"listbox\" aria-expanded=\"false\"><span class=\"ds-visually-hidden\">Cards in</span>English</button><span class=\"ds-prompt-end\"><button class=\"ds-prompt-picker\" type=\"button\" aria-haspopup=\"listbox\" aria-expanded=\"true\"><span class=\"ds-visually-hidden\">Answered by</span>llama3.1:8B</button><button class=\"ds-composer-send ds-icon-label\" type=\"submit\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 19V5M6 11l6-6 6 6\"/></svg>Send</button></span><div class=\"ds-prompt-list\" role=\"listbox\" aria-label=\"Answered by\"><button class=\"ds-prompt-choice\" type=\"button\" role=\"option\" aria-selected=\"true\">llama3.1:8B</button><button class=\"ds-prompt-choice\" type=\"button\" role=\"option\" aria-selected=\"false\">mistral:7b<span class=\"ds-prompt-note\">no structured filters</span></button><button class=\"ds-prompt-choice\" type=\"button\" role=\"option\" aria-selected=\"false\">nomic-embed-text<span class=\"ds-prompt-note\">cannot answer</span></button></div></div></div></form>",
+      "css": ".ds-composer { display: flex; flex-direction: column; gap: 12px; padding: 24px; background: oklch(14.5% 0 none); } .ds-composer-status { margin: 0; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-composer-alert { margin: 0; color: oklch(70.4% 0.191 22.216); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-prompt { border-radius: 4px; background: oklch(20.5% 0 none); padding: 12px; } .ds-prompt:has(textarea:focus-visible) { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-prompt-field { width: 100%; resize: none; border: 0; background: none; outline: none; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; scrollbar-width: thin; scrollbar-color: #404040 transparent; } .ds-prompt-field::placeholder { color: oklch(55.6% 0 none); } .ds-prompt-actions { position: relative; display: flex; align-items: center; gap: 12px; margin-top: 8px; } .ds-prompt-end { display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: auto; } .ds-prompt-picker { appearance: none; min-width: 0; max-width: 160px; border: 0; border-radius: 4px; background-color: transparent; background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 4px center; background-size: 14px 14px; padding: 4px 22px 4px 6px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-prompt-picker:hover { background-color: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-prompt-picker:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-prompt-list { position: absolute; bottom: 100%; right: 0; z-index: 20; margin-bottom: 8px; width: max-content; min-width: 176px; max-width: 320px; max-height: 256px; overflow-y: auto; border-radius: 4px; background: oklch(26.9% 0 none); padding: 4px; scrollbar-width: thin; scrollbar-color: #404040 transparent; } .ds-prompt-choice { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 12px; border: 0; border-radius: 4px; background: none; padding: 6px 8px; text-align: left; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-prompt-choice:hover { background: oklch(37.1% 0 none); } .ds-prompt-choice[aria-selected=\"true\"] { background: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-prompt-choice:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-prompt-note { color: oklch(55.6% 0 none); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-composer-send { display: inline-flex; align-items: center; gap: 6px; background: oklch(76.9% 0.188 70.08); color: oklch(27.9% 0.077 45.635); border: 0; border-radius: 4px; padding: 6px 10px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; } .ds-composer-send:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-composer-send:disabled { opacity: 0.6; } .ds-working-line { position: relative; display: inline-block; } .ds-working-glow { position: absolute; inset: 0; pointer-events: none; color: oklch(97% 0 none); mask-image: linear-gradient(100deg, transparent 33%, black 50%, transparent 67%); mask-size: 250% 100%; mask-repeat: no-repeat; animation: ds-working-sweep 1.8s linear infinite; } @keyframes ds-working-sweep { from { mask-position: 100% 0; } to { mask-position: 0% 0; } } @media (prefers-reduced-motion: reduce) { .ds-working-glow { animation: none; display: none; } }"
+    },
+    {
+      "name": "Search Readout",
+      "kind": "custom",
+      "refersTo": "search-readout-field",
+      "description": "What the last search was understood as: one fact per filter above the request field, the field it constrains quiet and what it asks of that field beside it. Facts rather than containers, set apart by space and never by a pill, a tag, or a box, and each fact is the control that corrects it, because the player is the one who knows what they asked for. A search that carried no filters says only that, and a turn that could not understand the request says so and repeats the words it fell back on. It is not a second live region: the status line announces the turn, and this is what is left once it is over. Beside them the readout offers the filter the request never named, wearing the line's own 12px mono in Ash Grey with the set's plus before its words, because it is an action read on a line of machine facts rather than a thing apart from them, while a fact carries no mark at all, since a mark on a fact would say it was a control before it was a fact. A fact is written as a sentence: the field starts it and carries the capital, and the value after the operator stays lowercase, so Attribute is dark and Type is normal monster are read. The catalog's own value words are the ones lowered, because the line is machine facts rather than sentences, and a value the player typed themselves, such as an archetype, is left exactly as they wrote it.",
+      "html": "<ul class=\"ds-readout\" aria-label=\"What the search was understood as\"><li><button class=\"ds-chip\" type=\"button\" aria-label=\"Change Attribute is dark\"><span>Attribute</span> <span class=\"ds-chip-ask\">is dark</span></button></li><li><button class=\"ds-chip\" type=\"button\" aria-label=\"Change Level at least 7\"><span>Level</span> <span class=\"ds-chip-ask\">at least 7</span></button></li></ul><button class=\"ds-readout-add\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 5v14M5 12h14\"/></svg>Add a filter</button>",
+      "css": ".ds-readout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 16px; margin: 0; padding: 0; list-style: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-chip { border: 0; background: none; padding: 0; border-radius: 4px; text-align: left; color: oklch(55.6% 0 none); font: inherit; } .ds-chip:hover { color: oklch(97% 0 none); } .ds-chip:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-chip-ask { color: oklch(70.8% 0 none); } .ds-chip:hover .ds-chip-ask { color: oklch(97% 0 none); } .ds-readout-note { margin: 0; color: oklch(70.8% 0 none); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-readout-add { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; border-radius: 4px; padding: 0; color: oklch(70.8% 0 none); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-readout-add:hover { color: oklch(97% 0 none); } .ds-readout-add:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-readout-add .ds-icon { flex-shrink: 0; width: 16px; height: 16px; translate: 0 -1px; }"
+    },
+    {
+      "name": "Chip Editor",
+      "kind": "form",
+      "refersTo": "search-readout-control",
+      "description": "One filter being said: the field it constrains, then the operator and the value it takes, gathered the way that field takes them: a fixed set where the domain has one, the catalog's own list for an archetype, and a number inside the bounds the field runs between where the field is a stat, so a level cannot be asked for above 12 nor a stat above 9000, so nothing can be built that the search would refuse. Correcting fixes the field, because the field is the part the readout is sure of; adding offers the fields the search supports and gathers the next operator and value the way the field that was chosen takes them. One group rather than loose controls, because what they say together is a single filter, and the group is where the keyboard arrives. Save or Add, Remove when there is one to remove, and Cancel each carry the set's mark before their word, the tick and the bar and the cross, because the word is what the group says and the mark is only what it looks like. Save or Add is out of action while the value is empty or the filter would be refused, and Escape calls the whole thing off. Its value choices read the same words, while the value it sends stays the catalog's own spelling, and a value the catalog no longer lists is still offered so a stored filter can be read back and kept.",
+      "html": "<div class=\"ds-chip-editor\" role=\"group\" aria-label=\"Add a filter\"><select class=\"ds-chip-control\" aria-label=\"Field\"><option>frame type</option></select><select class=\"ds-chip-control\" aria-label=\"Operator\"><option>is</option></select><select class=\"ds-chip-control\" aria-label=\"Value\"><option>spell</option></select><button class=\"ds-chip-action\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 13l4 4L19 7\"/></svg>Add</button><button class=\"ds-chip-action\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 7l10 10M17 7L7 17\"/></svg>Cancel</button></div>",
+      "css": ".ds-chip-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-chip-control { border: 1px solid oklch(76.9% 0.188 70.08 / 0.25); border-radius: 4px; background: oklch(20.5% 0 none); color: oklch(97% 0 none); padding: 4px 6px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-chip-control:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-chip-action { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; border-radius: 4px; padding: 0 4px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; } .ds-chip-action:hover { color: oklch(97% 0 none); } .ds-chip-action:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-chip-action:disabled { opacity: 0.6; } .ds-chip-action .ds-icon { flex-shrink: 0; width: 16px; height: 16px; translate: 0 -2px; }"
+    },
+    {
+      "name": "Nav Row Action",
+      "kind": "button",
+      "refersTo": "nav-row-action",
+      "description": "A conversation's own controls, renaming and deleting, drawn as marks rather than words so the list stays a list of conversations. They sit on the row's own surface, quiet until the row is pointed at or holds focus, always in the tab order, and each named for its conversation, because opacity is not what assistive technology reads and neither is a glyph.",
+      "html": "<span class=\"ds-nav-row\"><a class=\"ds-nav-row-name\" href=\"#\">Graveyard toolbox</a><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Rename Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z\"/></svg></button><button class=\"ds-nav-row-action\" type=\"button\" aria-label=\"Delete Graveyard toolbox\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 4h16\"/><path d=\"M10 4V2h4v2\"/><path d=\"M5.5 4v18h13V4\"/></svg></button></span>",
+      "css": ".ds-nav-row-action { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border: 0; background: none; padding: 6px; border-radius: 4px; color: oklch(70.8% 0 none); opacity: 0; } .ds-nav-row:hover .ds-nav-row-action, .ds-nav-row:focus-within .ds-nav-row-action { opacity: 1; } .ds-nav-row-action:hover { color: oklch(97% 0 none); } .ds-nav-row-action:focus-visible { opacity: 1; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sidebar Drawer",
+      "kind": "custom",
+      "refersTo": "sidebar-drawer",
+      "description": "The sidebar on a window too narrow to keep it beside the chat. It is a bar and a drawer: the bar is what the header becomes, carrying the mark that opens the list, the name, and the way to start a conversation on one row across the top of the chat; pressing the mark brings the sidebar across from the edge it lives on with the chat dimmed behind it. The drawer carries the list alone, because a header inside it would say what the bar already says, and it fills the height it is given: a mark at its top closes it, so the list is never a place a player is stuck in, and it is the same sidebar the wide window shows, so a row behaves the same either way. It takes the keyboard as it opens and gives it back to the mark as it closes, Escape, a press on the dimmed chat, and choosing a conversation all close it, the last of those because the drawer watches where the player went rather than which control was pressed, and while it is shut it is out of the document's tab order rather than merely off screen. It arrives in 200ms on cubic-bezier(0.16, 1, 0.3, 1) with the chat dimming in 150ms, and both are dropped when motion is not wanted.",
+      "html": "<div class=\"ds-mobile-frame\"><div class=\"ds-sidebar-bar\"><button class=\"ds-bar-mark\" type=\"button\" aria-expanded=\"false\" aria-controls=\"ds-drawer\" aria-label=\"Show the conversations\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 4h6v16H4zM15 12h6M18 9l3 3-3 3\"/></svg></button><span class=\"ds-bar-name\">Yu-Gi-Oh Assistant</span><button class=\"ds-composer-send ds-icon-label\" type=\"button\">New</button></div><div class=\"ds-drawer\" id=\"ds-drawer\"><div class=\"ds-drawer-close\"><button class=\"ds-bar-mark\" type=\"button\" aria-label=\"Hide the conversations\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M8 4h8v16H8zM14 12H4M7 9l-3 3 3 3\"/></svg></button></div><nav class=\"ds-nav\" aria-label=\"Conversations\"><a class=\"ds-nav-row\" href=\"#\">Graveyard toolbox</a></nav></div></div>",
+      "css": ".ds-sidebar-bar { display: flex; align-items: center; gap: 4px; padding: 12px; border-bottom: 1px solid oklch(26.9% 0 none); background: oklch(20.5% 0 none); } .ds-bar-mark { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; border: 0; border-radius: 4px; background: none; padding: 8px; color: oklch(70.8% 0 none); } .ds-bar-mark:hover { color: oklch(97% 0 none); } .ds-bar-mark:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-bar-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.025em; } .ds-drawer { position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; display: flex; transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-drawer[data-open=\"false\"] { transform: translateX(-100%); } @media (prefers-reduced-motion: reduce) { .ds-drawer { transition: none; } } .ds-drawer-close { display: flex; flex-shrink: 0; align-items: center; border-bottom: 1px solid oklch(26.9% 0 none); background: oklch(20.5% 0 none); padding: 12px; }"
+    },
+    {
+      "name": "Nav Fold",
+      "kind": "button",
+      "refersTo": "nav-fold",
+      "description": "The control that folds the conversation list away and brings it back, as a pair of marks: the panel with its contents going in, and the panel with them coming out. The mark says which way the list is about to go rather than only which control was pressed. Folded, the list is a rail of one mark per conversation, and this control rather than any hover is what brings the list back. The panel it stands in is what folds, so the panel's width is what moves: 300ms opening and 200ms closing on cubic-bezier(0.16, 1, 0.3, 1), with the list and the rail swapping as it moves and everything clipped to the panel while it does, so a label never spills over a width that has not arrived. Reduced motion keeps the state change and drops the movement.",
+      "html": "<button class=\"ds-nav-fold\" type=\"button\" aria-expanded=\"false\" aria-controls=\"conversations\" aria-label=\"Show the conversations\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M9 4v16\"/><path d=\"M13.5 12H18M16 10l2 2-2 2\"/></svg></button><button class=\"ds-nav-fold\" type=\"button\" aria-expanded=\"true\" aria-controls=\"conversations\" aria-label=\"Hide the conversations\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M9 4v16\"/><path d=\"M18 12h-4.5M15.5 10l-2 2 2 2\"/></svg></button>",
+      "css": ".ds-nav-fold { display: inline-flex; flex-shrink: 0; border: 0; background: none; padding: 6px; border-radius: 4px; color: oklch(70.8% 0 none); } .ds-nav-fold:hover { color: oklch(97% 0 none); } .ds-nav-fold:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-sidebar { overflow: hidden; transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-sidebar[data-folded=\"true\"] { transition-duration: 200ms; } @media (prefers-reduced-motion: reduce) { .ds-sidebar { transition: none; } }"
+    },
+    {
+      "name": "Nav Rail Mark",
+      "kind": "nav",
+      "refersTo": "nav-rail-mark",
+      "description": "A folded conversation: a 2.25rem square carrying the first letter of its name, which is enough to recognise one by and not enough to name it. The mark is named for its conversation for assistive technology, and pointing at or focusing it shows that name in a panel beside it.",
+      "html": "<a class=\"ds-nav-rail-mark\" href=\"#\" aria-label=\"Graveyard toolbox\">G</a><span class=\"ds-nav-rail-name\">Graveyard toolbox</span>",
+      "css": ".ds-nav-rail-mark { display: inline-flex; width: 36px; height: 36px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 4px; color: oklch(70.8% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; } .ds-nav-rail-mark:hover { background: color-mix(in oklab, oklch(26.9% 0 none) 60%, transparent); color: oklch(97% 0 none); } .ds-nav-rail-mark:focus-visible { outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; } .ds-nav-rail-mark[aria-current=\"page\"] { background: oklch(26.9% 0 none); color: oklch(97% 0 none); } .ds-nav-rail-name { position: fixed; z-index: 40; max-width: 16rem; pointer-events: none; border: 1px solid oklch(26.9% 0 none); border-radius: 4px; background: oklch(20.5% 0 none); padding: 4px 8px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; }"
+    },
+    {
+      "name": "Icon",
+      "kind": "custom",
+      "refersTo": "icon",
+      "description": "A control's mark, drawn in the set rather than imported: a 24-unit box on a 1.5px stroke, rendered at 16px, in the color of the control it sits in. It marks a control and never carries meaning alone. Beside a word it sits on the word's optical centre rather than on the box the row centres, raised a pixel at 12px and two at 14px, because a line box is mostly the font's descent and a word of caps and no descenders never fills it.",
+      "html": "<button class=\"ds-btn-primary ds-icon-label\" type=\"button\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 5v14M5 12h14\"/></svg>New</button>",
+      "css": ".ds-icon-label { display: inline-flex; align-items: center; gap: 6px; } .ds-icon { flex-shrink: 0; width: 16px; height: 16px; }"
+    },
+    {
+      "name": "Skip Link",
+      "kind": "nav",
+      "description": "The first thing focus finds on a conversation, so the keyboard is not walked down the whole conversation list. Hidden until it holds focus, then a Bench Slate panel over the frame.",
+      "html": "<a class=\"ds-skip\" href=\"#conversation\">Skip to the conversation</a>",
+      "css": ".ds-skip { position: absolute; left: 16px; top: 16px; z-index: 10; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-radius: 4px; background: oklch(20.5% 0 none); padding: 8px 12px; color: oklch(97% 0 none); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; text-decoration: none; } .ds-skip:focus-visible { width: auto; height: auto; clip-path: none; outline: 2px solid oklch(87.9% 0.169 91.605); outline-offset: 2px; }"
+    },
+    {
+      "name": "Searched As",
+      "kind": "caption",
+      "refersTo": "message-searched-as",
+      "description": "The words a request was searched with, when the parse rewrote it into card wording rather than searching the player's own. Pointing at the turn, the name and the request together, is the only thing that shows it: there is no control to press, and nothing keeps it once the pointer leaves. It is out of the layout while it is hidden, so its arrival moves what follows it, and it stays in the page while it is out of the way, so a reader that cannot point at it is told it with the request.",
+      "html": "<div class=\"ds-message-turn\"><p class=\"ds-message-label\">You</p><p class=\"ds-message-prose\">A card that lets me get a spell back</p><div class=\"ds-searched-as-block\"><p class=\"ds-searched-as-label\">Searched as</p><p class=\"ds-searched-as\">add 1 Spell from your GY to your hand</p></div></div>",
+      "css": ".ds-message-turn { display: flex; flex-direction: column; gap: 4px; } .ds-message-label { margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 20px; color: oklch(70.8% 0 none); } .ds-message-prose { margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Noto Sans\", Arial, sans-serif; font-size: 14px; line-height: 20px; color: oklch(70.8% 0 none); } .ds-searched-as-block { display: flex; flex-direction: column; gap: 4px; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .ds-searched-as-label, .ds-searched-as { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; font-size: 12px; line-height: 16px; } .ds-searched-as-label { color: oklch(55.6% 0 none); } .ds-searched-as { color: oklch(70.8% 0 none); white-space: pre-wrap; } .ds-message-turn:hover .ds-searched-as-block { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Duelist's Workbench",
+    "overview": "A workbench is a surface with the thing you are working on laid out on it, and one lamp above it. That is the whole system. The surfaces are dark, near-neutral, and stepped rather than shadowed; the cards are the objects on the bench and get the room; amber is the lamp, and it appears where something is being offered, chosen, or focused, and nowhere else. The voice is quiet precision: small type set tightly, machine facts in mono, hairlines instead of containers, and no ornament between the player and the cards.\n\nThe bench is a direction rather than a finished expression. The incumbent implementation carries the surfaces, the amber, the density, and the flatness; the conversation surface, which is where the bench actually shows, is being built. Its history, its grid of framed cards, and the readout of what a search was understood as are in place, and the amber rail around the active turn and the model's reading set as marginalia follow.\n\nFlatness is deliberate. Depth is tonal: three steps of near-black do the work shadows would do elsewhere, and state changes are instant color swaps. Motion is a small vocabulary rather than none: a few things move, each because the movement is the change itself, and they are listed under Elevation.",
+    "keyCharacteristics": [
+      "Near-neutral, three-step dark surfaces with no shadows.",
+      "One accent, amber, reserved for action, selection, and focus.",
+      "Density as craft: 14px body text, 12px mono for machine facts, 4px radius.",
+      "Hairline dividers instead of boxes, cards, or shadows.",
+      "The platform's font stack; no webfonts, no imagery in the chrome.",
+      "Keyboard first: every control reachable, focus always visible."
+    ],
+    "rules": [
+      {
+        "name": "The One Lamp Rule",
+        "body": "Amber marks what is actionable, chosen, or focused, and nothing else. No amber headings, no amber decoration, no amber dividers. Its rarity is what makes it read as light.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Second Accent Rule",
+        "body": "There is no secondary or tertiary color. Failure is the only exception, it is text only, and it never becomes a fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Display Rule",
+        "body": "Nothing shouts. 18px is the ceiling, and there is no display or headline size to reach for. Hierarchy comes from color, space, and hairlines, not from scale.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do keep amber for the action, the open row, and the focus ring, and count the amber elements on a screen; more than two is usually one too many.",
+      "Do step surfaces by one token (Room Black, Bench Slate, Rail Grey) when something needs to come forward, and keep them square.",
+      "Do use 1px Rail Grey hairlines to separate, and cap notices at 28rem.",
+      "Do set machine facts (filters, counts, card stats, identifiers) in 12px mono, and everything a person reads in the platform stack.",
+      "Do give a new full-page surface its own Room Black background. The frame carries it today and the document body stays transparent.",
+      "Do keep every control reachable by keyboard with a visible 2px Halo Amber outline, and keep aria-current on the open conversation.",
+      "Do keep an icon at 16px on a 1.5px stroke, the color of the control it sits in, beside the word it belongs to, or named for what it acts on when it is the whole control. The set is hand-drawn, and it does not grow a second weight, a fill, or a second size.",
+      "Do keep the pointer's affordances the pointer's: a folded conversation's mark, the fold control, and the list itself are each reachable without hovering, so no name and no conversation is behind a hover."
+    ],
+    "donts": [
+      "Don't introduce a second accent, a gradient, or a colored heading; the one exception is Signal Red as text about a failure.",
+      "Don't go above 18px anywhere. If something needs more weight, change its color, its space, or its hairline instead.",
+      "Don't add shadows, blur, or elevation effects. If a surface needs to communicate hierarchy, use a tonal step.",
+      "Don't add motion without deciding the motion question first; the system is instant today by design, not by accident.",
+      "Don't introduce a webfont, an icon font, or an icon as decoration. The set is hand-drawn, one stroke weight, and it marks controls only: the cards, the conversation, and the notices carry no icons at all.",
+      "Don't crop, round, tilt, or restyle a card image. The card is a record of a real object and keeps its printed proportions.",
+      "Don't use a box, a card container, or a nested rectangle where a hairline and a spacing step would do.",
+      "Don't put a filter in a pill, a tag, or a box. A filter is a mono fact set apart by space, and where it is a control it is the fact itself rather than a container drawn around it."
+    ]
+  }
+}

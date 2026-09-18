@@ -14,7 +14,7 @@ export enum MessageRole {
  * null title until its first user message provides one.
  */
 export interface Conversation {
-  id: number;
+  id: string;
   title: string | null;
   language: Language;
   model: string;
@@ -46,15 +46,17 @@ export interface UpdateConversationInput {
 /**
  * A stored message. The parsed filters and the suggested card ids are filled by
  * the turn that produced the reply, so a message that carried neither has
- * neither.
+ * neither. A user message carries the free text the turn searched on when the
+ * parse rewrote it, which is written once the turn has worked it out.
  */
 export interface Message {
-  id: number;
-  conversationId: number;
+  id: string;
+  conversationId: string;
   role: MessageRole;
   content: string;
   filters?: CardFilters;
   cardIds?: number[];
+  query?: string;
   createdAt: string;
 }
 
@@ -62,7 +64,7 @@ export interface Message {
  * The fields a message is appended from.
  */
 export interface AppendMessageInput {
-  conversationId: number;
+  conversationId: string;
   role: MessageRole;
   content: string;
   filters?: CardFilters;
@@ -77,19 +79,22 @@ export interface AppendMessageInput {
  */
 export interface IConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
-  find(id: number): Promise<Conversation | undefined>;
+  find(id: string): Promise<Conversation | undefined>;
   list(): Promise<Conversation[]>;
-  update(id: number, changes: UpdateConversationInput): Promise<Conversation>;
-  delete(id: number): Promise<void>;
+  update(id: string, changes: UpdateConversationInput): Promise<Conversation>;
+  delete(id: string): Promise<void>;
 }
 
 /**
  * Reads and appends the messages of a conversation, in the order they were
- * written. Appending is the seam the turn writes through.
+ * written. Appending is the seam the turn writes through. The query a turn
+ * searched on is set after the message exists, because the parse that produces
+ * it runs after the player's message has been appended.
  */
 export interface IMessageRepository {
   append(input: AppendMessageInput): Promise<Message>;
-  list(conversationId: number): Promise<Message[]>;
+  list(conversationId: string): Promise<Message[]>;
+  setQuery(messageId: string, query: string): Promise<void>;
 }
 
 /**

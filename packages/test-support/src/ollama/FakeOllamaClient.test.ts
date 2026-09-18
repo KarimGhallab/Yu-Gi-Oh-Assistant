@@ -14,7 +14,13 @@ const collect = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
 
 describe('FakeOllamaClient', () => {
   it('returns the canned models', async () => {
-    const models = [{ name: 'qwen3:4b', supportsStructuredOutput: true }];
+    const models = [
+      {
+        name: 'qwen3:4b',
+        supportsCompletion: true,
+        supportsStructuredOutput: true
+      }
+    ];
     const client = new FakeOllamaClient({ models });
 
     await expect(client.listModels()).resolves.toEqual(models);

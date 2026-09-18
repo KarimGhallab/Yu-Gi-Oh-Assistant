@@ -9,6 +9,7 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,
@@ -16,6 +17,7 @@ import {
   LinkMarker,
   cardMatchesFilters
 } from '@ygo-assistant/cards';
+import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import {
   type IOllamaClient,
   OllamaInvalidResponseError
@@ -24,7 +26,9 @@ import {
 import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
 import {
   buildCardIndex,
+  listCardArchetypes,
   readCardIndex,
+  readCardsByIds,
   scanCardIndex,
   searchCardIndex
 } from './cardIndex.js';
@@ -116,6 +120,55 @@ describe('card index', () => {
     return dataDir;
   };
 
+  it('lists the archetypes the index carries, once each and sorted', async () => {
+    const directory = await createDataDir();
+    const cards = [
+      createDarkMagician(),
+      createDarkMagician({
+        id: 2,
+        name: 'Dark Magician Girl',
+        archetype: 'Dark Magician'
+      }),
+      createDarkMagician({
+        id: 3,
+        name: 'Blue-Eyes White Dragon',
+        archetype: 'Blue-Eyes'
+      }),
+      createDarkMagician({ id: 4, name: 'Kuriboh', archetype: undefined })
+    ];
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards,
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15'
+    });
+
+    expect(await listCardArchetypes(directory)).toEqual([
+      'Blue-Eyes',
+      'Dark Magician'
+    ]);
+  });
+
+  it('lists no archetype at all when the index carries none', async () => {
+    const directory = await createDataDir();
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards: [
+        createDarkMagician({ id: 4, name: 'Kuriboh', archetype: undefined })
+      ],
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15'
+    });
+
+    expect(await listCardArchetypes(directory)).toEqual([]);
+  });
+
   it('builds one row per card and reads the rows, count, and metadata back', async () => {
     const directory = await createDataDir();
     const cards = [createDarkMagician(), createPotOfGreed()];
@@ -203,6 +256,46 @@ describe('card index', () => {
 
     expect(batches.map(batch => batch.length)).toEqual([2, 1]);
     expect(batches.flat()).toEqual(cards.map(composeCardDocument));
+  });
+
+  it('records the embedding progress batch by batch', async () => {
+    const directory = await createDataDir();
+    const cards = [
+      createDarkMagician(),
+      createPotOfGreed(),
+      createDarkMagician({ id: 89631139, name: 'Blue-Eyes White Dragon' })
+    ];
+    const records: Array<{ message: string; context?: LogContext }> = [];
+    const logger: ILogger = {
+      debug: () => {},
+      info: (message, context) => {
+        records.push({ message, context });
+      },
+      warn: () => {},
+      error: () => {}
+    };
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards,
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15',
+      batchSize: 2,
+      logger
+    });
+
+    expect(records).toEqual([
+      {
+        message: 'Embedded card batch',
+        context: { batch: 1, batches: 2, embedded: 2, total: 3 }
+      },
+      {
+        message: 'Embedded card batch',
+        context: { batch: 2, batches: 2, embedded: 3, total: 3 }
+      }
+    ]);
   });
 
   it('retries a transient embedding failure', async () => {
@@ -293,6 +386,94 @@ describe('card index', () => {
     expect(count).toBe(1);
     expect(rows.map(row => row.name)).toEqual(['Pot of Greed']);
     expect(metadata.datasetVersion).toBe('ygoprodeck-2026-09-16');
+  });
+
+  describe('readCardsByIds', () => {
+    const buildIndex = async (
+      directory: string,
+      cards: Card[]
+    ): Promise<void> => {
+      await buildCardIndex({
+        dataDir: directory,
+        cards,
+        embedder: createEmbedder([]),
+        embeddingModel: EMBEDDING_MODEL,
+        dimensions: DIMENSIONS,
+        datasetVersion: 'ygoprodeck-2026-09-16'
+      });
+    };
+
+    const DARK_MAGICIAN_ID = 46986414;
+
+    it('reads the cards it was asked for, in the order it was asked', async () => {
+      const directory = await createDataDir();
+      const magician = createDarkMagician();
+      const greed = createPotOfGreed();
+      await buildIndex(directory, [magician, greed]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [greed.id, magician.id],
+        language: Language.English
+      });
+
+      expect(cards.map(card => card.name)).toEqual([
+        'Pot of Greed',
+        'Dark Magician'
+      ]);
+    });
+
+    it('reads a card in the language it was asked for when both have it', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [
+        createDarkMagician(),
+        createDarkMagician({
+          language: Language.French,
+          name: 'Magicien Sombre'
+        })
+      ]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID],
+        language: Language.French
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Magicien Sombre']);
+    });
+
+    it('falls back to the language that has a card alone', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID],
+        language: Language.French
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Dark Magician']);
+    });
+
+    it('leaves out an id no language has', async () => {
+      const directory = await createDataDir();
+      await buildIndex(directory, [createDarkMagician()]);
+
+      const cards = await readCardsByIds(directory, {
+        ids: [DARK_MAGICIAN_ID, 999999999],
+        language: Language.English
+      });
+
+      expect(cards.map(card => card.name)).toEqual(['Dark Magician']);
+    });
+
+    it('reads nothing, and opens nothing, when it was asked for nothing', async () => {
+      const directory = await createDataDir();
+
+      const cards = await readCardsByIds(directory, {
+        ids: [],
+        language: Language.English
+      });
+
+      expect(cards).toEqual([]);
+    });
   });
 
   describe('searchCardIndex', () => {
@@ -579,20 +760,6 @@ describe('card index', () => {
         ],
         [
           {
-            field: CardFilterField.FrameType,
-            operator: FilterOperator.Eq,
-            value: FrameType.Spell
-          }
-        ],
-        [
-          {
-            field: CardFilterField.FrameType,
-            operator: FilterOperator.Ne,
-            value: FrameType.Spell
-          }
-        ],
-        [
-          {
             field: CardFilterField.Archetype,
             operator: FilterOperator.Ne,
             value: 'Greed'
@@ -602,7 +769,7 @@ describe('card index', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'spellcaster'
+            value: CardRace.Spellcaster
           }
         ],
         [
@@ -644,7 +811,7 @@ describe('card index', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'Dragon'
+            value: CardRace.Dragon
           },
           {
             field: CardFilterField.Level,

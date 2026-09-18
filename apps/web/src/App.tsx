@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router';
 
-import { apiUrl } from './api.js';
+import ChatFrame from './shared/components/ChatFrame.js';
 
+import ConversationPage from './views/conversation/ConversationPage.js';
+import EmptyState from './views/home/EmptyState.js';
+
+/**
+ * The chat's addresses: the conversations themselves, and the empty state for
+ * both the way in and anything that names no conversation.
+ */
 export default function App() {
-  const [apiStatus, setApiStatus] = useState('checking');
-
-  useEffect(() => {
-    fetch(apiUrl('/health'))
-      .then(response => setApiStatus(response.ok ? 'ok' : 'error'))
-      .catch(() => setApiStatus('unreachable'));
-  }, []);
-
   return (
-    <main>
-      <h1>Yu-Gi-Oh Assistant</h1>
-      <p>API status: {apiStatus}</p>
-    </main>
+    <Routes>
+      <Route element={<ChatFrame />}>
+        <Route index element={<EmptyState />} />
+        <Route path="c/:conversationId" element={<ConversationPage />} />
+        <Route path="*" element={<EmptyState />} />
+      </Route>
+    </Routes>
   );
 }

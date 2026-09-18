@@ -1,6 +1,6 @@
 # 09 - Transparent controls
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** 08
 - **Source:** architecture grilling, 2026-09-15

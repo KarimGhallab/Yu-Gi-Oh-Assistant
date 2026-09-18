@@ -8,7 +8,7 @@ import type { ILogger } from '@ygo-assistant/logger';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
 
 import { loadConfig } from '../config/index.js';
-import { createServer } from './server.js';
+import { createServer } from './createServer.js';
 
 const silentLogger: ILogger = {
   debug: () => {},
@@ -36,7 +36,13 @@ describe('composition root with test doubles', () => {
 
   it('builds and serves the app with a fake Ollama client and a temporary data directory', async () => {
     dataDir = await TempDataDir.create();
-    const models = [{ name: 'canned:1b', supportsStructuredOutput: true }];
+    const models = [
+      {
+        name: 'canned:1b',
+        supportsCompletion: true,
+        supportsStructuredOutput: true
+      }
+    ];
     const ollama = new FakeOllamaClient({ models });
     store = await openAppStore(databasePath(dataDir.path));
 

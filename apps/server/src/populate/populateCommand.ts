@@ -2,7 +2,7 @@ import { populateCardIndex } from '@ygo-assistant/db';
 import { createLogger } from '@ygo-assistant/logger';
 
 import { NodeEnvironment, loadConfig } from '../config/index.js';
-import { createOllamaClient } from '../ollama-client/ollamaClient.js';
+import { createOllamaClient } from '../ollama-client/createOllamaClient.js';
 
 const config = loadConfig(process.env);
 const logger = createLogger({

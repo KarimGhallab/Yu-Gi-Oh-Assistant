@@ -1,4 +1,5 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
+import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 /**
@@ -34,6 +35,11 @@ export interface BuildCardIndexOptions {
    * single call when the dump is large.
    */
   batchSize?: number;
+  /**
+   * Records the embedding progress, batch by batch. A build without one is
+   * silent, which is what a test wants.
+   */
+  logger?: ILogger;
 }
 
 /**
@@ -61,6 +67,15 @@ export interface CardQueryOptions {
  */
 export interface SearchCardIndexOptions extends CardQueryOptions {
   vector: number[];
+}
+
+/**
+ * A read of specific cards: which ids to read, and the language to prefer when a
+ * card exists in more than one, since the language partitions share their ids.
+ */
+export interface ReadCardsByIdsOptions {
+  ids: number[];
+  language: Language;
 }
 
 /**
