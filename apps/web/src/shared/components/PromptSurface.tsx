@@ -9,7 +9,8 @@ import {
 
 import { Language, type Model } from '@ygo-assistant/contracts';
 
-import SettingPicker, { type SettingChoice } from './SettingPicker.js';
+import { describeModel } from '../modelPolicy.js';
+import SettingPicker from './SettingPicker.js';
 import SendIcon from './icons/SendIcon.js';
 
 /**
@@ -43,22 +44,6 @@ const LANGUAGES: { language: Language; name: string }[] = [
   { language: Language.English, name: 'English' },
   { language: Language.French, name: 'French' }
 ];
-
-/**
- * What a model's own note says about it. A model that cannot answer a turn at
- * all is named as such rather than as one that only answers without a schema,
- * because that is the fact that matters when it is chosen, and the listing
- * reports both.
- */
-const noteFor = (candidate: Model): string | undefined => {
-  if (!candidate.supportsCompletion) {
-    return 'cannot answer';
-  }
-
-  return candidate.supportsStructuredOutput
-    ? undefined
-    : 'no structured filters';
-};
 
 interface PromptSurfaceProps {
   onSend(text: string): void;
@@ -99,22 +84,7 @@ export default function PromptSurface({
   const field = useRef<HTMLTextAreaElement>(null);
   const ready = text.trim().length > 0 && !running;
 
-  // A conversation can be left on a model the machine no longer has, which is a
-  // state the player should see rather than a control that shows nothing.
-  const missingModel =
-    model.length > 0 &&
-    models !== undefined &&
-    !models.some(candidate => candidate.name === model);
-
-  const modelChoices: SettingChoice[] = [
-    ...(models ?? []).map(candidate => ({
-      value: candidate.name,
-      name: candidate.name,
-      note: noteFor(candidate),
-      disabled: !candidate.supportsCompletion
-    })),
-    ...(missingModel ? [{ value: model, name: model }] : [])
-  ];
+  const modelChoices = describeModel(models, model).choices;
 
   useEffect(() => {
     field.current?.focus();

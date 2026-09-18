@@ -1,8 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   type Card,
@@ -14,14 +10,13 @@ import {
   FrameType,
   Language
 } from '@ygo-assistant/cards';
-import { buildCardIndex } from '@ygo-assistant/db';
+import type { ICardCatalog } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 import { retrieveCards } from './retrieveCards.js';
 import type { RetrievalQuery, RetrievalRanking } from './types.js';
 
-const DIMENSIONS = 3;
-const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
 const QUERY_VECTOR = [1, 0, 0];
 
 const createCard = (overrides: Partial<Card> = {}): Card => ({
@@ -77,21 +72,6 @@ const createBlueEyes = (): Card =>
 const createMagicienSombre = (): Card =>
   createCard({ language: Language.French, name: 'Magicien Sombre' });
 
-const createScriptedEmbedder = (vectors: number[][]): IOllamaClient => {
-  let cursor = 0;
-  return {
-    listModels: async () => [],
-    embed: async inputs => {
-      const batch = vectors.slice(cursor, cursor + inputs.length);
-      cursor += inputs.length;
-      return batch;
-    },
-    chat: () => {
-      throw new Error('Retrieval never streams chat completions');
-    }
-  };
-};
-
 interface QueryEmbedder {
   embedder: IOllamaClient;
   texts: string[];
@@ -115,57 +95,36 @@ const createQueryEmbedder = (vector: number[]): QueryEmbedder => {
 };
 
 describe('retrieveCards', () => {
-  let dataDir: string | undefined;
-
-  afterEach(async () => {
-    if (dataDir !== undefined) {
-      await rm(dataDir, { recursive: true, force: true });
-    }
-    dataDir = undefined;
-  });
-
-  const createDataDir = async (): Promise<string> => {
-    dataDir = await mkdtemp(join(tmpdir(), 'ygo-retrieval-'));
-    return dataDir;
-  };
-
-  const seed = async (
-    directory: string,
+  const createCatalog = (
     cards: Card[],
     vectors: number[][]
-  ): Promise<void> => {
-    await buildCardIndex({
-      dataDir: directory,
-      cards,
-      embedder: createScriptedEmbedder(vectors),
-      embeddingModel: EMBEDDING_MODEL,
-      dimensions: DIMENSIONS,
-      datasetVersion: 'ygoprodeck-2026-09-16'
+  ): InMemoryCardCatalog =>
+    new InMemoryCardCatalog({
+      rows: cards.map((card, index) => ({ ...card, vector: vectors[index] }))
     });
-  };
 
   const retrieve = (
-    directory: string,
+    catalog: ICardCatalog,
     embedder: IOllamaClient,
     language: Language = Language.English,
     topK: number = 25,
     minScore: number = 0
   ) =>
     retrieveCards({
-      dataDir: directory,
+      catalog,
       embedder,
       query: { text: 'cards that banish monsters', language },
       ranking: { topK, minScore }
     });
 
   const retrieveWith = (
-    directory: string,
+    catalog: ICardCatalog,
     embedder: IOllamaClient,
     query: Partial<RetrievalQuery>,
     ranking: Partial<RetrievalRanking> = {}
   ) =>
     retrieveCards({
-      dataDir: directory,
+      catalog,
       embedder,
       query: { language: Language.English, ...query },
       ranking: { topK: 25, minScore: 0, ...ranking }
@@ -180,9 +139,7 @@ describe('retrieveCards', () => {
   ];
 
   it('returns the nearest cards ordered by score', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -192,7 +149,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieve(directory, embedder);
+    const results = await retrieve(catalog, embedder);
 
     expect(results.map(result => result.card.name)).toEqual([
       'Dark Magician',
@@ -206,19 +163,16 @@ describe('retrieveCards', () => {
   });
 
   it('embeds the free-text request', async () => {
-    const directory = await createDataDir();
-    await seed(directory, [createCard()], [[1, 0, 0]]);
+    const catalog = createCatalog([createCard()], [[1, 0, 0]]);
     const { embedder, texts } = createQueryEmbedder(QUERY_VECTOR);
 
-    await retrieve(directory, embedder);
+    await retrieve(catalog, embedder);
 
     expect(texts).toEqual(['cards that banish monsters']);
   });
 
   it('scopes the retrieval to the active language', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createMagicienSombre()],
       [
         [1, 0, 0],
@@ -227,11 +181,11 @@ describe('retrieveCards', () => {
     );
 
     const english = await retrieve(
-      directory,
+      catalog,
       createQueryEmbedder(QUERY_VECTOR).embedder
     );
     const french = await retrieve(
-      directory,
+      catalog,
       createQueryEmbedder(QUERY_VECTOR).embedder,
       Language.French
     );
@@ -241,9 +195,7 @@ describe('retrieveCards', () => {
   });
 
   it('drops candidates below the similarity floor', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -254,7 +206,7 @@ describe('retrieveCards', () => {
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
     const results = await retrieve(
-      directory,
+      catalog,
       embedder,
       Language.English,
       25,
@@ -265,9 +217,7 @@ describe('retrieveCards', () => {
   });
 
   it('returns nothing when no candidate clears the floor', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -278,7 +228,7 @@ describe('retrieveCards', () => {
     const { embedder } = createQueryEmbedder([0, 0, 1]);
 
     const results = await retrieve(
-      directory,
+      catalog,
       embedder,
       Language.English,
       25,
@@ -289,9 +239,7 @@ describe('retrieveCards', () => {
   });
 
   it('limits the candidates to the requested count', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -301,7 +249,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieve(directory, embedder, Language.English, 2);
+    const results = await retrieve(catalog, embedder, Language.English, 2);
 
     expect(results.map(result => result.card.name)).toEqual([
       'Dark Magician',
@@ -310,9 +258,7 @@ describe('retrieveCards', () => {
   });
 
   it('deduplicates candidates that share a card identity', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [
         createCard({ id: 46986414, name: 'Dark Magician' }),
         createCard({ id: 46986414, name: 'Dark Magician (alternate)' })
@@ -324,7 +270,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieve(directory, embedder);
+    const results = await retrieve(catalog, embedder);
 
     expect(results).toHaveLength(1);
     expect(results[0].card.name).toBe('Dark Magician (alternate)');
@@ -332,9 +278,7 @@ describe('retrieveCards', () => {
   });
 
   it('pre-filters on the structured fields before ranking semantically', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -344,7 +288,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieveWith(directory, embedder, {
+    const results = await retrieveWith(catalog, embedder, {
       text: 'draw cards',
       filters: [
         {
@@ -360,9 +304,7 @@ describe('retrieveCards', () => {
   });
 
   it('returns every match of a filter-only request in a stable order', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -372,7 +314,7 @@ describe('retrieveCards', () => {
     );
     const { embedder, texts } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieveWith(directory, embedder, {
+    const results = await retrieveWith(catalog, embedder, {
       filters: levelAtLeast(7)
     });
 
@@ -385,9 +327,7 @@ describe('retrieveCards', () => {
   });
 
   it('AND-combines several filters while ranking by intent', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -397,7 +337,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieveWith(directory, embedder, {
+    const results = await retrieveWith(catalog, embedder, {
       text: 'a powerful monster',
       filters: [
         {
@@ -419,9 +359,7 @@ describe('retrieveCards', () => {
   });
 
   it('scopes a filter-only request to the active language', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createMagicienSombre()],
       [
         [1, 0, 0],
@@ -430,7 +368,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const french = await retrieveWith(directory, embedder, {
+    const french = await retrieveWith(catalog, embedder, {
       language: Language.French,
       filters: levelAtLeast(7)
     });
@@ -439,9 +377,7 @@ describe('retrieveCards', () => {
   });
 
   it('returns nothing when no card matches the filters', async () => {
-    const directory = await createDataDir();
-    await seed(
-      directory,
+    const catalog = createCatalog(
       [createCard(), createPotOfGreed(), createBlueEyes()],
       [
         [1, 0, 0],
@@ -451,7 +387,7 @@ describe('retrieveCards', () => {
     );
     const { embedder } = createQueryEmbedder(QUERY_VECTOR);
 
-    const results = await retrieveWith(directory, embedder, {
+    const results = await retrieveWith(catalog, embedder, {
       filters: levelAtLeast(11)
     });
 

@@ -1,0 +1,33 @@
+# Version control and editors
+.git
+.gitignore
+
+# Dependencies and build output: reinstalled and rebuilt inside the image
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+
+# The dump, the index, and the logs are mounted at run time, never baked in
+data
+apps/server/data
+apps/server/logs
+**/logs
+
+# Local environment and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+
+# Test, lint, and coverage artifacts
+**/test-results
+**/playwright-report
+**/blob-report
+**/.eslintcache
+**/coverage
+
+# Docs and scratch files do not belong in an image
+docs
+todo.md
+dependency-graph.svg

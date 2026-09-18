@@ -99,9 +99,12 @@ export interface MessageFixture {
   conversationId: string;
   role: string;
   content: string;
-  filters?: CardFilter[];
+  search?: {
+    filters: CardFilter[];
+    query?: string;
+    status?: string;
+  };
   cards?: CardFixture[];
-  query?: string;
   createdAt: string;
 }
 
@@ -181,12 +184,18 @@ type FetchHandler = (
   init: RequestInit | undefined
 ) => Response | Promise<Response>;
 
+interface ModelFixture {
+  name: string;
+  supportsCompletion: boolean;
+  supportsStructuredOutput: boolean;
+}
+
 /**
  * The models a test's machine has installed unless it says otherwise: the one
  * the conversation fixtures are set to, so a test that is not about choosing a
  * model never has to think about the listing.
  */
-const DEFAULT_MODELS = [
+const DEFAULT_MODELS: ModelFixture[] = [
   {
     name: 'llama3.1:8b',
     supportsCompletion: true,
@@ -194,20 +203,27 @@ const DEFAULT_MODELS = [
   }
 ];
 
+/** The listing the server answers with: the models, and the default it picks. */
+const listingOf = (models: ModelFixture[]): unknown => {
+  const first = models.find(model => model.supportsCompletion);
+
+  return first === undefined ? { models } : { models, default: first.name };
+};
+
 /**
  * A fetch stub for the app. The model listing is answered here rather than in
  * every test, because its answer is the same for all of them except the ones
- * about choosing a model, which pass the listing they mean.
+ * about choosing a model, which pass the models they mean.
  */
 export const stubFetch = (
   handler: FetchHandler,
-  models: unknown[] = DEFAULT_MODELS
+  models: ModelFixture[] = DEFAULT_MODELS
 ): ReturnType<typeof vi.fn> =>
   vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
 
     if (url === '/api/models') {
-      return json(models);
+      return json(listingOf(models));
     }
 
     return handler(url, init);

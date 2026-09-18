@@ -1,4 +1,4 @@
-import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
+import type { Card } from '@ygo-assistant/cards';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -49,33 +49,6 @@ export interface CardIndexContents {
   rows: IndexedCardRow[];
   count: number;
   metadata: IndexMetadata;
-}
-
-/**
- * What every query over the index is scoped by: the language partition to stay
- * inside, the optional structured pre-filters, and how many rows to return.
- */
-export interface CardQueryOptions {
-  language: Language;
-  filters?: CardFilters;
-  limit: number;
-}
-
-/**
- * A vector search over the index: the query vector on top of the shared query
- * scope.
- */
-export interface SearchCardIndexOptions extends CardQueryOptions {
-  vector: number[];
-}
-
-/**
- * A read of specific cards: which ids to read, and the language to prefer when a
- * card exists in more than one, since the language partitions share their ids.
- */
-export interface ReadCardsByIdsOptions {
-  ids: number[];
-  language: Language;
 }
 
 /**

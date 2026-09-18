@@ -27,20 +27,16 @@ import { ExamplePromptList } from '../conversation/ExamplePrompts.js';
  */
 export default function EmptyState() {
   const start = useStartConversation();
-  const models = useModels();
+  const listing = useModels();
   const client = useQueryClient();
   const navigate = useNavigate();
   const [language, setLanguage] = useState<Language>(Language.English);
   const [chosen, setChosen] = useState<string | undefined>(undefined);
 
-  // What a conversation nobody has chosen a model for is answered by: the first
-  // model the machine has that can answer a turn, which is the first of the list
-  // the server sorts. The control shows it, so what will answer is read before
-  // the request is sent rather than guessed at.
-  const model =
-    chosen ??
-    models.data?.find(candidate => candidate.supportsCompletion)?.name ??
-    '';
+  // What a conversation nobody has chosen a model for is answered by, as the
+  // server reports it, so the control shows what will answer before the request
+  // is sent rather than guessing at the rule.
+  const model = chosen ?? listing.data?.default ?? '';
 
   const begin = async (request: string): Promise<void> => {
     start.reset();
@@ -95,7 +91,7 @@ export default function EmptyState() {
           running={start.isPending}
           language={language}
           model={model}
-          models={models.data}
+          models={listing.data?.models}
           onLanguage={setLanguage}
           onModel={setChosen}
           clearOnSend={false}

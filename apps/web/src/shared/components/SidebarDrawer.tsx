@@ -13,8 +13,8 @@ import PlusIcon from './icons/PlusIcon.js';
  * whole sidebar across the room with the chat dimmed behind it.
  *
  * The bar is what a phone keeps of the header, so it carries the same three
- * things the header does — the way in, the name, and the way to start a
- * conversation — and the sidebar it opens holds no header of its own below the
+ * things the header does (the way in, the name, and the way to start a
+ * conversation), and the sidebar it opens holds no header of its own below the
  * breakpoint. The drawer arrives from the edge it lives on and leaves the same
  * way, the room behind it dims, and the keyboard is put on the drawer as it opens
  * and back on the mark as it closes.

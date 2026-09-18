@@ -61,8 +61,9 @@ Confirmed today:
   filters each turn was searched with, and the cards each turn suggested.
 - A request can name the language and the model to use, and a conversation
   remembers what it was last told.
-- Planned, not delivered: showing and editing the parsed filters in the client,
-  and switching language or model from the interface.
+- The client shows what a request was understood as in a readout under it, lets
+  the player correct a filter or add one and re-run the turn, switches the
+  conversation's language, and picks the model from those installed in Ollama.
 - Terminology, normative for docs and code: a request is what the player asks, a
   turn is one exchange, filters are the structured constraints parsed from a
   request, suggested cards are the candidates a turn retrieved, and a grounded
@@ -75,7 +76,7 @@ Constraints:
   client, in the current specs.
 - Card data comes from the YGOPRODeck dump and is bilingual. Adding a language
   means rebuilding the index, not translating an answer.
-- The interface's visual direction is not recorded anywhere yet.
+- The interface's visual direction is recorded in `docs/DESIGN.md`.
 
 Open decision: where the app is hosted, if anywhere. The repository is public; a
 live instance is not.

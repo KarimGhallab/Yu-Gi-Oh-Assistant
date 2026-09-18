@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IAppStore } from '@ygo-assistant/db';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import { LogLevel } from '@ygo-assistant/logger';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
@@ -60,10 +61,7 @@ const storeStub: IAppStore = {
     append: async () => {
       throw new Error('These tests never store a message');
     },
-    list: async () => [],
-    setQuery: async () => {
-      throw new Error('These tests never store a query');
-    }
+    list: async () => []
   },
   close: async () => {}
 };
@@ -72,7 +70,8 @@ const createDependencies = (env: Record<string, string | undefined> = {}) => ({
   config: loadConfig(env),
   logger: new RecordingLogger(),
   ollama: ollamaStub,
-  store: storeStub
+  store: storeStub,
+  catalog: new InMemoryCardCatalog({ rows: [] })
 });
 
 describe('createServer', () => {
@@ -107,6 +106,24 @@ describe('createServer', () => {
     expect(response.headers.get('access-control-allow-origin')).toBe(
       'http://localhost:5173'
     );
+  });
+
+  it('refuses an API request named for another host', async () => {
+    const app = createServer(createDependencies());
+
+    const response = await app.request('http://evil.example/api/conversations');
+
+    expect(response.status).toBe(403);
+  });
+
+  it('serves the API to a same-origin request', async () => {
+    const app = createServer(createDependencies());
+
+    const response = await app.request(
+      'http://127.0.0.1:3000/api/conversations'
+    );
+
+    expect(response.status).toBe(200);
   });
 
   it('maps a domain error to its HTTP status and logs it', async () => {

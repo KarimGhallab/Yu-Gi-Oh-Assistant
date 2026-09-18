@@ -1,54 +1,35 @@
 import { Language } from '@ygo-assistant/cards';
 
+import { createStoredValueReader, enumGuard } from '../storedValue.js';
 import { MessageRole } from './types.js';
 
 const LANGUAGES = new Set<string>(Object.values(Language));
 const MESSAGE_ROLES = new Set<string>(Object.values(MessageRole));
 
-const isLanguage = (value: unknown): value is Language =>
-  typeof value === 'string' && LANGUAGES.has(value);
-
-const isMessageRole = (value: unknown): value is MessageRole =>
-  typeof value === 'string' && MESSAGE_ROLES.has(value);
+const isLanguage = enumGuard<Language>(LANGUAGES);
+const isMessageRole = enumGuard<MessageRole>(MESSAGE_ROLES);
 
 /**
- * Reads a string from a stored row. SQLite hands back loose values, and a column
- * that does not hold what the schema promised means the store is corrupt, so a
- * mismatch is raised rather than coerced.
+ * The application store's rows, read through the reader bound to it. The store
+ * is the one place that names its source, and a column that does not hold what
+ * the schema promised raises rather than reaching the domain.
  */
-export function toString(value: unknown, field: string): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-  throw unexpected(field, value);
-}
+const store = createStoredValueReader('the application store');
 
-export function toOptionalString(value: unknown, field: string): string | null {
-  if (value === null || value === undefined) {
-    return null;
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  throw unexpected(field, value);
-}
+export const { toString, toOptionalString, readJson, writeJson } = store;
 
+/**
+ * Reads the language a conversation is stored in, raising when the column is
+ * not a member of the vocabulary.
+ */
 export function toLanguage(value: unknown): Language {
-  if (isLanguage(value)) {
-    return value;
-  }
-  throw unexpected('language', value);
+  return store.toEnum(value, isLanguage, 'language');
 }
 
+/**
+ * Reads the role a message is stored in, raising when the column is not a
+ * member of the vocabulary.
+ */
 export function toMessageRole(value: unknown): MessageRole {
-  if (isMessageRole(value)) {
-    return value;
-  }
-  throw unexpected('role', value);
-}
-
-function unexpected(field: string, value: unknown): Error {
-  return new Error(
-    `Unexpected value for "${field}" in the application store: ${String(value)}`
-  );
+  return store.toEnum(value, isMessageRole, 'role');
 }

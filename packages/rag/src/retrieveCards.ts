@@ -1,8 +1,4 @@
-import {
-  type ScoredCard,
-  scanCardIndex,
-  searchCardIndex
-} from '@ygo-assistant/db';
+import type { ScoredCard } from '@ygo-assistant/db';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 import type {
@@ -34,7 +30,7 @@ export async function retrieveCards(
   const filters = query.filters ?? [];
 
   if (text.length === 0) {
-    const cards = await scanCardIndex(options.dataDir, {
+    const cards = await options.catalog.scan({
       language: query.language,
       filters,
       limit: ranking.topK
@@ -46,7 +42,7 @@ export async function retrieveCards(
   }
 
   const vector = await embedText(options.embedder, text);
-  const scored = await searchCardIndex(options.dataDir, {
+  const scored = await options.catalog.search({
     vector,
     language: query.language,
     filters,

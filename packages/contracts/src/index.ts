@@ -20,11 +20,16 @@ export type {
 export {
   MessageRole,
   conversationWithMessagesSchema,
-  messageSchema
+  messageSchema,
+  searchInterpretationSchema
 } from './message.js';
-export type { ConversationWithMessages, Message } from './message.js';
-export { modelListSchema, modelSchema } from './model.js';
-export type { Model } from './model.js';
+export type {
+  ConversationWithMessages,
+  Message,
+  SearchInterpretation
+} from './message.js';
+export { modelListingSchema, modelSchema } from './model.js';
+export type { Model, ModelListing } from './model.js';
 export {
   TurnEventName,
   TurnStage,

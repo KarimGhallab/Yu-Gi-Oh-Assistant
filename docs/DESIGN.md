@@ -466,7 +466,7 @@ level deep.
 - **What it is:** the assistant's answer, rendered from the Markdown the model
   writes rather than shown as it typed it. What a model may use is asked for in
   its prompt, and what it uses anyway is mapped onto the system here, so an answer
-  cannot reach a size, a colour, or a container this system does not have.
+  cannot reach a size, a color, or a container this system does not have.
 - **Bold:** the same Bone White at weight 600. Emphasis is weight rather than
   scale, the way the rest of the system carries hierarchy.
 - **Headings:** every level a model reaches for comes out at Body scale and weight

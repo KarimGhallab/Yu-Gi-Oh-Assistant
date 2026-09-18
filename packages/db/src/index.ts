@@ -1,23 +1,17 @@
+export { CardCatalog } from './catalog/CardCatalog.js';
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
-export {
-  buildCardIndex,
-  listCardArchetypes,
-  readCardIndex,
-  readCardIndexMetadata,
-  readCardsByIds,
-  scanCardIndex,
-  searchCardIndex
-} from './catalog/index/cardIndex.js';
-export { indexDirectory } from './catalog/indexPaths.js';
+export type {
+  ICardCatalog,
+  ReadByIdsOptions,
+  ScanOptions,
+  SearchOptions
+} from './catalog/ICardCatalog.js';
+export { buildCardIndex } from './catalog/index/cardIndex.js';
 export type {
   BuildCardIndexOptions,
-  CardIndexContents,
-  CardQueryOptions,
   IndexedCardRow,
   IndexMetadata,
-  ReadCardsByIdsOptions,
-  ScoredCard,
-  SearchCardIndexOptions
+  ScoredCard
 } from './catalog/types.js';
 export { populateCardIndex } from './populateCardIndex.js';
 export type {
@@ -42,7 +36,7 @@ export {
   convertCardInfoResponse,
   convertCards
 } from './ygoprodeck/convert/convertCards.js';
-export { fetchCardDump } from './ygoprodeck/fetchCardDump.js';
-export type { FetchCardDumpOptions } from './ygoprodeck/fetchCardDump.js';
 export { cardInfoResponseSchema } from './ygoprodeck/dumpSchemas.js';
 export type { YgoProdeckCard } from './ygoprodeck/dumpSchemas.js';
+export { fetchCardDump } from './ygoprodeck/fetchCardDump.js';
+export type { FetchCardDumpOptions } from './ygoprodeck/fetchCardDump.js';

@@ -45,6 +45,9 @@ export interface AppConfig {
   logLevel: LogLevel;
   logDir: string;
   corsOrigin?: string[];
+  allowedHosts?: string[];
+  expectedDumpSha256?: string;
+  expectedDatasetVersion?: string;
   ollama: OllamaConfig;
   retrieval: RetrievalConfig;
 }

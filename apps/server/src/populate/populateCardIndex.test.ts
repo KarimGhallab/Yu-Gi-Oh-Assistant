@@ -4,7 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { populateCardIndex, readCardIndex } from '@ygo-assistant/db';
+import { populateCardIndex } from '@ygo-assistant/db';
+import { readCardIndex } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
 import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
 

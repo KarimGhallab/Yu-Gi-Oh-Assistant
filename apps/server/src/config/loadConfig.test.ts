@@ -38,7 +38,7 @@ describe('loadConfig', () => {
       OLLAMA_EMBEDDING_MODEL: 'bge-m3',
       OLLAMA_EMBEDDING_DIMENSIONS: '1024',
       RETRIEVAL_TOP_K: '40',
-      RETRIEVAL_SHOWN: '12',
+      RETRIEVAL_MAX_SHOWN: '12',
       RETRIEVAL_MIN_SCORE: '0.4'
     });
 
@@ -77,6 +77,42 @@ describe('loadConfig', () => {
       'http://localhost:5173',
       'https://assistant.example'
     ]);
+  });
+
+  it('leaves the allowed hosts undefined when not configured', () => {
+    expect(loadConfig({}).allowedHosts).toBeUndefined();
+  });
+
+  it('parses a comma-separated list of allowed hosts', () => {
+    const config = loadConfig({
+      ALLOWED_HOSTS: 'assistant.example, 192.168.1.5'
+    });
+
+    expect(config.allowedHosts).toEqual(['assistant.example', '192.168.1.5']);
+  });
+
+  it('leaves the ingestion pins undefined when not configured', () => {
+    const config = loadConfig({});
+
+    expect(config.expectedDumpSha256).toBeUndefined();
+    expect(config.expectedDatasetVersion).toBeUndefined();
+  });
+
+  it('reads the dump digest and dataset version pins', () => {
+    const digest = 'a'.repeat(64);
+    const config = loadConfig({
+      CARD_DUMP_SHA256: digest.toUpperCase(),
+      CARD_DATASET_VERSION: 'ygoprodeck-0123456789abcdef'
+    });
+
+    expect(config.expectedDumpSha256).toBe(digest);
+    expect(config.expectedDatasetVersion).toBe('ygoprodeck-0123456789abcdef');
+  });
+
+  it('refuses a dump digest that is not a SHA-256', () => {
+    expect(() => loadConfig({ CARD_DUMP_SHA256: 'not-a-digest' })).toThrow(
+      /CARD_DUMP_SHA256/
+    );
   });
 
   it('refuses to start and names the offending variable', () => {

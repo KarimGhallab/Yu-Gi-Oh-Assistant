@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type CardFilters,
   type Language,
+  type SearchInterpretation,
   TurnEventName,
   type TurnRequest,
   type TurnStage,
@@ -77,19 +78,6 @@ export interface UseTurnResult {
 interface TurnSettings {
   language?: Language;
   model?: string;
-}
-
-/**
- * How a turn's search was understood: the filters it reported, the words it
- * searched on when it had none, and what the server said about how it got
- * there. It is kept past the end of the turn, because a turn that gave way to
- * free text says so only while it is running, and the reply the server stores
- * keeps the filters and not the reason there were none.
- */
-export interface SearchInterpretation {
-  filters: CardFilters;
-  query?: string;
-  status?: TurnStatus;
 }
 
 /**

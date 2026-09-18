@@ -76,18 +76,20 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a blue-eyes warrior'),
       said(11, 'assistant', 'Fits.', {
-        filters: [
-          {
-            field: CardFilterField.Race,
-            operator: FilterOperator.Eq,
-            value: CardRace.BeastWarrior
-          },
-          {
-            field: CardFilterField.Archetype,
-            operator: FilterOperator.Contains,
-            value: 'Blue-Eyes'
-          }
-        ]
+        search: {
+          filters: [
+            {
+              field: CardFilterField.Race,
+              operator: FilterOperator.Eq,
+              value: CardRace.BeastWarrior
+            },
+            {
+              field: CardFilterField.Archetype,
+              operator: FilterOperator.Contains,
+              value: 'Blue-Eyes'
+            }
+          ]
+        }
       })
     ];
     vi.stubGlobal(
@@ -128,7 +130,7 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE],
+        search: { filters: [DARK_ATTRIBUTE] },
         cards: [DARK_MAGICIAN]
       })
     ];
@@ -157,7 +159,9 @@ describe('the search readout', () => {
   it('says the last search of a conversation carried no filters', async () => {
     const stored = [
       playerMessage(10, 'something that stops attacks'),
-      said(11, 'assistant', 'Searched by meaning.', { filters: [] })
+      said(11, 'assistant', 'Searched by meaning.', {
+        search: { filters: [] }
+      })
     ];
     vi.stubGlobal(
       'fetch',
@@ -173,12 +177,41 @@ describe('the search readout', () => {
     expect(await screen.findByText('No filters')).toBeInTheDocument();
   });
 
+  it('remembers a search that fell back to the request words', async () => {
+    const stored = [
+      playerMessage(10, 'something that stops attacks'),
+      said(11, 'assistant', 'Searched as written.', {
+        search: {
+          filters: [],
+          query: 'something that stops attacks',
+          status: 'free-text-only'
+        }
+      })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    expect(
+      await screen.findByText(
+        'Searched as written: something that stops attacks'
+      )
+    ).toBeInTheDocument();
+  });
+
   it('re-runs the search on a corrected chip rather than reading the request', async () => {
     const turns: TurnStream[] = [];
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE]
+        search: { filters: [DARK_ATTRIBUTE] }
       })
     ];
     const fetchMock = stubFetch((url, init) => {
@@ -261,7 +294,7 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE]
+        search: { filters: [DARK_ATTRIBUTE] }
       })
     ];
     vi.stubGlobal(
@@ -295,7 +328,7 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE]
+        search: { filters: [DARK_ATTRIBUTE] }
       })
     ];
     const fetchMock = stubFetch((url, init) =>
@@ -338,7 +371,7 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE]
+        search: { filters: [DARK_ATTRIBUTE] }
       })
     ];
     const fetchMock = stubFetch((url, init) =>
@@ -374,7 +407,7 @@ describe('the search readout', () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
       said(11, 'assistant', 'Dark Magician fits.', {
-        filters: [DARK_ATTRIBUTE]
+        search: { filters: [DARK_ATTRIBUTE] }
       })
     ];
     const fetchMock = stubFetch((url, init) =>
@@ -433,7 +466,9 @@ describe('the search readout', () => {
   it('gathers the value and the operators the way the field being added takes them', async () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
-      said(11, 'assistant', 'Dark Magician fits.', { filters: [] })
+      said(11, 'assistant', 'Dark Magician fits.', {
+        search: { filters: [] }
+      })
     ];
     vi.stubGlobal(
       'fetch',
@@ -482,7 +517,7 @@ describe('the search readout', () => {
   it('refuses a numeric value outside the bounds the game has', async () => {
     const stored = [
       playerMessage(10, 'a dark monster'),
-      said(11, 'assistant', 'Fits.', { filters: [] })
+      said(11, 'assistant', 'Fits.', { search: { filters: [] } })
     ];
     vi.stubGlobal(
       'fetch',

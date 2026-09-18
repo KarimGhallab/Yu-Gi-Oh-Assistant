@@ -10,6 +10,8 @@ export {
 } from './enums.js';
 export {
   CardFilterField,
+  FILTER_FIELD_KINDS,
+  FilterKind,
   cardFilterSchema,
   cardFiltersSchema,
   cardMatchesFilters,

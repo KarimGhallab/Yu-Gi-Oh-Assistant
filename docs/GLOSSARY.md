@@ -2,8 +2,8 @@
 
 The glossary of the terms this project uses for its own concepts. It expands the
 short normative list in `docs/PRODUCT.md`: where the two disagree about a term,
-the product doc wins, and a term that is missing here is a gap in this file
-rather than a licence to invent a new word. Code and docs use these terms with
+the product doc wins, and a missing term is a gap in this file, not permission to
+invent a new word. Code and docs use these terms with
 these meanings, so a second name for an old idea is a defect.
 
 Two families live here. The game's own terms come from the card data. The
@@ -73,6 +73,11 @@ Monster` or `Spell Card`. A filter field.
 - **Request**: what the player asks for, in prose. One request starts one turn.
 - **Turn**: one exchange: a stored request, the search it resolved to, the cards
   it found, and the answer it produced. The unit the stream reports.
+- **Turn pipeline** (or **pipeline**): the one module that owns the turn's stage
+  sequence, resolve, retrieve, select, answer, and yields one neutral event
+  stream (`runPipeline`). The turn and the RAG command are adapters over it, and
+  the stages themselves are `rag`'s; the server owns the sequence, not the
+  stages.
 - **Message**: one stored utterance in a conversation, from the player or the
   assistant. A turn writes the player's message first and the assistant's once
   the answer is complete.
@@ -81,6 +86,10 @@ Monster` or `Spell Card`. A filter field.
 - **Settings**: the language and the model in force for a turn. They belong to
   the conversation and may be overridden per turn, and a turn only ever sees the
   resolved pair.
+- **Model listing**: what the configured Ollama instance has installed and what
+  each model can do, together with the model that answers when nobody has chosen.
+  The instance is asked for it rather than remembered, and the default is the
+  server's to name, so a client never derives a second answer.
 - **Filters** (or **card filters**): the structured constraints parsed from a
   request, a set combined with AND. An empty set matches every card. The set is
   the vocabulary shared by parsing, retrieval, and the interface.
@@ -97,8 +106,8 @@ Monster` or `Spell Card`. A filter field.
 - **Query** (or **free text**): the words a search actually ranks. It may be the
   player's request or the parse's own rewrite.
 - **Rewrite** (or **rephrased query**): the parse's wording of the request, in
-  the request's language, when it kept one. It is what the player's message
-  records as its `query`, so a reopened turn shows what was searched.
+  the request's language, when it kept one. It is what the turn's search records
+  as its `query`, so a reopened conversation shows what was searched.
 - **Bounds**: the game's own limits on a numeric filter, level 1 to 12 and ATK
   and DEF 0 to 9000. Declared once in the filter schema, so the prompt, the
   parser, the search, and the controls all refuse the same values.
@@ -131,9 +140,9 @@ Monster` or `Spell Card`. A filter field.
 - **Retrieval**: finding candidate cards in the index for a query
   (`retrieveCards`).
 - **Semantic search**: embedding the query text and returning the nearest
-  documents, closest first (`searchCardIndex`).
+  documents, closest first (the catalog's `search`).
 - **Filter-only lookup** (or **scan**): a search with no text, only filters,
-  which returns matching rows in a stable identity order (`scanCardIndex`).
+  which returns matching rows in a stable identity order (the catalog's `scan`).
 - **Ranked card** (`RankedCard`): a candidate with its score. A semantic match
   carries a cosine similarity, higher meaning closer. A filter-only match has no
   distance to report and carries 1 as a certain structural match, so the two
@@ -194,7 +203,9 @@ Monster` or `Spell Card`. A filter field.
   a chip in the implementation.
 - **Interpretation** (`SearchInterpretation`): how a turn's search was
   understood: the filters it reported, the words it fell back on, and what the
-  server said about how it got there.
+  server said about how it got there. It is one record, stored with the reply,
+  so a reopened conversation reads what a turn searched rather than rebuilding it
+  from the filters alone. The readout is where it is shown.
 - **Correction**: the edited filters the player submits with the next turn
   (`correct`).
 - **Request prompt** (or **composer**): the input a request is typed into

@@ -1,6 +1,6 @@
 # 11 - End-to-end tests
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** 09
 - **Source:** implementation planning, 2026-09-18

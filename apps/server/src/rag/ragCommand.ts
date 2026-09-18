@@ -1,3 +1,4 @@
+import { CardCatalog } from '@ygo-assistant/db';
 import {
   type ILogger,
   type LogDestination,
@@ -6,7 +7,7 @@ import {
   createLogger
 } from '@ygo-assistant/logger';
 import type { OllamaModel } from '@ygo-assistant/ollama';
-import { hasErrorMessage } from '@ygo-assistant/utils';
+import { describeError } from '@ygo-assistant/utils';
 
 import {
   type AppConfig,
@@ -16,6 +17,11 @@ import {
 import { ensureIndexMatchesConfig } from '../index-guard/ensureIndexMatchesConfig.js';
 import { createOllamaClient } from '../ollama-client/createOllamaClient.js';
 import {
+  type PipelineDependencies,
+  type PipelineInput,
+  runPipeline
+} from '../pipeline/runPipeline.js';
+import {
   defaultModel,
   installedModels,
   requireInstalledModel
@@ -23,11 +29,6 @@ import {
 import type { OllamaDependencies } from '../server/types.js';
 import { RagReporter } from './RagReporter.js';
 import { type RagArgs, RagArgsError, parseRagArgs } from './parseRagArgs.js';
-import {
-  type RagQueryDependencies,
-  type RagQueryInput,
-  runRagQuery
-} from './runRagQuery.js';
 
 const USAGE = `Ask the local card pipeline a question.
 
@@ -77,9 +78,10 @@ async function main(): Promise<void> {
 
   const config = loadConfig(process.env);
   const logger = createRagLogger(args, config);
+  const catalog = await CardCatalog.getInstance(config.dataDir);
 
   try {
-    await ensureIndexMatchesConfig(config);
+    await ensureIndexMatchesConfig(catalog, config);
   } catch (error) {
     logger.error('The card index is not usable', {
       message: describeError(error)
@@ -94,10 +96,10 @@ async function main(): Promise<void> {
     return;
   }
 
-  const dependencies: RagQueryDependencies = {
+  const dependencies: PipelineDependencies = {
     logger,
     ollama: createOllamaClient(config.ollama),
-    dataDir: config.dataDir
+    catalog
   };
 
   let model: OllamaModel;
@@ -111,8 +113,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const input: RagQueryInput = {
-    prompt,
+  const input: PipelineInput = {
+    request: prompt,
     language: args.language,
     model: model.name,
     supportsStructuredOutput: model.supportsStructuredOutput,
@@ -120,10 +122,12 @@ async function main(): Promise<void> {
     parse: args.parse,
     answer: args.answer,
     filter: args.filter,
-    topK: args.topK ?? config.retrieval.topK,
-    shown: args.shown ?? config.retrieval.shown,
-    minScore: args.minScore ?? config.retrieval.minScore,
-    filterPool: args.filterPool ?? config.retrieval.filterPool
+    ranking: {
+      topK: args.topK ?? config.retrieval.topK,
+      minScore: args.minScore ?? config.retrieval.minScore
+    },
+    pool: args.filterPool ?? config.retrieval.filterPool,
+    shown: args.shown ?? config.retrieval.shown
   };
 
   const reporter = new RagReporter(args.json);
@@ -131,12 +135,12 @@ async function main(): Promise<void> {
     prompt,
     language: input.language,
     model: input.model,
-    topK: input.topK,
+    topK: input.ranking.topK,
     shown: input.shown,
-    minScore: input.minScore
+    minScore: input.ranking.minScore
   });
 
-  for await (const event of runRagQuery(dependencies, input)) {
+  for await (const event of runPipeline(dependencies, input)) {
     reporter.event(event);
   }
   reporter.finish();
@@ -186,10 +190,6 @@ async function readPrompt(): Promise<string> {
 function fail(message: string): void {
   process.stderr.write(`${message}\n\n${USAGE}\n`);
   process.exitCode = 2;
-}
-
-function describeError(error: unknown): string {
-  return hasErrorMessage(error) ? error.message : String(error);
 }
 
 await main();

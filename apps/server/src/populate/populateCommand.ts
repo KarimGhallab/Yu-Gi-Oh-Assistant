@@ -18,7 +18,8 @@ try {
     logger,
     embedder,
     embeddingModel: config.ollama.embeddingModel,
-    dimensions: config.ollama.embeddingDimensions
+    dimensions: config.ollama.embeddingDimensions,
+    expectedDumpSha256: config.expectedDumpSha256
   });
 
   logger.info('Card index populated', {

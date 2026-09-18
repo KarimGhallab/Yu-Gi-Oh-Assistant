@@ -12,12 +12,18 @@ const environmentSchema = z.object({
   LOG_LEVEL: z.enum(LogLevel).default(LogLevel.Info),
   LOG_DIR: z.string().min(1).default('./logs'),
   CORS_ORIGIN: z.string().optional(),
+  ALLOWED_HOSTS: z.string().optional(),
+  CARD_DUMP_SHA256: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/i, 'must be a SHA-256 hex digest')
+    .optional(),
+  CARD_DATASET_VERSION: z.string().min(1).optional(),
   OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
   OLLAMA_EMBEDDING_BASE_URL: z.url().optional(),
   OLLAMA_EMBEDDING_MODEL: z.string().min(1).default('qwen3-embedding:0.6b'),
   OLLAMA_EMBEDDING_DIMENSIONS: z.coerce.number().int().positive().default(1024),
   RETRIEVAL_TOP_K: z.coerce.number().int().positive().default(25),
-  RETRIEVAL_SHOWN: z.coerce.number().int().positive().default(8),
+  RETRIEVAL_MAX_SHOWN: z.coerce.number().int().positive().default(8),
   RETRIEVAL_MIN_SCORE: z.coerce.number().min(-1).max(1).default(0),
   RETRIEVAL_FILTER_POOL: z.coerce.number().int().positive().default(25)
 });
@@ -57,12 +63,10 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     nodeEnv: parsed.NODE_ENV,
     logLevel: parsed.LOG_LEVEL,
     logDir: parsed.LOG_DIR,
-    corsOrigin:
-      parsed.CORS_ORIGIN === undefined
-        ? undefined
-        : parsed.CORS_ORIGIN.split(',')
-            .map(origin => origin.trim())
-            .filter(origin => origin.length > 0),
+    corsOrigin: splitList(parsed.CORS_ORIGIN),
+    allowedHosts: splitList(parsed.ALLOWED_HOSTS),
+    expectedDumpSha256: parsed.CARD_DUMP_SHA256?.toLowerCase(),
+    expectedDatasetVersion: parsed.CARD_DATASET_VERSION,
     ollama: {
       baseUrl: parsed.OLLAMA_BASE_URL,
       embeddingBaseUrl:
@@ -72,9 +76,24 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     },
     retrieval: {
       topK: parsed.RETRIEVAL_TOP_K,
-      shown: parsed.RETRIEVAL_SHOWN,
+      shown: parsed.RETRIEVAL_MAX_SHOWN,
       minScore: parsed.RETRIEVAL_MIN_SCORE,
       filterPool: parsed.RETRIEVAL_FILTER_POOL
     }
   };
+}
+
+/**
+ * Splits a comma-separated environment list into its members, dropping the empty
+ * ones so a trailing comma or a stray space does not become an entry.
+ */
+function splitList(value: string | undefined): string[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return value
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
 }

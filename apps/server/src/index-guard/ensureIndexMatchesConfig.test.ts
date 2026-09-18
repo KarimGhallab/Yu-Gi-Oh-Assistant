@@ -1,7 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { buildCardIndex } from '@ygo-assistant/db';
-import { FakeOllamaClient, TempDataDir } from '@ygo-assistant/test-support';
+import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 
 import { loadConfig } from '../config/index.js';
 import {
@@ -24,51 +23,36 @@ const captureError = async (operation: Promise<unknown>): Promise<Error> => {
   throw new Error('Expected the operation to reject');
 };
 
-const buildIndex = (
-  dataDir: string,
+const catalogWith = (
   embeddingModel: string = EMBEDDING_MODEL,
   dimensions: number = EMBEDDING_DIMENSIONS
-) =>
-  buildCardIndex({
-    dataDir,
-    cards: [],
-    embedder: new FakeOllamaClient(),
-    embeddingModel,
-    dimensions,
-    datasetVersion: 'ygoprodeck-test'
+): InMemoryCardCatalog =>
+  new InMemoryCardCatalog({
+    rows: [],
+    metadata: {
+      datasetVersion: 'ygoprodeck-test',
+      embeddingModel,
+      dimensions
+    }
   });
 
-const configFor = (dataDir: string, overrides: Record<string, string> = {}) =>
+const configFor = (overrides: Record<string, string> = {}) =>
   loadConfig({
-    DATA_DIR: dataDir,
     OLLAMA_EMBEDDING_MODEL: EMBEDDING_MODEL,
     OLLAMA_EMBEDDING_DIMENSIONS: String(EMBEDDING_DIMENSIONS),
     ...overrides
   });
 
 describe('ensureIndexMatchesConfig', () => {
-  let dataDir: TempDataDir | undefined;
-
-  afterEach(async () => {
-    await dataDir?.cleanup();
-    dataDir = undefined;
-  });
-
   it('passes silently when the index matches the configuration', async () => {
-    dataDir = await TempDataDir.create();
-    await buildIndex(dataDir.path);
-
     await expect(
-      ensureIndexMatchesConfig(configFor(dataDir.path))
+      ensureIndexMatchesConfig(catalogWith(), configFor())
     ).resolves.toBeUndefined();
   });
 
   it('fails when the index was built with a different embedding model', async () => {
-    dataDir = await TempDataDir.create();
-    await buildIndex(dataDir.path, 'other-embedding:1b');
-
     const error = await captureError(
-      ensureIndexMatchesConfig(configFor(dataDir.path))
+      ensureIndexMatchesConfig(catalogWith('other-embedding:1b'), configFor())
     );
 
     expect(error).toBeInstanceOf(StaleIndexError);
@@ -77,22 +61,42 @@ describe('ensureIndexMatchesConfig', () => {
   });
 
   it('fails when the index was built with different dimensions', async () => {
-    dataDir = await TempDataDir.create();
-    await buildIndex(dataDir.path, EMBEDDING_MODEL, 768);
-
     const error = await captureError(
-      ensureIndexMatchesConfig(configFor(dataDir.path))
+      ensureIndexMatchesConfig(catalogWith(EMBEDDING_MODEL, 768), configFor())
     );
 
     expect(error).toBeInstanceOf(StaleIndexError);
     expect(error.message).toContain('db:populate');
   });
 
-  it('fails when there is no index', async () => {
-    dataDir = await TempDataDir.create();
+  it('passes when the index holds the pinned dataset version', async () => {
+    await expect(
+      ensureIndexMatchesConfig(
+        catalogWith(),
+        configFor({ CARD_DATASET_VERSION: 'ygoprodeck-test' })
+      )
+    ).resolves.toBeUndefined();
+  });
 
+  it('fails when the index holds a different dataset version than pinned', async () => {
     const error = await captureError(
-      ensureIndexMatchesConfig(configFor(dataDir.path))
+      ensureIndexMatchesConfig(
+        catalogWith(),
+        configFor({ CARD_DATASET_VERSION: 'ygoprodeck-something-else' })
+      )
+    );
+
+    expect(error).toBeInstanceOf(StaleIndexError);
+    expect(error.message).toContain('ygoprodeck-something-else');
+    expect(error.message).toContain('db:populate');
+  });
+
+  it('fails when there is no index', async () => {
+    const error = await captureError(
+      ensureIndexMatchesConfig(
+        new InMemoryCardCatalog({ rows: [] }),
+        configFor()
+      )
     );
 
     expect(error).toBeInstanceOf(StaleIndexError);

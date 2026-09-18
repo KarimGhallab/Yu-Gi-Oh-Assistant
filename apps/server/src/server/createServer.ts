@@ -7,6 +7,7 @@ import { DomainError, HttpStatus } from '@ygo-assistant/utils';
 import { createArchetypeRoutes } from './archetypes/archetypeRoutes.js';
 import { createConversationRoutes } from './conversations/conversationRoutes.js';
 import { createModelRoutes } from './models/modelRoutes.js';
+import { originGuard } from './originGuard.js';
 import { requestLogger } from './requestLogger.js';
 import type { ServerDependencies } from './types.js';
 
@@ -19,6 +20,8 @@ export function createServer(dependencies: ServerDependencies): Hono {
   const app = new Hono();
 
   app.use('*', requestLogger(dependencies.logger));
+
+  app.use('/api/*', originGuard(dependencies.config));
 
   const { corsOrigin } = dependencies.config;
   if (corsOrigin !== undefined) {

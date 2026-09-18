@@ -119,7 +119,7 @@ export class ConversationRepository implements IConversationRepository {
 function toConversation(row: Record<string, unknown>): Conversation {
   return {
     id: toString(row.id, 'id'),
-    title: toOptionalString(row.title, 'title'),
+    title: toOptionalString(row.title, 'title') ?? null,
     language: toLanguage(row.language),
     model: toString(row.model, 'model'),
     createdAt: toString(row.created_at, 'created_at'),

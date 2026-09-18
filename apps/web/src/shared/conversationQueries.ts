@@ -11,7 +11,7 @@ import type {
   Conversation,
   ConversationWithMessages,
   CreateConversationRequest,
-  Model,
+  ModelListing,
   UpdateConversationRequest
 } from '@ygo-assistant/contracts';
 
@@ -73,7 +73,7 @@ export function useConversations(): UseQueryResult<Conversation[], Error> {
  */
 const MODELS_KEY = ['models'] as const;
 
-export function useModels(): UseQueryResult<Model[], Error> {
+export function useModels(): UseQueryResult<ModelListing, Error> {
   return useQuery({ queryKey: MODELS_KEY, queryFn: listModels });
 }
 

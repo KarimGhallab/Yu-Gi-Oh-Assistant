@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { CardAttribute, CardRace, CardType, LinkMarker } from '../enums.js';
-import { CardFilterField, FilterOperator, cardFilterSchema } from './schema.js';
+import {
+  CardFilterField,
+  FilterKind,
+  FilterOperator,
+  cardFilterSchema
+} from './schema.js';
 import {
   type FilterFieldVocabulary,
   describeFilterFields
@@ -107,6 +112,21 @@ describe('describeFilterFields', () => {
     expect(byField().get(CardFilterField.Atk)?.valueType).toBe('integer');
     expect(byField().get(CardFilterField.Race)?.valueType).toBe('string');
     expect(byField().get(CardFilterField.Archetype)?.valueType).toBe('string');
+  });
+
+  it('reports the kind each field filters by', () => {
+    const kind = (field: CardFilterField): FilterKind | undefined =>
+      byField().get(field)?.kind;
+
+    expect(kind(CardFilterField.Level)).toBe(FilterKind.Numeric);
+    expect(kind(CardFilterField.Atk)).toBe(FilterKind.Numeric);
+    expect(kind(CardFilterField.Def)).toBe(FilterKind.Numeric);
+    expect(kind(CardFilterField.LinkVal)).toBe(FilterKind.Numeric);
+    expect(kind(CardFilterField.Type)).toBe(FilterKind.Enumerated);
+    expect(kind(CardFilterField.Race)).toBe(FilterKind.Enumerated);
+    expect(kind(CardFilterField.Attribute)).toBe(FilterKind.Enumerated);
+    expect(kind(CardFilterField.Archetype)).toBe(FilterKind.Text);
+    expect(kind(CardFilterField.LinkMarkers)).toBe(FilterKind.Markers);
   });
 
   it('leaves the free-text and numeric fields without enumerated values', () => {

@@ -59,6 +59,30 @@ numbering across specs, so blocking edges stay legible across features.
 | 49  | [The language and the model persist, and the conversation reopens](./49-the-language-and-the-model-persist-and-the-conversation-reopens.md) | Resolved (2026-09-18) | 47         | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 50  | [A broken turn and a missing index say so](./50-a-broken-turn-and-a-missing-index-say-so.md)                                                | Resolved (2026-09-18) | 46, 47     | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 51  | [CI runs the suite as reusable workflows behind one gate](./51-ci-runs-the-suite-as-reusable-workflows-behind-one-gate.md)                  | Resolved (2026-09-18) | 48, 49, 50 | [11](../specs/11-end-to-end-tests.md)                                                 |
+| 52  | [The runbook gets a stranger running](./52-the-runbook-gets-a-stranger-running.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 53  | [The client and the server run in containers](./53-the-client-and-the-server-run-in-containers.md)                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 54  | [The architecture and the product doc are written down](./54-the-architecture-and-the-product-doc-are-written-down.md)                      | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 55  | [The platform decisions are recorded](./55-the-platform-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 56  | [The pipeline decisions are recorded](./56-the-pipeline-decisions-are-recorded.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 57  | [The conversation and testing decisions are recorded](./57-the-conversation-and-testing-decisions-are-recorded.md)                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 58  | [The catalog is read behind a port](./58-the-catalog-is-read-behind-a-port.md)                                                              | Resolved (2026-09-18) | None       | [12](../specs/12-card-catalog-port.md)                                                |
+| 59  | [The callers and the suites move onto the port](./59-the-callers-and-the-suites-move-onto-the-port.md)                                      | Resolved (2026-09-18) | 58         | [12](../specs/12-card-catalog-port.md)                                                |
+| 60  | [The db entry narrows and the architecture doc follows](./60-the-db-entry-narrows-and-the-architecture-doc-follows.md)                      | Resolved (2026-09-18) | 59         | [12](../specs/12-card-catalog-port.md)                                                |
+| 61  | [The pipeline module owns the sequence](./61-the-pipeline-module-owns-the-sequence.md)                                                      | Resolved (2026-09-18) | None       | [13](../specs/13-turn-pipeline.md)                                                    |
+| 62  | [The command runs the pipeline directly](./62-the-command-runs-the-pipeline-directly.md)                                                    | Resolved (2026-09-18) | 61         | [13](../specs/13-turn-pipeline.md)                                                    |
+| 63  | [The suites rebalance and the docs follow](./63-the-suites-rebalance-and-the-docs-follow.md)                                                | Resolved (2026-09-18) | 61, 62     | [13](../specs/13-turn-pipeline.md)                                                    |
+| 64  | [The predicate renders from the schema's field kinds](./64-the-predicate-renders-from-the-schema-kinds.md)                                  | Resolved (2026-09-18) | None       | [14](../specs/14-filter-predicate.md)                                                 |
+| 65  | [The shipped predicate is pinned to the tested one](./65-the-shipped-predicate-is-pinned-to-the-tested-one.md)                              | Resolved (2026-09-18) | 64         | [14](../specs/14-filter-predicate.md)                                                 |
+| 66  | [The reply carries one search record](./66-the-reply-carries-one-search-record.md)                                                          | Resolved (2026-09-18) | None       | [15](../specs/15-search-interpretation.md)                                            |
+| 67  | [The readout and history read the stored record](./67-the-readout-and-history-read-the-stored-record.md)                                    | Resolved (2026-09-18) | 66         | [15](../specs/15-search-interpretation.md)                                            |
+| 68  | [The listing names the model a conversation starts on](./68-the-listing-names-the-model-a-conversation-starts-on.md)                        | Resolved (2026-09-18) | None       | [16](../specs/16-model-listing-and-policy.md)                                         |
+| 69  | [One owner for the model policy](./69-one-owner-for-the-model-policy.md)                                                                    | Resolved (2026-09-18) | 68         | [16](../specs/16-model-listing-and-policy.md)                                         |
+| 70  | [One reader for a stored value, and the store reads through it](./70-one-reader-for-a-stored-value.md)                                      | Resolved (2026-09-18) | None       | [17](../specs/17-stored-value-reader.md)                                              |
+| 71  | [The catalog reads its rows through the same reader](./71-the-catalog-reads-through-the-same-reader.md)                                     | Resolved (2026-09-18) | 70         | [17](../specs/17-stored-value-reader.md)                                              |
+| 72  | [A stored JSON column reads through one validated read](./72-a-stored-json-column-reads-through-one-validated-read.md)                      | Resolved (2026-09-18) | 70         | [17](../specs/17-stored-value-reader.md)                                              |
+| 73  | [The API refuses requests from another origin](./73-the-api-refuses-another-origin.md)                                                      | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
+| 74  | [Card text is data, not instructions, in the model prompts](./74-card-text-is-data-in-the-prompts.md)                                       | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
+| 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 
 ## Frontier
 
@@ -73,8 +97,42 @@ reads, the chips that show, correct, and extend a parse, the language a
 conversation is in, the reply an empty search gives, the marker on a card that is
 not in that language, and the model chooser. No ticket of it is left.
 
-Spec 10 (Local run, CI, and documentation) is the frontier and is free to be
-ticketed; it keeps the runbook, the containers, and the docs. Spec 11 (End-to-end
-tests) is fully landed: 45 through 51 are resolved, from the fake Ollama's public
-surface and the harness that stands the stack up to the suite in CI behind the
-pipeline gate. Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.
+Spec 10 (Local run, CI, and documentation) is fully landed: 52 through 57 are
+resolved, the runbook and environment template, the containers for the client
+and the server, the architecture and product docs, and the three groups of ADRs
+(the platform, the pipeline, and the conversation and testing decisions). The CI
+shape the spec called for already landed under specs 01 and 11. Spec 11
+(End-to-end tests) is fully landed: 45 through 51 are
+resolved, from the fake Ollama's public surface and the harness that stands the
+stack up to the suite in CI behind the pipeline gate. Ticket 11 supersedes the
+single-origin setup in ticket 06 and spec 01.
+
+Spec 12 (Card catalog port) is fully landed: 58 through 60 are resolved, the
+port and its in-memory substitute, the callers and the suites moved onto it, and
+the db entry narrowed with the architecture doc updated. The port is the
+architecture review's first candidate, recorded in ADR 0011. Spec 13 (Turn
+pipeline) is fully landed: 61 through 63 are resolved, the pipeline module owns
+the sequence behind its neutral events, the RAG command calls it directly, and
+the suites and docs follow. Spec 14 (Filter predicate) is fully landed: 64 and 65
+are resolved, the schema's field kinds are the one source the shipped SQL renders
+from, and the adapter contract test pins the shipped predicate to the tested one.
+The first architecture review's three candidates are done (specs 12 to 14). A
+second review surfaced six more, and its first is fully landed as spec 15 (Search
+interpretation): 66 and 67 are resolved, the reply carries one search record of
+the filters, the free text, and the status, the client reads it live and stored,
+and the old message fields are gone. Spec 16 (Model listing and policy) is fully
+landed: 68 and 69 are resolved, the listing carries the server's default, and
+the client reads one policy for how a model is offered. Spec 17 (One reader for a
+stored value) is the current review's first candidate, ticketed as 70 through
+72: 70 lands the reader and moves the store onto it, 71 moves the catalog onto
+it, and 72 moves the store's JSON reads onto it. 70 through 72 are all resolved.
+The review's second candidate, narrowing the `utils` leaf and deleting its
+broken error predicate, was pruned directly. Its pipeline-dependencies candidate
+is not yet ticketed.
+
+A security track runs beside the architecture work. A whole-codebase security
+review on 2026-09-18 ranked twelve threats, and the three the maintainer picked
+are ticketed as 73 through 75 under spec 18 (Security hardening of the untrusted
+boundaries): 73 puts a host and origin checkpoint in front of the API, 74 carries
+card text as delimited data in the prompts, and 75 verifies the dump and
+constrains its URLs. 73 through 75 are all resolved.

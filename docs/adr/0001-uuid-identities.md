@@ -13,9 +13,8 @@ was no reasonable way to carry those rows over and nothing worth carrying. The
 migration that does it drops both tables and creates them again, so it is also
 the record of that decision.
 
-The consequence that is easy to miss is order. An id used to carry it: messages
-read back in the order they were written and conversations listed newest first,
-because the id counted upward. A UUID does not, so both reads order by the rowid,
+An id used to carry order: messages read back in the order they were written,
+and conversations listed newest first, because the id counted upward. A UUID does not, so both reads order by the rowid,
 which SQLite hands out in the order rows were inserted, with the last change
 breaking ties between conversations. That is a deliberate reliance on an
 implementation detail, kept because it is exactly the old guarantee: the order

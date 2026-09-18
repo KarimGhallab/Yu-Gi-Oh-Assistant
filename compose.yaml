@@ -1,0 +1,73 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Containerfile
+    image: localhost/ygo-assistant-server:latest
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3000'
+      DATA_DIR: /data
+      LOG_DIR: /logs
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.containers.internal:11434}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
+      OLLAMA_EMBEDDING_DIMENSIONS: ${OLLAMA_EMBEDDING_DIMENSIONS:-768}
+    volumes:
+      # The populated index and the SQLite store, built on the host.
+      - ./apps/server/data:/data
+      - server-logs:/logs
+    ports:
+      - '127.0.0.1:3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    pids_limit: 256
+    cpus: 1.0
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Containerfile
+    image: localhost/ygo-assistant-web:latest
+    depends_on:
+      - server
+    ports:
+      - '127.0.0.1:8080:8080'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8080/ > /dev/null || exit 1']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    pids_limit: 100
+    cpus: 0.5
+
+volumes:
+  server-logs:

@@ -1,9 +1,31 @@
 import type { ReactNode } from 'react';
-import Markdown, { type Components } from 'react-markdown';
+import Markdown, { type Components, type UrlTransform } from 'react-markdown';
+
+const SAFE_LINK_PROTOCOLS = new Set(['http:', 'https:']);
+
+/**
+ * Whether an answer's link is one the system will follow. Only the web is a
+ * target here: a card's own page is an absolute public URL, and anything else
+ * (a mail or chat scheme, a script, a bare or malformed string) is rendered as
+ * plain text rather than given to the browser as an action.
+ */
+function isSafeLink(href: string | undefined): href is string {
+  if (href === undefined || href.length === 0) {
+    return false;
+  }
+
+  try {
+    return SAFE_LINK_PROTOCOLS.has(new URL(href).protocol);
+  } catch {
+    return false;
+  }
+}
+
+const urlTransform: UrlTransform = url => (isSafeLink(url) ? url : '');
 
 /**
  * A heading in an answer is the body's own scale and a weight, because this
- * system builds hierarchy from colour, space, and hairlines rather than from
+ * system builds hierarchy from color, space, and hairlines rather than from
  * size, and the conversation's own title is the only thing at Title scale. Every
  * level the model might use comes out the same, so a heading cannot shout.
  */
@@ -47,15 +69,18 @@ const COMPONENTS: Components = {
       {children}
     </pre>
   ),
-  a: ({ children, href }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="text-neutral-100 underline decoration-neutral-800 underline-offset-2 hover:decoration-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-      {children}
-    </a>
-  ),
+  a: ({ children, href }) =>
+    isSafeLink(href) ? (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="text-neutral-100 underline decoration-neutral-800 underline-offset-2 hover:decoration-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+        {children}
+      </a>
+    ) : (
+      <span>{children}</span>
+    ),
   blockquote: ({ children }) => (
     <blockquote className="border-l border-neutral-800 pl-4 text-neutral-400">
       {children}
@@ -78,9 +103,9 @@ interface MessageProseProps {
 /**
  * The answer's prose, rendered from the Markdown a model writes rather than shown
  * as it typed it. What the model is allowed to use is asked for in its prompt, and
- * what it uses anyway is mapped here, so an answer cannot reach a size, a colour,
- * or a container this system does not have. Raw HTML is dropped rather than
- * rendered, and the prose takes the width it is given.
+ * what it uses anyway is mapped here, so an answer cannot reach a size, a color,
+ * a link scheme, or a container this system does not have. Raw HTML is dropped
+ * rather than rendered, and the prose takes the width it is given.
  */
 export default function MessageProse({ markdown }: MessageProseProps) {
   return (
@@ -88,6 +113,7 @@ export default function MessageProse({ markdown }: MessageProseProps) {
       <Markdown
         components={COMPONENTS}
         disallowedElements={DISALLOWED_ELEMENTS}
+        urlTransform={urlTransform}
         skipHtml>
         {markdown}
       </Markdown>
