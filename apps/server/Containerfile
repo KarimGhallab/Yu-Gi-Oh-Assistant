@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+
+# The pinned Node and pnpm the repository runs on.
+FROM docker.io/library/node:26.5.0-alpine AS base
+
+RUN npm install --global pnpm@11.20.0
+WORKDIR /app
+
+# Compile the server and every workspace package it depends on.
+FROM base AS build
+
+COPY . .
+RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm --filter "@ygo-assistant/server..." build
+
+# A node_modules holding only what the server needs at run time.
+FROM base AS production-dependencies
+
+COPY . .
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+
+# The runtime: production dependencies, the built packages, and the server,
+# running as the unprivileged node user.
+FROM docker.io/library/node:26.5.0-alpine AS runtime
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=3000 \
+    DATA_DIR=/data \
+    LOG_DIR=/logs
+
+WORKDIR /app
+
+COPY --from=production-dependencies /app ./
+COPY --from=build /app/packages/cards/dist ./packages/cards/dist
+COPY --from=build /app/packages/contracts/dist ./packages/contracts/dist
+COPY --from=build /app/packages/db/dist ./packages/db/dist
+COPY --from=build /app/packages/logger/dist ./packages/logger/dist
+COPY --from=build /app/packages/ollama/dist ./packages/ollama/dist
+COPY --from=build /app/packages/rag/dist ./packages/rag/dist
+COPY --from=build /app/packages/utils/dist ./packages/utils/dist
+COPY --from=build /app/apps/server/dist ./apps/server/dist
+
+RUN mkdir -p /data /logs && chown -R node:node /app /data /logs
+
+USER node
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+
+CMD ["node", "apps/server/dist/main.js"]

@@ -68,6 +68,44 @@ is no account.
   to the API's public address and `CORS_ORIGIN` on the server to the client's
   origin.
 
+### In containers (optional)
+
+With docker/podman compose, the same stack runs isolated. The pnpm
+scripts above stay the primary path.
+
+Before the first run:
+
+- Build the card index on the host (`pnpm db:populate`); the compose file mounts
+  it from `apps/server/data`.
+- Let Ollama listen beyond loopback, because the server container reaches the
+  host through `host.containers.internal`:
+
+  ```sh
+  OLLAMA_HOST=0.0.0.0 ollama serve
+  ```
+
+- Have `docker/podman-compose` available.
+
+Then:
+
+```sh
+docker/podman-compose up --build
+```
+
+The client is served on http://localhost:8080 and the API on
+http://localhost:3000. Nginx in the client container proxies `/api` and
+`/health` to the server, so the browser talks to one origin and no CORS is
+needed. The index is mounted from `apps/server/data`, the logs go to a named
+volume, and both containers run read-only as a non-root user.
+
+The embedding model and its dimensions must match the index that was populated.
+Override them from a root `.env`, which compose reads, for example:
+
+```sh
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
+OLLAMA_EMBEDDING_DIMENSIONS=768
+```
+
 ## Configuration
 
 The server reads `apps/server/.env`; `apps/server/.env.example` documents every

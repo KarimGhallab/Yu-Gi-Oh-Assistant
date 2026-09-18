@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+
+# Compile the client with the pinned Node and pnpm.
+FROM docker.io/library/node:26.5.0-alpine AS build
+
+RUN npm install --global pnpm@11.20.0
+WORKDIR /app
+
+COPY . .
+RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm --filter "@ygo-assistant/web..." build
+
+# Serve the built client and proxy the API, as the unprivileged nginx user.
+FROM docker.io/nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/ > /dev/null || exit 1

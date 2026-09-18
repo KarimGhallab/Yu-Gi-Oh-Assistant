@@ -60,7 +60,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 50  | [A broken turn and a missing index say so](./50-a-broken-turn-and-a-missing-index-say-so.md)                                                | Resolved (2026-09-18) | 46, 47     | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 51  | [CI runs the suite as reusable workflows behind one gate](./51-ci-runs-the-suite-as-reusable-workflows-behind-one-gate.md)                  | Resolved (2026-09-18) | 48, 49, 50 | [11](../specs/11-end-to-end-tests.md)                                                 |
 | 52  | [The runbook gets a stranger running](./52-the-runbook-gets-a-stranger-running.md)                                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
-| 53  | [The client and the server run in containers](./53-the-client-and-the-server-run-in-containers.md)                                          | ready-for-agent       | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
+| 53  | [The client and the server run in containers](./53-the-client-and-the-server-run-in-containers.md)                                          | Resolved (2026-09-18) | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 54  | [The architecture and the product doc are written down](./54-the-architecture-and-the-product-doc-are-written-down.md)                      | ready-for-agent       | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 55  | [The platform decisions are recorded](./55-the-platform-decisions-are-recorded.md)                                                          | ready-for-agent       | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
 | 56  | [The pipeline decisions are recorded](./56-the-pipeline-decisions-are-recorded.md)                                                          | ready-for-agent       | -          | [10](../specs/10-local-run-ci-and-docs.md)                                            |
@@ -83,9 +83,9 @@ Spec 10 (Local run, CI, and documentation) is the frontier and is ticketed as 52
 through 57: the runbook and environment template, the containers for the client
 and the server, the architecture and product docs, and the three groups of ADRs
 (the platform, the pipeline, and the conversation and testing decisions). The
-runbook is resolved; the rest are free to start. The CI shape the spec called for
-already landed under specs 01 and 11. Spec 11 (End-to-end tests) is fully landed:
-45 through 51 are
+runbook and the containers are resolved; the rest are free to start. The CI shape
+the spec called for already landed under specs 01 and 11. Spec 11 (End-to-end
+tests) is fully landed: 45 through 51 are
 resolved, from the fake Ollama's public surface and the harness that stands the
 stack up to the suite in CI behind the pipeline gate. Ticket 11 supersedes the
 single-origin setup in ticket 06 and spec 01.
