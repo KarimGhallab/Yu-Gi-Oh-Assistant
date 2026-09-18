@@ -15,7 +15,7 @@ import type { SearchInterpretation } from './useTurn.js';
  * line is drawn twice: once as the status line is, in Ash Grey, and once more in
  * Bone White behind a mask that lets a band of it through and moves. So the
  * resting line is the line it always was, and the light is the app's own second
- * colour rather than a gradient laid over its text.
+ * color rather than a gradient laid over its text.
  *
  * The second drawing is hidden from assistive technology, and its characters
  * never change, so the live region announces the sentence once, as it appears.

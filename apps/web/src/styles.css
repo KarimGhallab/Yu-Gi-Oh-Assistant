@@ -90,7 +90,7 @@
    * The status line while a turn runs: a light passes through what it says. The
    * line is written twice, the second time in Bone White behind a mask, so the
    * resting line is the Ash Grey it always was and the travelling band is the
-   * app's own second colour rather than a gradient filled into its text. One pass
+   * app's own second color rather than a gradient filled into its text. One pass
    * every 1.8s, linear, with the band crossing in the middle so the line reads as
    * busy without anything about it blinking. It is the only loop in the system,
    * alive only while the work it reports is.

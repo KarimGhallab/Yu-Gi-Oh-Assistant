@@ -3,7 +3,7 @@ import Markdown, { type Components } from 'react-markdown';
 
 /**
  * A heading in an answer is the body's own scale and a weight, because this
- * system builds hierarchy from colour, space, and hairlines rather than from
+ * system builds hierarchy from color, space, and hairlines rather than from
  * size, and the conversation's own title is the only thing at Title scale. Every
  * level the model might use comes out the same, so a heading cannot shout.
  */
@@ -78,7 +78,7 @@ interface MessageProseProps {
 /**
  * The answer's prose, rendered from the Markdown a model writes rather than shown
  * as it typed it. What the model is allowed to use is asked for in its prompt, and
- * what it uses anyway is mapped here, so an answer cannot reach a size, a colour,
+ * what it uses anyway is mapped here, so an answer cannot reach a size, a color,
  * or a container this system does not have. Raw HTML is dropped rather than
  * rendered, and the prose takes the width it is given.
  */
