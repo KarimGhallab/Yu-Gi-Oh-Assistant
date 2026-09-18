@@ -215,6 +215,29 @@ describe('streamGroundedAnswer', () => {
     expect(systemPrompt(requests[0])).toContain('French');
   });
 
+  it('asks for the Markdown dialect the conversation can render', async () => {
+    const { client, requests } = createStubClient([
+      { content: 'ok', done: true }
+    ]);
+
+    await collect(
+      streamGroundedAnswer({
+        client,
+        model: MODEL,
+        request: REQUEST,
+        language: Language.English,
+        cards: [createCard()]
+      })
+    );
+
+    const prompt = systemPrompt(requests[0]);
+    expect(prompt).toContain('**bold**');
+    expect(prompt).toContain('bullet list');
+    expect(prompt).toContain(
+      'no headings, no code, no tables, no images, and no links'
+    );
+  });
+
   it('leaves the answer free at temperature 0 rather than schema-constrained', async () => {
     const { client, requests } = createStubClient([
       { content: 'ok', done: true }

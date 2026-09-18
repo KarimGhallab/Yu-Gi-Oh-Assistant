@@ -15,7 +15,9 @@ export function buildAnswerPrompt(cards: Card[], language: Language): string {
     'The cards the search found:',
     ...cards.map(describeCard),
     '',
-    `Answer the request that follows in ${languageName(language)}. Mention no card that is not listed above, and say why each card you recommend matches the request.`
+    `Answer the request that follows in ${languageName(language)}. Mention no card that is not listed above, and say why each card you recommend matches the request.`,
+    '',
+    'Write it in Markdown, and no more of it than this: paragraphs, **bold** around a card name, *italic* for emphasis, and a bullet list when you recommend several cards. Use no headings, no code, no tables, no images, and no links: the cards are already listed with their links under your answer.'
   ].join('\n');
 }
 

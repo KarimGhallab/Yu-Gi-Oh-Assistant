@@ -1,11 +1,18 @@
 import { type Language, MessageRole } from '@ygo-assistant/contracts';
 
+import MessageProse from '../../shared/components/MessageProse.js';
+
 import CardGrid, { type SuggestedCard } from './CardGrid.js';
 
 const PLAYER = 'You';
 const ASSISTANT = 'Assistant';
 
-const CONTENT_CLASS = 'whitespace-pre-wrap text-sm';
+/*
+ * The player's own words, shown as they typed them. Only the answer is
+ * Markdown: a request is read back rather than rendered, so a character the
+ * player typed is a character they see.
+ */
+const REQUEST_CLASS = 'whitespace-pre-wrap text-sm text-neutral-400';
 /*
  * The words a search ran on, in the readout's mono. It is taken out of the flow
  * until the request is pointed at, which is the only thing that shows it, and
@@ -50,10 +57,10 @@ interface MessageHistoryProps {
 /**
  * What was said in a conversation, in the order it was said. The player's
  * request and the assistant's answer are told apart by their own label, and the
- * answer keeps its line breaks so a list does not collapse into one paragraph.
- * Prose is held to a readable measure while the cards below it take the width.
- * The conversation's language comes down to the cards, because a card the
- * language has no printing of has to say which language it is in.
+ * answer is rendered from the Markdown it was written in while the request is
+ * shown as it was typed. The conversation's language comes down to the cards,
+ * because a card the language has no printing of has to say which language it
+ * is in.
  */
 export default function MessageHistory({
   messages,
@@ -76,9 +83,6 @@ interface MessageTurnProps {
 function MessageTurn({ message, language }: MessageTurnProps) {
   const fromPlayer = message.role === MessageRole.User;
   const cards = message.cards ?? [];
-  const prose = `${CONTENT_CLASS} ${
-    fromPlayer ? 'text-neutral-400' : 'text-neutral-100'
-  }`;
 
   return (
     /*
@@ -93,18 +97,35 @@ function MessageTurn({ message, language }: MessageTurnProps) {
       </p>
       {message.pieces === undefined ? (
         <div className="relative flex flex-col gap-1">
-          <p className={prose}>{message.content}</p>
+          {fromPlayer ? (
+            <p className={REQUEST_CLASS}>{message.content}</p>
+          ) : (
+            <MessageProse markdown={message.content} />
+          )}
           {message.query === undefined ? null : (
             <SearchedAs query={message.query} />
           )}
         </div>
       ) : (
-        <div role="log" aria-label="The answer being written">
-          <p className={prose}>
+        /*
+         * The answer while it is written: the prose for the eye, and the
+         * announcement for the ear, drawn apart. What the eye reads is Markdown,
+         * which changes shape as it fills in, so a live region redrawn with it
+         * would read the whole answer out again on every piece. The hidden region
+         * is the answer arriving, one node per piece, which is what a screen
+         * reader hears; it is positioned so its absolute box stays inside the
+         * region the messages scroll in rather than stretching the page.
+         */
+        <div className="relative flex flex-col gap-1">
+          <MessageProse markdown={message.pieces.join('')} />
+          <div
+            role="log"
+            aria-label="The answer being written"
+            className="sr-only">
             {message.pieces.map((piece, index) => (
               <span key={index}>{piece}</span>
             ))}
-          </p>
+          </div>
         </div>
       )}
       {cards.length === 0 ? null : (

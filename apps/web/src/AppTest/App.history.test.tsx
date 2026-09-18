@@ -56,6 +56,44 @@ describe('reading a conversation', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('renders an answer as the Markdown the model writes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(() =>
+        json(
+          withMessages(GRAVEYARD, [
+            playerMessage(11, 'a dark monster'),
+            assistantMessage(
+              12,
+              '**Dark Magician** fits.\n\n- it is a Spellcaster\n- [Read more](https://example.com/card)\n\n<script>alert(1)</script>'
+            )
+          ])
+        )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    // A card's name is weight, and the syntax that asked for it is gone.
+    expect(within(history).getByText('Dark Magician').tagName).toBe('STRONG');
+    expect(within(history).queryByText('**Dark Magician**')).toBeNull();
+
+    // A list is a list, and a link is the one action the prose carries.
+    expect(
+      within(history).getByText('it is a Spellcaster').closest('ul')
+    ).not.toBeNull();
+
+    const link = within(history).getByRole('link', { name: 'Read more' });
+    expect(link).toHaveAttribute('href', 'https://example.com/card');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noreferrer');
+
+    // Raw HTML is dropped rather than rendered.
+    expect(within(history).queryByText('alert(1)')).toBeNull();
+  });
+
   it('opens a conversation on what was said in it, in the order it was said', async () => {
     vi.stubGlobal(
       'fetch',

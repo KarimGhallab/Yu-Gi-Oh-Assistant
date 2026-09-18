@@ -326,7 +326,9 @@ describe('running a turn', () => {
       type: TurnEventName.AnswerDelta,
       text: 'Blue-Eyes is '
     });
-    expect(within(history).getByText(/Blue-Eyes is/)).toBeInTheDocument();
+    expect(
+      within(history).getByText(/Blue-Eyes is/, { selector: 'p' })
+    ).toBeInTheDocument();
 
     // The turn gives way at the answer stage: the question was stored, the prose
     // was not, and the server hands back its account of what happened.
@@ -425,7 +427,7 @@ describe('running a turn', () => {
     });
 
     expect(
-      within(history).getByText(/could not find a card/)
+      within(history).getByText(/could not find a card/, { selector: 'p' })
     ).toBeInTheDocument();
     expect(
       within(history).queryByRole('list', { name: 'Suggested cards' })
@@ -474,6 +476,53 @@ describe('running a turn', () => {
         piece => piece.textContent
       )
     ).toEqual(['Blue-Eyes ', 'is the biggest body.']);
+
+    await act(async () => {
+      turn.close();
+    });
+  });
+
+  it('reads the answer as Markdown while it is still arriving', async () => {
+    const turn = turnStream();
+    const fetchMock = stubFetch((url, init) =>
+      init?.method === 'POST'
+        ? turn.response
+        : url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, []))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp(`/c/${uuid(2)}`);
+    await send('I want a dragon');
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    await arrives(turn, {
+      type: TurnEventName.TurnStart,
+      userMessageId: uuid(11)
+    });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: '**Blue-Eyes** '
+    });
+    await arrives(turn, {
+      type: TurnEventName.AnswerDelta,
+      text: 'is the biggest body.'
+    });
+
+    // The eye reads the Markdown, filled in as it arrives.
+    expect(
+      within(history).getByText('Blue-Eyes', { selector: 'strong' })
+    ).toBeInTheDocument();
+
+    // The ear hears each piece exactly as it came, which is what keeps a live
+    // region from reading the whole answer again on every piece.
+    expect(
+      Array.from(within(history).getByRole('log').querySelectorAll('span')).map(
+        piece => piece.textContent
+      )
+    ).toEqual(['**Blue-Eyes** ', 'is the biggest body.']);
 
     await act(async () => {
       turn.close();
