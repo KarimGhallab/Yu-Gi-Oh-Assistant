@@ -9,13 +9,11 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
-  CardRace,
   CardType,
   FilterOperator,
   FrameType,
   Language,
-  LinkMarker,
-  cardMatchesFilters
+  LinkMarker
 } from '@ygo-assistant/cards';
 import type { ILogger, LogContext } from '@ygo-assistant/logger';
 import {
@@ -700,140 +698,6 @@ describe('card index', () => {
       filters: CardFilters,
       language: Language = Language.English
     ) => openCardCatalog(directory).scan({ language, filters, limit: 100 });
-
-    it('matches exactly the cards the card filter predicate matches', async () => {
-      const directory = await createDataDir();
-      const cards = englishCards();
-      await seedIndex(directory, cards);
-
-      const filterCases: CardFilters[] = [
-        [],
-        [
-          {
-            field: CardFilterField.Level,
-            operator: FilterOperator.Lte,
-            value: 4
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Level,
-            operator: FilterOperator.Gte,
-            value: 7
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Level,
-            operator: FilterOperator.Ne,
-            value: 7
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Atk,
-            operator: FilterOperator.Gt,
-            value: 2000
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Attribute,
-            operator: FilterOperator.Eq,
-            value: CardAttribute.Dark
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Attribute,
-            operator: FilterOperator.Ne,
-            value: CardAttribute.Dark
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Type,
-            operator: FilterOperator.Eq,
-            value: CardType.SpellCard
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Archetype,
-            operator: FilterOperator.Ne,
-            value: 'Greed'
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Race,
-            operator: FilterOperator.Eq,
-            value: CardRace.Spellcaster
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Archetype,
-            operator: FilterOperator.Contains,
-            value: 'MAGICIAN'
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Archetype,
-            operator: FilterOperator.StartsWith,
-            value: 'code'
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Archetype,
-            operator: FilterOperator.EndsWith,
-            value: 'TALKER'
-          }
-        ],
-        [
-          {
-            field: CardFilterField.LinkMarkers,
-            operator: FilterOperator.Contains,
-            value: LinkMarker.Top
-          }
-        ],
-        [
-          {
-            field: CardFilterField.LinkMarkers,
-            operator: FilterOperator.Contains,
-            value: LinkMarker.Right
-          }
-        ],
-        [
-          {
-            field: CardFilterField.Race,
-            operator: FilterOperator.Eq,
-            value: CardRace.Dragon
-          },
-          {
-            field: CardFilterField.Level,
-            operator: FilterOperator.Lte,
-            value: 4
-          }
-        ]
-      ];
-
-      const observed: Record<string, string[]> = {};
-      const expected: Record<string, string[]> = {};
-      for (const filters of filterCases) {
-        const key = JSON.stringify(filters);
-        const rows = await scan(directory, filters);
-        observed[key] = rows.map(row => row.name).sort();
-        expected[key] = cards
-          .filter(card => cardMatchesFilters(card, filters))
-          .map(card => card.name)
-          .sort();
-      }
-
-      expect(observed).toEqual(expected);
-    });
 
     it('returns filter matches in a stable identity order', async () => {
       const directory = await createDataDir();

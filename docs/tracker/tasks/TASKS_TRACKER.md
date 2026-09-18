@@ -71,6 +71,8 @@ numbering across specs, so blocking edges stay legible across features.
 | 61  | [The pipeline module owns the sequence](./61-the-pipeline-module-owns-the-sequence.md)                                                      | Resolved (2026-09-18) | None       | [13](../specs/13-turn-pipeline.md)                                                    |
 | 62  | [The command runs the pipeline directly](./62-the-command-runs-the-pipeline-directly.md)                                                    | Resolved (2026-09-18) | 61         | [13](../specs/13-turn-pipeline.md)                                                    |
 | 63  | [The suites rebalance and the docs follow](./63-the-suites-rebalance-and-the-docs-follow.md)                                                | Resolved (2026-09-18) | 61, 62     | [13](../specs/13-turn-pipeline.md)                                                    |
+| 64  | [The predicate renders from the schema's field kinds](./64-the-predicate-renders-from-the-schema-kinds.md)                                  | Resolved (2026-09-18) | None       | [14](../specs/14-filter-predicate.md)                                                 |
+| 65  | [The shipped predicate is pinned to the tested one](./65-the-shipped-predicate-is-pinned-to-the-tested-one.md)                              | Resolved (2026-09-18) | 64         | [14](../specs/14-filter-predicate.md)                                                 |
 
 ## Frontier
 
@@ -101,5 +103,8 @@ the db entry narrowed with the architecture doc updated. The port is the
 architecture review's first candidate, recorded in ADR 0011. Spec 13 (Turn
 pipeline) is fully landed: 61 through 63 are resolved, the pipeline module owns
 the sequence behind its neutral events, the RAG command calls it directly, and
-the suites and docs follow. Spec 14 (Filter predicate) depended on 12 and is
-unblocked; it has no tickets yet.
+the suites and docs follow. Spec 14 (Filter predicate) is fully landed: 64 and 65
+are resolved, the schema's field kinds are the one source the shipped SQL renders
+from, and the adapter contract test pins the shipped predicate to the tested one.
+The architecture review's first three candidates are done; candidates four
+through six are not yet ticketed.

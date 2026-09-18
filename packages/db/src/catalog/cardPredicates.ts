@@ -2,11 +2,10 @@ import {
   type CardFilter,
   CardFilterField,
   type CardFilters,
-  type ComparisonOperator,
-  type EqualityOperator,
+  FILTER_FIELD_KINDS,
+  FilterKind,
   FilterOperator,
-  Language,
-  type TextOperator
+  Language
 } from '@ygo-assistant/cards';
 
 const LANGUAGE_PREDICATES: Record<Language, string> = {
@@ -30,7 +29,9 @@ const COLUMNS: Record<CardFilterField, string> = {
   [CardFilterField.Archetype]: 'archetype'
 };
 
-const NUMERIC_COMPARATORS: Record<ComparisonOperator, string> = {
+type TextPredicate = (column: string, literal: string) => string;
+
+const NUMERIC_COMPARATORS: Partial<Record<FilterOperator, string>> = {
   [FilterOperator.Eq]: '=',
   [FilterOperator.Ne]: '<>',
   [FilterOperator.Gt]: '>',
@@ -39,14 +40,12 @@ const NUMERIC_COMPARATORS: Record<ComparisonOperator, string> = {
   [FilterOperator.Lte]: '<='
 };
 
-const EQUALITY_COMPARATORS: Record<EqualityOperator, string> = {
+const EQUALITY_COMPARATORS: Partial<Record<FilterOperator, string>> = {
   [FilterOperator.Eq]: '=',
   [FilterOperator.Ne]: '<>'
 };
 
-type TextPredicate = (column: string, literal: string) => string;
-
-const TEXT_PREDICATES: Record<TextOperator, TextPredicate> = {
+const TEXT_PREDICATES: Partial<Record<FilterOperator, TextPredicate>> = {
   [FilterOperator.Eq]: (column, literal) => `${column} = ${literal}`,
   [FilterOperator.Ne]: (column, literal) => `${column} <> ${literal}`,
   [FilterOperator.Contains]: (column, literal) =>
@@ -55,6 +54,25 @@ const TEXT_PREDICATES: Record<TextOperator, TextPredicate> = {
     `starts_with(${column}, ${literal})`,
   [FilterOperator.EndsWith]: (column, literal) =>
     `ends_with(${column}, ${literal})`
+};
+
+type FilterRenderer = (column: string, filter: CardFilter) => string;
+
+/**
+ * How each field kind renders, total over the kinds so adding one does not
+ * compile until it has a renderer. The kind comes from the card filter schema's
+ * exhaustive field-kind map, so the classification is declared once there and
+ * the SQL follows it.
+ */
+const FILTER_RENDERERS: Record<FilterKind, FilterRenderer> = {
+  [FilterKind.Numeric]: (column, filter) =>
+    `${column} ${comparator(NUMERIC_COMPARATORS, filter.operator)} ${numericLiteral(filter.value)}`,
+  [FilterKind.Enumerated]: (column, filter) =>
+    `${column} ${comparator(EQUALITY_COMPARATORS, filter.operator)} ${stringLiteral(filter.value)}`,
+  [FilterKind.Text]: (column, filter) =>
+    textPredicate(column, filter.operator, filter.value),
+  [FilterKind.Markers]: (column, filter) =>
+    `array_contains(${column}, ${stringLiteral(filter.value)})`
 };
 
 /**
@@ -77,32 +95,36 @@ export function buildWhereClause(
 
 function filterPredicate(filter: CardFilter): string {
   const column = COLUMNS[filter.field];
-
-  if (filter.field === CardFilterField.LinkMarkers) {
-    return `array_contains(${column}, ${stringLiteral(filter.value)})`;
-  }
-  if (filter.field === CardFilterField.Archetype) {
-    return textPredicate(column, filter.operator, filter.value);
-  }
-  if (
-    filter.field === CardFilterField.Type ||
-    filter.field === CardFilterField.Race ||
-    filter.field === CardFilterField.Attribute
-  ) {
-    return `${column} ${EQUALITY_COMPARATORS[filter.operator]} ${stringLiteral(filter.value)}`;
-  }
-  return `${column} ${NUMERIC_COMPARATORS[filter.operator]} ${numericLiteral(filter.value)}`;
+  const render = FILTER_RENDERERS[FILTER_FIELD_KINDS[filter.field]];
+  return render(column, filter);
 }
 
 function textPredicate(
   column: string,
-  operator: TextOperator,
-  value: string
+  operator: FilterOperator,
+  value: unknown
 ): string {
-  return TEXT_PREDICATES[operator](
-    `lower(${column})`,
-    `lower(${stringLiteral(value)})`
-  );
+  const predicate = TEXT_PREDICATES[operator];
+  if (predicate === undefined) {
+    throw new Error(`The operator "${operator}" has no text predicate`);
+  }
+  return predicate(`lower(${column})`, `lower(${stringLiteral(value)})`);
+}
+
+/**
+ * Reads a comparator from the map a field kind owns. A kind only carries the
+ * operators its fields accept, so an operator outside them is a disagreement
+ * between the schema and the renderer rather than a query to build.
+ */
+function comparator(
+  comparators: Partial<Record<FilterOperator, string>>,
+  operator: FilterOperator
+): string {
+  const rendered = comparators[operator];
+  if (rendered === undefined) {
+    throw new Error(`The operator "${operator}" has no SQL comparator`);
+  }
+  return rendered;
 }
 
 /**
@@ -118,8 +140,8 @@ export function buildIdClause(ids: number[]): string {
  * Renders a numeric literal. The value is unquoted, so it is only safe once it
  * is known to be a finite integer rather than a caller-supplied string.
  */
-function numericLiteral(value: number): string {
-  if (!Number.isInteger(value)) {
+function numericLiteral(value: unknown): string {
+  if (typeof value !== 'number' || !Number.isInteger(value)) {
     throw new Error(
       `A numeric card filter needs an integer value, received ${String(value)}`
     );
@@ -134,6 +156,11 @@ function numericLiteral(value: number): string {
  * operators use plain substring functions rather than `LIKE`, so `%` and `_`
  * carry no special meaning.
  */
-function stringLiteral(value: string): string {
+function stringLiteral(value: unknown): string {
+  if (typeof value !== 'string') {
+    throw new Error(
+      `A card filter needs a string value, received ${String(value)}`
+    );
+  }
   return `'${value.replaceAll("'", "''")}'`;
 }

@@ -9,10 +9,13 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,
-  Language
+  Language,
+  LinkMarker,
+  cardMatchesFilters
 } from '@ygo-assistant/cards';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -304,6 +307,230 @@ describe('CardCatalog', () => {
 
         expect(french.map(card => card.name)).toEqual(['Magicien Sombre']);
       });
+    });
+  });
+
+  describe('predicate agreement', () => {
+    const createBlueEyes = (): Card =>
+      createCard({
+        id: 89631139,
+        name: 'Blue-Eyes White Dragon',
+        attribute: CardAttribute.Light,
+        race: 'Dragon',
+        level: 8,
+        atk: 3000,
+        def: 2500,
+        archetype: 'Blue-Eyes'
+      });
+
+    const createDecodeTalker = (): Card =>
+      createCard({
+        id: 1861629,
+        name: 'Decode Talker',
+        type: CardType.LinkMonster,
+        frameType: FrameType.Link,
+        typeLine: ['Cyberse', 'Link', 'Effect'],
+        race: 'Cyberse',
+        level: undefined,
+        def: undefined,
+        linkVal: 3,
+        linkMarkers: [
+          LinkMarker.Top,
+          LinkMarker.BottomLeft,
+          LinkMarker.BottomRight
+        ],
+        archetype: 'Code Talker'
+      });
+
+    const createGravekeepersSpy = (): Card =>
+      createCard({
+        id: 3050,
+        name: "Gravekeeper's Spy",
+        type: CardType.EffectMonster,
+        frameType: FrameType.Effect,
+        level: 4,
+        atk: 1200,
+        def: 2000,
+        archetype: "Gravekeeper's"
+      });
+
+    const createPercentDragon = (): Card =>
+      createCard({
+        id: 4097,
+        name: 'Percent Dragon',
+        attribute: CardAttribute.Wind,
+        race: 'Dragon',
+        level: 4,
+        atk: 1500,
+        def: 1200,
+        archetype: 'Dragon%'
+      });
+
+    const createLaJinn = (): Card =>
+      createCard({
+        id: 97590747,
+        name: 'La Jinn the Mystical Genie of the Lamp',
+        attribute: CardAttribute.Dark,
+        race: 'Fiend',
+        level: 4,
+        atk: 1800,
+        def: 1000,
+        archetype: undefined
+      });
+
+    it('agrees with the in-process predicate over a battery of filters', async () => {
+      const cards = [
+        createCard(),
+        createPotOfGreed(),
+        createBlueEyes(),
+        createDecodeTalker(),
+        createGravekeepersSpy(),
+        createPercentDragon(),
+        createLaJinn()
+      ];
+      const adapters = await seed(cards);
+
+      const cases: CardFilters[] = [
+        [],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Lte,
+            value: 4
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Gte,
+            value: 7
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Ne,
+            value: 7
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Atk,
+            operator: FilterOperator.Gt,
+            value: 2000
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Attribute,
+            operator: FilterOperator.Eq,
+            value: CardAttribute.Dark
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Attribute,
+            operator: FilterOperator.Ne,
+            value: CardAttribute.Dark
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Type,
+            operator: FilterOperator.Eq,
+            value: CardType.SpellCard
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.Ne,
+            value: 'Greed'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: CardRace.Spellcaster
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.Contains,
+            value: 'MAGICIAN'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.StartsWith,
+            value: 'code'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.EndsWith,
+            value: 'TALKER'
+          }
+        ],
+        [
+          {
+            field: CardFilterField.LinkMarkers,
+            operator: FilterOperator.Contains,
+            value: LinkMarker.Top
+          }
+        ],
+        [
+          {
+            field: CardFilterField.LinkMarkers,
+            operator: FilterOperator.Contains,
+            value: LinkMarker.Right
+          }
+        ],
+        [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: CardRace.Dragon
+          },
+          {
+            field: CardFilterField.Level,
+            operator: FilterOperator.Lte,
+            value: 4
+          }
+        ]
+      ];
+
+      const observed = await Promise.all(
+        adapters.map(async adapter => {
+          const byFilter: Record<string, string[]> = {};
+          for (const filters of cases) {
+            const rows = await adapter.catalog.scan({
+              language: Language.English,
+              filters,
+              limit: 100
+            });
+            byFilter[JSON.stringify(filters)] = rows
+              .map(card => card.name)
+              .sort();
+          }
+          return byFilter;
+        })
+      );
+
+      const expected: Record<string, string[]> = {};
+      for (const filters of cases) {
+        expected[JSON.stringify(filters)] = cards
+          .filter(card => cardMatchesFilters(card, filters))
+          .map(card => card.name)
+          .sort();
+      }
+
+      expect(observed[0]).toEqual(observed[1]);
+      expect(observed[0]).toEqual(expected);
     });
   });
 

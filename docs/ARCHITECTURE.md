@@ -50,7 +50,10 @@ Cross-package imports go through a package's entry point, enforced by its
   production opens the LanceDB adapter with `openCardCatalog`, tests substitute
   the in-memory adapter at `@ygo-assistant/db/testing`, and the two are held to
   one contract test. Ingestion stays direct and is not on the port: a build
-  replaces the whole table and runs before the server starts.
+  replaces the whole table and runs before the server starts. A filter's
+  semantics are declared once, as each field's kind in `packages/cards`; the
+  LanceDB predicate renders its SQL from those kinds, the in-process matcher is
+  the specification, and the adapter contract test pins the two together.
 - **The application state** lives in SQLite at `DATA_DIR/app.db`. It holds
   conversations and messages, including the filters a turn searched with, the
   rewrite a parse recorded, and the ids of the cards a turn suggested. The store

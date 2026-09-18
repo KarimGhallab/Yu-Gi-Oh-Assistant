@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import {
   CardFilterField,
+  FILTER_FIELD_KINDS,
+  type FilterKind,
   FilterOperator,
   cardFiltersSchema
 } from './schema.js';
@@ -15,6 +17,7 @@ import {
  */
 export interface FilterFieldVocabulary {
   field: CardFilterField;
+  kind: FilterKind;
   operators: FilterOperator[];
   valueType: string;
   values?: string[];
@@ -108,6 +111,7 @@ export function describeFilterFields(): FilterFieldVocabulary[] {
 
     return {
       field: field.const,
+      kind: FILTER_FIELD_KINDS[field.const],
       operators: asOperators(asList(operator)),
       valueType: value.type,
       values: value.enum,

@@ -31,6 +31,36 @@ export enum CardFilterField {
 }
 
 /**
+ * The kind of value a filterable field takes, which decides how a filter on it
+ * is rendered. Numeric fields compare, enumerated fields match a value exactly,
+ * text fields compare case-insensitively, and markers match by containment.
+ */
+export enum FilterKind {
+  Numeric = 'numeric',
+  Enumerated = 'enumerated',
+  Text = 'text',
+  Markers = 'markers'
+}
+
+/**
+ * The kind behind each filterable field. The record is exhaustive, so a new
+ * field does not compile until its kind is named, and the in-process matcher
+ * and the LanceDB predicate both read their semantics from here rather than
+ * each classifying fields on its own.
+ */
+export const FILTER_FIELD_KINDS: Record<CardFilterField, FilterKind> = {
+  [CardFilterField.Type]: FilterKind.Enumerated,
+  [CardFilterField.Race]: FilterKind.Enumerated,
+  [CardFilterField.Attribute]: FilterKind.Enumerated,
+  [CardFilterField.Level]: FilterKind.Numeric,
+  [CardFilterField.Atk]: FilterKind.Numeric,
+  [CardFilterField.Def]: FilterKind.Numeric,
+  [CardFilterField.LinkVal]: FilterKind.Numeric,
+  [CardFilterField.LinkMarkers]: FilterKind.Markers,
+  [CardFilterField.Archetype]: FilterKind.Text
+};
+
+/**
  * Comparison a structured filter applies to a card field. Which operators fit a
  * field depends on whether the field is numeric, textual, or enumerated.
  */
