@@ -1,5 +1,6 @@
 import { type Card, Language } from '@ygo-assistant/cards';
 
+import { CARD_DATA_RULE, asCardData, frameCardData } from '../cardData.js';
 import { languageName } from '../languageName.js';
 
 /**
@@ -7,13 +8,18 @@ import { languageName } from '../languageName.js';
  * may mention, each with the facts that let the model explain why it matches.
  * The cards are the candidate payload, so an answer cannot reference a card the
  * search did not return.
+ *
+ * Their text is untrusted card data, so it sits in a labelled block and is
+ * flattened to one line per card and stripped of anything that could forge the
+ * block's delimiters.
  */
 export function buildAnswerPrompt(cards: Card[], language: Language): string {
   return [
     'You recommend Yu-Gi-Oh cards to a player, using only the cards listed below.',
     '',
+    CARD_DATA_RULE,
     'The cards the search found:',
-    ...cards.map(describeCard),
+    frameCardData(cards.map(describeCard)),
     '',
     `Answer the request that follows in ${languageName(language)}. Mention no card that is not listed above, and say why each card you recommend matches the request.`,
     '',
@@ -22,7 +28,9 @@ export function buildAnswerPrompt(cards: Card[], language: Language): string {
 }
 
 function describeCard(card: Card): string {
-  return `- ${card.name} (${describeFacts(card)}): ${card.effect}`;
+  return `- ${asCardData(card.name)} (${asCardData(
+    describeFacts(card)
+  )}): ${asCardData(card.effect)}`;
 }
 
 /**
