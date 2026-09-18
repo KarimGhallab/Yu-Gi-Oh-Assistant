@@ -83,6 +83,9 @@ numbering across specs, so blocking edges stay legible across features.
 | 73  | [The API refuses requests from another origin](./73-the-api-refuses-another-origin.md)                                                      | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 74  | [Card text is data, not instructions, in the model prompts](./74-card-text-is-data-in-the-prompts.md)                                       | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
+| 76  | [An unanswered request says so and can be asked again](./76-an-unanswered-request-says-so.md)                                               | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 77  | [A search that found nothing names what to relax](./77-a-no-result-search-names-what-to-relax.md)                                           | ready-for-agent       | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | ready-for-agent       | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 
 ## Frontier
 
@@ -136,3 +139,11 @@ are ticketed as 73 through 75 under spec 18 (Security hardening of the untrusted
 boundaries): 73 puts a host and origin checkpoint in front of the API, 74 carries
 card text as delimited data in the prompts, and 75 verifies the dump and
 constrains its URLs. 73 through 75 are all resolved.
+
+A design track opens with spec 19 (Turn recovery and the empty bench), ticketed
+as 76 through 78. 76 is resolved: an unanswered request now says so, can be
+asked again on the search it ran with, and no longer wears the previous search as
+its readout. 77 makes a no-result search name the fields it ran with and show
+them beside its answer, and 78 keeps the workbench in view on the home and
+empty-conversation surfaces. Both are independent and unblocked; they are the
+frontier.

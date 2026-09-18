@@ -2,34 +2,35 @@
 target: the web client (apps/web)
 total_score: 32
 max_score: 40
-na_heuristics: 
+na_heuristics:
 p0_count: 0
 p1_count: 0
 p2_count: 4
 p3_count: 1
-target_identity: "file:/mnt/Fichier/Documents/Projets/Yu-Gi-Oh-Assistant/apps/web/src/App.tsx"
-target_fingerprint: "sha256:043ec097c5e86bf6cf87dcad92cf9bfc3586b15367a24e7f081ab3e3bf4442da"
+target_identity: 'file:/mnt/Fichier/Documents/Projets/Yu-Gi-Oh-Assistant/apps/web/src/App.tsx'
+target_fingerprint: 'sha256:043ec097c5e86bf6cf87dcad92cf9bfc3586b15367a24e7f081ab3e3bf4442da'
 target_path: /mnt/Fichier/Documents/Projets/Yu-Gi-Oh-Assistant/apps/web/src/App.tsx
 timestamp: 2026-09-18T18-15-33Z
 slug: apps-web-src-app-tsx
 ---
+
 Method: dual-agent (A: general · B: general)
 
 ## Design Health Score
 
-| # | Heuristic | Score | Key Issue |
-|---|-----------|-------|-----------|
-| 1 | Visibility of System Status | 3 | The travelling-light status line and readout are good, but an interrupted or dead turn leaves the last request unanswered with no notice and a stale readout above the composer. |
-| 2 | Match Between System and Real World | 4 | "Cards in", "Answered by", "Level is 4 / Race is warrior" are the domain's own words, and the parse rewrite is surfaced as "Searched as". |
-| 3 | User Control and Freedom | 3 | Escape, Cancel, skip link, and focus return are thorough, but a running turn cannot be stopped, and a prior request cannot be edited or resent. |
-| 4 | Consistency and Standards | 4 | One icon set, one radius, one focus treatment, one red. The two amber fills are the sole documented inconsistency. |
-| 5 | Error Prevention | 3 | Delete confirms and Send disables, but the destructive action wears the same amber lamp as Save/New/Send, and New instantly creates an untitled conversation with no undo. |
-| 6 | Recognition Rather Than Recall | 3 | The readout and examples remove recall, but the chosen model truncates at `max-w-40` (`SettingPicker.tsx:38`) and "Searched as" is reveal-on-hover only. |
-| 7 | Flexibility and Efficiency | 3 | Enter sends, Shift+Enter newlines, filters are correctable; no shortcut for a new conversation or jumping to the list. |
-| 8 | Aesthetic and Minimalist Design | 4 | Genuinely restrained; density as craft is real. |
-| 9 | Error Recovery | 3 | Verbatim alert lines, retry on load failure, and pull guidance, but a dead turn gives no diagnosis or recovery and the empty-result answer names no filter to relax. |
-| 10 | Help and Documentation | 2 | No help affordance and no explanation of what the tool is; four rotating examples are the whole onboarding. |
-| **Total** | | **32/40** | **Good (28-35)** |
+| #         | Heuristic                           | Score     | Key Issue                                                                                                                                                                        |
+| --------- | ----------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1         | Visibility of System Status         | 3         | The travelling-light status line and readout are good, but an interrupted or dead turn leaves the last request unanswered with no notice and a stale readout above the composer. |
+| 2         | Match Between System and Real World | 4         | "Cards in", "Answered by", "Level is 4 / Race is warrior" are the domain's own words, and the parse rewrite is surfaced as "Searched as".                                        |
+| 3         | User Control and Freedom            | 3         | Escape, Cancel, skip link, and focus return are thorough, but a running turn cannot be stopped, and a prior request cannot be edited or resent.                                  |
+| 4         | Consistency and Standards           | 4         | One icon set, one radius, one focus treatment, one red. The two amber fills are the sole documented inconsistency.                                                               |
+| 5         | Error Prevention                    | 3         | Delete confirms and Send disables, but the destructive action wears the same amber lamp as Save/New/Send, and New instantly creates an untitled conversation with no undo.       |
+| 6         | Recognition Rather Than Recall      | 3         | The readout and examples remove recall, but the chosen model truncates at `max-w-40` (`SettingPicker.tsx:38`) and "Searched as" is reveal-on-hover only.                         |
+| 7         | Flexibility and Efficiency          | 3         | Enter sends, Shift+Enter newlines, filters are correctable; no shortcut for a new conversation or jumping to the list.                                                           |
+| 8         | Aesthetic and Minimalist Design     | 4         | Genuinely restrained; density as craft is real.                                                                                                                                  |
+| 9         | Error Recovery                      | 3         | Verbatim alert lines, retry on load failure, and pull guidance, but a dead turn gives no diagnosis or recovery and the empty-result answer names no filter to relax.             |
+| 10        | Help and Documentation              | 2         | No help affordance and no explanation of what the tool is; four rotating examples are the whole onboarding.                                                                      |
+| **Total** |                                     | **32/40** | **Good (28-35)**                                                                                                                                                                 |
 
 ## Design Specificity Verdict
 
@@ -37,7 +38,7 @@ Method: dual-agent (A: general · B: general)
 
 **LLM assessment**: The "Duelist's Workbench" genuinely lands where cards and filters live: dark stepped neutrals, one amber, hairlines instead of boxes, printed card proportions, the `EN only` / `FR only` marker (`CardGrid.tsx:115`), the schema-derived editable filter readout (`SearchReadout.tsx`, `filterFields.ts`), and the prompt-docking and card-morph transitions. Roughly 60/40 specific. The surfaces a visitor meets first are the generic grounded-chat template: sidebar conversation list with rename/delete, "You"/"Assistant" history (`MessageHistory.tsx:7-8`), bottom composer, four example sentences. Swap the strings and it is any grounded-chat app, and the distinctive half currently sits below the fold.
 
-**Deterministic scan**: The static source scan of `apps/web/src` was **clean** (`[]`, exit 0). The rendered-URL scan was not: it returned 2 findings, `layout-transition` (`transition: width`) and `low-contrast` on the Send stack. The browser overlay across four surfaces added `cramped-padding`, `clipped-overflow-container`, and `text-overflow`. Of those five rules, **only `layout-transition` survives scrutiny**; the rest are false positives with file evidence (disabled Send is exempt from contrast minimums per WCAG 1.4.3; the title's overflow *is* `truncate`; the flagged containers use `position: fixed` descendants with no containing-block creator; the shell legitimately has flush children; `body` has no width transition). The important finding is the **divergence**: the static regex path cannot see Tailwind arbitrary utilities, so a clean source scan is not a clean UI.
+**Deterministic scan**: The static source scan of `apps/web/src` was **clean** (`[]`, exit 0). The rendered-URL scan was not: it returned 2 findings, `layout-transition` (`transition: width`) and `low-contrast` on the Send stack. The browser overlay across four surfaces added `cramped-padding`, `clipped-overflow-container`, and `text-overflow`. Of those five rules, **only `layout-transition` survives scrutiny**; the rest are false positives with file evidence (disabled Send is exempt from contrast minimums per WCAG 1.4.3; the title's overflow _is_ `truncate`; the flagged containers use `position: fixed` descendants with no containing-block creator; the shell legitimately has flush children; `body` has no width transition). The important finding is the **divergence**: the static regex path cannot see Tailwind arbitrary utilities, so a clean source scan is not a clean UI.
 
 **Visual overlays**: Injection succeeded. Overlays are visible in the **[Human]** tab in your browser, on the desktop conversation (1280), narrow home (500x844), mobile conversation (390x844 emulated), and desktop home (1280x800). Console groups reported 2-4 `[impeccable]` anti-patterns per surface; the live server was stopped and port 8400 confirmed closed.
 
@@ -54,7 +55,7 @@ This is a beautifully constrained app with one genuinely original interaction, w
 ## Priority Issues
 
 1. **[P2] A dead or interrupted turn leaves a stale screen and no recovery.**
-   **Why it matters**: when a stream dies or the user leaves mid-turn, `useTurn` keeps the previous interpretation and the composer shows the *previous* search while an unanswered request sits above it (`ConversationPage.tsx:179-182`, `useTurn.ts:115-119`). The screen implies those filters apply to the question that was never answered. Every live turn ended in the same verbatim "I could not find a card that matches that request. Try broadening it." with no filter named.
+   **Why it matters**: when a stream dies or the user leaves mid-turn, `useTurn` keeps the previous interpretation and the composer shows the _previous_ search while an unanswered request sits above it (`ConversationPage.tsx:179-182`, `useTurn.ts:115-119`). The screen implies those filters apply to the question that was never answered. Every live turn ended in the same verbatim "I could not find a card that matches that request. Try broadening it." with no filter named.
    **Fix**: when the last stored message is a user turn with no reply, clear or dim the readout and render a `Notice` or alert line with a retry tied to that request; have the empty answer name the filter most likely responsible.
    **Suggested command**: `$impeccable clarify`
 
@@ -82,7 +83,7 @@ This is a beautifully constrained app with one genuinely original interaction, w
 
 **Alex (Power User)**: the chosen model truncates to `max-w-40` (`SettingPicker.tsx:38`), so a long model name reads as `jobautomation/Op...` and identifying the answering model means reopening the picker every time. Every conversation row carries two always-tabbed controls, so traversal costs two stops per row, and the skip link only exists on a conversation address (`ChatFrame.tsx:31`). "Searched as" cannot be read with the keyboard at all.
 
-**Sam (Accessibility)**: Dust Grey 12px facts at 4.18:1 / 3.19:1 (above). Pointer-opened dialogs show no initial focus. The disabled model row (`nomic-embed-text cannot answer`) uses `opacity-50` on a dark panel, so the *reason* the row is not selectable is effectively unreadable (`SettingPicker.tsx:187`).
+**Sam (Accessibility)**: Dust Grey 12px facts at 4.18:1 / 3.19:1 (above). Pointer-opened dialogs show no initial focus. The disabled model row (`nomic-embed-text cannot answer`) uses `opacity-50` on a dark panel, so the _reason_ the row is not selectable is effectively unreadable (`SettingPicker.tsx:187`).
 
 **Casey (Mobile, 390px)**: "Searched as" is hover-only, so the parse rewrite is never visible on touch. The conversation title truncates with no `title`, so a long auto-title is unreachable, and `PromptSurface.tsx:89-91` focuses the field on mount, raising the soft keyboard over the example prompts before they are read.
 

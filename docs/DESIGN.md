@@ -110,6 +110,12 @@ components:
   message-searched-as:
     textColor: '{colors.ink-muted}'
     typography: '{typography.mono}'
+  message-unanswered:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
+  message-unanswered-action:
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
   composer-field:
     backgroundColor: '{colors.surface-panel}'
     textColor: '{colors.ink}'
@@ -490,6 +496,23 @@ level deep.
   node per piece, so a screen reader hears the answer arriving rather than the
   whole of it again on every piece, which is the same drawing twice that the
   status line makes.
+
+### Unanswered request
+
+- **What it is:** the line a request carries when its turn never produced a
+  reply, saying that it was not answered, and the one action that asks it again.
+  It is a row of the history rather than a notice over the conversation, because
+  the request is what it is about and the request is a row.
+- **Text:** Body in Ash Grey, the same voice as the rest of the conversation.
+- **Action:** the request's retry is a text button at Bone White, underlined in
+  Rail Grey and stepping to Lamp Amber on hover, with the recorded focus ring.
+  It is the treatment the prose's links and the surfaces' quiet actions share,
+  and it is not a fill: the lamp of the screen is still the composer's Send.
+- **Keyboard:** the retry is a button, reached by Tab in the order the turn is
+  read, and it is not a hover.
+- **Searched as:** a request that reported a search before it gave way keeps it,
+  because that search is the request's own; a request with none shows no readout,
+  because the last one belongs to the answer before it.
 
 ### Cards (the grid)
 

@@ -1,4 +1,8 @@
-import { type Language, MessageRole } from '@ygo-assistant/contracts';
+import {
+  type CardFilters,
+  type Language,
+  MessageRole
+} from '@ygo-assistant/contracts';
 
 import MessageProse from '../../shared/components/MessageProse.js';
 
@@ -25,6 +29,13 @@ const SEARCHED_AS_CLASS =
   'sr-only group-hover:not-sr-only flex flex-col gap-1 font-mono text-xs';
 const SEARCHED_AS_LABEL_CLASS = 'text-neutral-500';
 const SEARCHED_AS_QUERY_CLASS = 'whitespace-pre-wrap text-neutral-400';
+/*
+ * The one action a request that was never answered carries. It takes the
+ * prose's own link treatment, because asking again is the same kind of act as
+ * following a card's source: a quiet word on the page, not a second lamp.
+ */
+const RETRY_CLASS =
+  'rounded text-sm font-medium text-neutral-100 underline decoration-neutral-800 underline-offset-2 hover:decoration-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 
 /**
  * A turn as the history renders it. A stored turn and one that is still being
@@ -40,6 +51,12 @@ export interface ChatTurn {
   cards?: SuggestedCard[];
   query?: string;
   /*
+   * A request whose turn never produced a reply, with the search it ran with
+   * when the turn reported one. A request without it was answered, or is the
+   * answer being written.
+   */
+  retry?: { filters?: CardFilters };
+  /*
    * The answer as it arrived, piece by piece, for a turn the server has not
    * stored yet. Each piece is its own node in a polite live region, so what is
    * announced is the piece that just arrived rather than the whole answer being
@@ -52,6 +69,7 @@ export interface ChatTurn {
 interface MessageHistoryProps {
   messages: ChatTurn[];
   language: Language;
+  onRetry(text: string, filters?: CardFilters): void;
 }
 
 /**
@@ -64,12 +82,18 @@ interface MessageHistoryProps {
  */
 export default function MessageHistory({
   messages,
-  language
+  language,
+  onRetry
 }: MessageHistoryProps) {
   return (
     <ol className="flex flex-col gap-6">
       {messages.map(message => (
-        <MessageTurn key={message.key} message={message} language={language} />
+        <MessageTurn
+          key={message.key}
+          message={message}
+          language={language}
+          onRetry={onRetry}
+        />
       ))}
     </ol>
   );
@@ -78,9 +102,10 @@ export default function MessageHistory({
 interface MessageTurnProps {
   message: ChatTurn;
   language: Language;
+  onRetry(text: string, filters?: CardFilters): void;
 }
 
-function MessageTurn({ message, language }: MessageTurnProps) {
+function MessageTurn({ message, language, onRetry }: MessageTurnProps) {
   const fromPlayer = message.role === MessageRole.User;
   const cards = message.cards ?? [];
 
@@ -128,10 +153,38 @@ function MessageTurn({ message, language }: MessageTurnProps) {
           </div>
         </div>
       )}
+      {message.retry === undefined ? null : (
+        <UnansweredRequest
+          onRetry={() => onRetry(message.content, message.retry?.filters)}
+        />
+      )}
       {cards.length === 0 ? null : (
         <CardGrid cards={cards} language={language} />
       )}
     </li>
+  );
+}
+
+interface UnansweredRequestProps {
+  onRetry(): void;
+}
+
+/**
+ * What a request whose turn never produced a reply says for itself: that it was
+ * not answered, and the one action that asks it again. It is a line of the
+ * conversation rather than a notice over it, because the request is what it is
+ * about and the request is a row of the history.
+ */
+function UnansweredRequest({ onRetry }: UnansweredRequestProps) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <p className="text-sm text-neutral-400">
+        This request was never answered.
+      </p>
+      <button type="button" onClick={onRetry} className={RETRY_CLASS}>
+        Ask it again
+      </button>
+    </div>
   );
 }
 
