@@ -11,19 +11,26 @@ import {
   FrameType,
   Language
 } from '@ygo-assistant/cards';
-import { TurnStatus } from '@ygo-assistant/contracts';
+import { TurnStage, TurnStatus } from '@ygo-assistant/contracts';
 import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
-import type { IOllamaClient, OllamaModel } from '@ygo-assistant/ollama';
+import {
+  type IOllamaClient,
+  type OllamaModel,
+  OllamaUnreachableError
+} from '@ygo-assistant/ollama';
 import { ParseOutcome } from '@ygo-assistant/rag';
 import { FakeOllamaClient } from '@ygo-assistant/test-support';
 
 import {
-  type RagQueryDependencies,
-  type RagQueryEvent,
-  type RagQueryInput,
-  runRagQuery
-} from './runRagQuery.js';
+  type PipelineDependencies,
+  PipelineError,
+  type PipelineEvent,
+  type PipelineInput,
+  runPipeline
+} from './runPipeline.js';
+
+const BASE_URL = 'http://127.0.0.1:11434';
 
 const CHAT_MODEL: OllamaModel = {
   name: 'canned:1b',
@@ -89,82 +96,99 @@ const silentLogger: ILogger = {
 };
 
 async function collect(
-  events: AsyncGenerator<RagQueryEvent>
-): Promise<RagQueryEvent[]> {
-  const collected: RagQueryEvent[] = [];
+  events: AsyncGenerator<PipelineEvent>
+): Promise<PipelineEvent[]> {
+  const collected: PipelineEvent[] = [];
   for await (const event of events) {
     collected.push(event);
   }
   return collected;
 }
 
+async function captureError(operation: Promise<unknown>): Promise<Error> {
+  try {
+    await operation;
+  } catch (error) {
+    if (error instanceof Error) {
+      return error;
+    }
+    throw error;
+  }
+  throw new Error('Expected the pipeline to reject');
+}
+
 function searchEventOf(
-  events: RagQueryEvent[]
-): Extract<RagQueryEvent, { type: 'search' }> {
+  events: PipelineEvent[]
+): Extract<PipelineEvent, { type: 'search' }> {
   const event = events.find(candidate => candidate.type === 'search');
   if (event === undefined || event.type !== 'search') {
-    throw new Error('The query reported no search');
+    throw new Error('The pipeline reported no search');
   }
   return event;
 }
 
 function selectedEventOf(
-  events: RagQueryEvent[]
-): Extract<RagQueryEvent, { type: 'selected' }> {
+  events: PipelineEvent[]
+): Extract<PipelineEvent, { type: 'selected' }> {
   const event = events.find(candidate => candidate.type === 'selected');
   if (event === undefined || event.type !== 'selected') {
-    throw new Error('The query reported no selection');
+    throw new Error('The pipeline reported no selection');
   }
   return event;
 }
 
 function rankedEventOf(
-  events: RagQueryEvent[]
-): Extract<RagQueryEvent, { type: 'ranked' }> {
+  events: PipelineEvent[]
+): Extract<PipelineEvent, { type: 'ranked' }> {
   const event = events.find(candidate => candidate.type === 'ranked');
   if (event === undefined || event.type !== 'ranked') {
-    throw new Error('The query reported no ranking');
+    throw new Error('The pipeline reported no ranking');
   }
   return event;
 }
 
-function answerTextOf(events: RagQueryEvent[]): string {
+function answerTextOf(events: PipelineEvent[]): string {
   return events
     .flatMap(event => (event.type === 'answer' ? [event.text] : []))
     .join('');
 }
 
-describe('runRagQuery', () => {
+describe('runPipeline', () => {
   const catalog = new InMemoryCardCatalog({
     rows: [
       { ...DRAGON, vector: [1, 0, 0] },
-      { ...REBORN, vector: [0, 1, 0] }
+      { ...REBORN, vector: [0, 1, 0] },
+      {
+        ...DRAGON,
+        language: Language.French,
+        name: 'Dragon Blanc aux Yeux Bleus',
+        vector: [1, 0, 0]
+      }
     ]
   });
 
-  const dependencies = (ollama: IOllamaClient): RagQueryDependencies => ({
+  const dependencies = (ollama: IOllamaClient): PipelineDependencies => ({
     logger: silentLogger,
     ollama,
     catalog
   });
 
-  const defaultInput: RagQueryInput = {
-    prompt: 'a dragon with high attack',
+  const defaultInput: PipelineInput = {
+    request: 'a dragon with high attack',
     language: Language.English,
     model: CHAT_MODEL.name,
     supportsStructuredOutput: true,
     parse: true,
     answer: true,
     filter: true,
-    topK: 25,
-    shown: 1,
-    minScore: 0,
-    filterPool: 25
+    ranking: { topK: 25, minScore: 0 },
+    pool: 25,
+    shown: 1
   };
 
   /**
    * What the judgement answers unless a test says otherwise: both cards the
-   * index holds, so what is shown is the ranking's own top.
+   * catalog holds, so what is shown is the ranking's own top.
    */
   const KEEPS_EVERYTHING = {
     content: JSON.stringify({ keep: [DRAGON.id, REBORN.id] }),
@@ -189,7 +213,7 @@ describe('runRagQuery', () => {
     const ollama = answeringClient();
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), defaultInput)
+      runPipeline(dependencies(ollama), defaultInput)
     );
 
     const search = searchEventOf(events);
@@ -207,11 +231,19 @@ describe('runRagQuery', () => {
     expect(answerTextOf(events)).toBe('Blue-Eyes is the dragon you want.');
   });
 
+  it('embeds the query the parse rewrote the request into', async () => {
+    const ollama = answeringClient();
+
+    await collect(runPipeline(dependencies(ollama), defaultInput));
+
+    expect(ollama.embeddedInputs).toEqual([['high attack']]);
+  });
+
   it('ranks every candidate the search returns and answers from the shown ones', async () => {
     const ollama = answeringClient(PARSE_QUERY_ONLY);
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), defaultInput)
+      runPipeline(dependencies(ollama), defaultInput)
     );
 
     const ranked = rankedEventOf(events);
@@ -235,7 +267,7 @@ describe('runRagQuery', () => {
     });
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), defaultInput)
+      runPipeline(dependencies(ollama), defaultInput)
     );
 
     expect(selectedEventOf(events).cards.map(card => card.name)).toEqual([
@@ -249,11 +281,52 @@ describe('runRagQuery', () => {
     );
   });
 
+  it('falls back to the search own ranking when the judgement fails', async () => {
+    const ollama = answeringClient(PARSE_QUERY_ONLY, {
+      content: 'I would keep Blue-Eyes.',
+      done: true
+    });
+
+    const events = await collect(
+      runPipeline(dependencies(ollama), defaultInput)
+    );
+    const selected = selectedEventOf(events);
+
+    expect(selected.fellBack).toBe(true);
+    expect(selected.cards.map(card => card.name)).toEqual([
+      'Blue-Eyes White Dragon'
+    ]);
+  });
+
+  it('judges the candidates against the request the player wrote', async () => {
+    const ollama = answeringClient();
+
+    await collect(runPipeline(dependencies(ollama), defaultInput));
+
+    expect(ollama.chatRequests[1]?.messages[1]?.content).toBe(
+      defaultInput.request
+    );
+    expect(ollama.chatRequests[1]?.format).toBeDefined();
+  });
+
+  it('constrains the parse and the judgement but never the answer', async () => {
+    const ollama = answeringClient();
+
+    await collect(runPipeline(dependencies(ollama), defaultInput));
+
+    expect(ollama.chatRequests).toHaveLength(3);
+    expect(ollama.chatRequests[0]?.model).toBe(CHAT_MODEL.name);
+    expect(ollama.chatRequests[0]?.format).toBeDefined();
+    expect(ollama.chatRequests[1]?.format).toBeDefined();
+    expect(ollama.chatRequests[2]?.format).toBeUndefined();
+    expect(ollama.chatRequests[2]?.messages[0]?.content).toContain(DRAGON.name);
+  });
+
   it('shows the search own top when no judgement is asked for', async () => {
     const ollama = answeringClient();
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), { ...defaultInput, filter: false })
+      runPipeline(dependencies(ollama), { ...defaultInput, filter: false })
     );
 
     const selected = selectedEventOf(events);
@@ -269,13 +342,13 @@ describe('runRagQuery', () => {
     const ollama = answeringClient();
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), { ...defaultInput, parse: false })
+      runPipeline(dependencies(ollama), { ...defaultInput, parse: false })
     );
 
     const search = searchEventOf(events);
     expect(search.outcome).toBeUndefined();
     expect(search.filters).toEqual([]);
-    expect(search.query).toBe(defaultInput.prompt);
+    expect(search.query).toBe(defaultInput.request);
     expect(ollama.chatRequests).toHaveLength(2);
   });
 
@@ -283,7 +356,7 @@ describe('runRagQuery', () => {
     const ollama = answeringClient();
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), {
+      runPipeline(dependencies(ollama), {
         ...defaultInput,
         editedFilters: DRAGON_FILTER
       })
@@ -292,15 +365,44 @@ describe('runRagQuery', () => {
     const search = searchEventOf(events);
     expect(search.outcome).toBeUndefined();
     expect(search.filters).toEqual(DRAGON_FILTER);
-    expect(search.query).toBe(defaultInput.prompt);
+    expect(search.query).toBe(defaultInput.request);
     expect(ollama.chatRequests).toHaveLength(2);
+  });
+
+  it('searches the request itself when the parse names nothing', async () => {
+    const ollama = answeringClient(JSON.stringify({}));
+
+    const events = await collect(
+      runPipeline(dependencies(ollama), defaultInput)
+    );
+
+    const search = searchEventOf(events);
+    expect(search.outcome).toBe(ParseOutcome.Parsed);
+    expect(search.filters).toEqual([]);
+    expect(search.query).toBe(defaultInput.request);
+    expect(search.status).toBe(TurnStatus.FreeTextOnly);
+  });
+
+  it('stays inside the requested language partition', async () => {
+    const ollama = answeringClient(PARSE_QUERY_ONLY);
+
+    const events = await collect(
+      runPipeline(dependencies(ollama), {
+        ...defaultInput,
+        language: Language.French
+      })
+    );
+
+    expect(
+      rankedEventOf(events).ranked.map(candidate => candidate.card.name)
+    ).toEqual(['Dragon Blanc aux Yeux Bleus']);
   });
 
   it('stops after the ranking and the judgement when the answer is not wanted', async () => {
     const ollama = answeringClient();
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), { ...defaultInput, answer: false })
+      runPipeline(dependencies(ollama), { ...defaultInput, answer: false })
     );
 
     expect(events.map(event => event.type)).toEqual([
@@ -324,13 +426,13 @@ describe('runRagQuery', () => {
     });
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), defaultInput)
+      runPipeline(dependencies(ollama), defaultInput)
     );
 
     const search = searchEventOf(events);
     expect(search.outcome).toBe(ParseOutcome.Degraded);
     expect(search.filters).toEqual([]);
-    expect(search.query).toBe(defaultInput.prompt);
+    expect(search.query).toBe(defaultInput.request);
     expect(search.status).toBe(TurnStatus.FreeTextOnly);
     expect(answerTextOf(events)).toBe('The dragon.');
   });
@@ -343,7 +445,10 @@ describe('runRagQuery', () => {
     });
 
     const events = await collect(
-      runRagQuery(dependencies(ollama), { ...defaultInput, minScore: 0.5 })
+      runPipeline(dependencies(ollama), {
+        ...defaultInput,
+        ranking: { topK: 25, minScore: 0.5 }
+      })
     );
 
     expect(rankedEventOf(events).ranked).toEqual([]);
@@ -351,5 +456,91 @@ describe('runRagQuery', () => {
       'I could not find a card that matches that request. Try broadening it.'
     );
     expect(ollama.chatRequests).toHaveLength(1);
+  });
+
+  it('answers the empty search in the conversation language', async () => {
+    const ollama = new FakeOllamaClient({
+      models: [CHAT_MODEL],
+      embeddings: [[0, 0, 1]],
+      chatResponses: [[{ content: PARSE_QUERY_ONLY, done: true }]]
+    });
+
+    const events = await collect(
+      runPipeline(dependencies(ollama), {
+        ...defaultInput,
+        language: Language.French,
+        ranking: { topK: 25, minScore: 0.5 }
+      })
+    );
+
+    expect(answerTextOf(events)).toContain('aucune carte');
+  });
+
+  describe('failures', () => {
+    it('tags a parse failure with the parse stage', async () => {
+      const ollama = new FakeOllamaClient({
+        models: [CHAT_MODEL],
+        embeddings: [[0.9, 0.4, 0]],
+        chatResponses: [[]],
+        chatFailures: [new Error('connection refused')]
+      });
+
+      const error = await captureError(
+        collect(runPipeline(dependencies(ollama), defaultInput))
+      );
+
+      expect(error).toBeInstanceOf(PipelineError);
+      expect((error as PipelineError).stage).toBe(TurnStage.Parse);
+      expect((error as PipelineError).cause).toBeInstanceOf(Error);
+    });
+
+    it('tags a retrieval failure with the search stage', async () => {
+      const ollama: IOllamaClient = {
+        listModels: async () => [CHAT_MODEL],
+        embed: async () => {
+          throw new OllamaUnreachableError(BASE_URL);
+        },
+        chat: async function* chatForTheParse() {
+          yield { content: PARSE_QUERY_ONLY, done: true };
+        }
+      };
+
+      const error = await captureError(
+        collect(runPipeline(dependencies(ollama), defaultInput))
+      );
+
+      expect(error).toBeInstanceOf(PipelineError);
+      expect((error as PipelineError).stage).toBe(TurnStage.Search);
+      expect((error as PipelineError).cause).toBeInstanceOf(
+        OllamaUnreachableError
+      );
+    });
+
+    it('tags an answer failure with the answer stage', async () => {
+      const ollama = new FakeOllamaClient({
+        models: [CHAT_MODEL],
+        embeddings: [[0.9, 0.4, 0]],
+        chatResponses: [
+          [{ content: PARSE_WITH_FILTER, done: true }],
+          [KEEPS_EVERYTHING],
+          [{ content: 'Blue-Eyes ', done: false }]
+        ],
+        chatFailures: [
+          undefined,
+          undefined,
+          new OllamaUnreachableError(BASE_URL)
+        ]
+      });
+
+      const error = await captureError(
+        collect(runPipeline(dependencies(ollama), defaultInput))
+      );
+
+      expect(error).toBeInstanceOf(PipelineError);
+      expect((error as PipelineError).stage).toBe(TurnStage.Answer);
+      expect((error as PipelineError).cause).toBeInstanceOf(
+        OllamaUnreachableError
+      );
+    });
   });
 });

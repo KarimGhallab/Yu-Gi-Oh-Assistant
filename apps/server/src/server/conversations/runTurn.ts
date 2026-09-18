@@ -1,16 +1,20 @@
-import { type CardFilters, Language } from '@ygo-assistant/cards';
+import { type Card, type CardFilters, Language } from '@ygo-assistant/cards';
 import {
   type TurnEvent,
   TurnEventName,
   TurnStage
 } from '@ygo-assistant/contracts';
 import { MessageRole } from '@ygo-assistant/db';
-import { ParseOutcome, retrieveCards, selectCards } from '@ygo-assistant/rag';
+import { ParseOutcome } from '@ygo-assistant/rag';
 import { DomainError, hasErrorMessage } from '@ygo-assistant/utils';
 
+import {
+  PipelineError,
+  type PipelineEvent,
+  type PipelineInput,
+  runPipeline
+} from '../../pipeline/runPipeline.js';
 import type { ServerDependencies } from '../types.js';
-import { answerDeltas } from './answerDeltas.js';
-import { type TurnSearch, resolveSearch } from './resolveSearch.js';
 
 /**
  * What the turn runs on: the conversation it happens in, what the player asked
@@ -43,82 +47,68 @@ const TURN_FAILED_MESSAGE = 'The turn failed';
  * search that was understood, the cards it found, the answer as it is written,
  * and the id the answer was stored under.
  *
- * The answer is written from the cards retrieval returned and nothing else, so
- * a suggested card cannot be invented, and the turn is stored only once, when
- * the answer is complete: a turn that fails partway leaves the question and no
- * reply (ticket 27).
+ * The sequence itself belongs to the pipeline; this is the adapter that turns
+ * its neutral events into the turn's wire frames and stores the reply. The
+ * answer is written from the cards retrieval returned and nothing else, so a
+ * suggested card cannot be invented, and the turn is stored only once, when the
+ * answer is complete: a turn that fails partway leaves the question and no reply
+ * (ticket 27).
  */
 export async function* runTurn(
   dependencies: ServerDependencies,
   input: TurnInput
 ): AsyncGenerator<TurnEvent> {
-  const { text, language, model } = input;
-
   yield { type: TurnEventName.TurnStart, userMessageId: input.userMessageId };
 
-  let stage = TurnStage.Parse;
+  let search: Extract<PipelineEvent, { type: 'search' }> | undefined;
+  let ranked = 0;
+  let cards: Card[] = [];
+  let answer = '';
+
   try {
-    const search: TurnSearch = await resolveSearch(dependencies, input);
-
-    await storeQuery(dependencies, input, search);
-
-    if (search.status !== undefined) {
-      yield { type: TurnEventName.Status, status: search.status };
-    }
-
-    // The event reports the search that is actually about to run, so a client
-    // rendering the chips shows what retrieval was asked for, even when the
-    // parse kept no free text of its own and the request was searched instead.
-    yield {
-      type: TurnEventName.Filters,
-      filters: search.filters,
-      query: search.text
-    };
-
-    stage = TurnStage.Search;
-    const ranked = await retrieveCards({
-      catalog: dependencies.catalog,
-      embedder: dependencies.ollama,
-      query: { text: search.text, filters: search.filters, language },
-      ranking: {
-        topK: dependencies.config.retrieval.topK,
-        minScore: dependencies.config.retrieval.minScore
-      }
-    });
-    const selection = await selectCards({
-      client: dependencies.ollama,
-      model,
-      supportsStructuredOutput: input.supportsStructuredOutput,
-      request: text,
-      ranked,
-      pool: dependencies.config.retrieval.filterPool,
-      shown: dependencies.config.retrieval.shown,
-      filter: true
-    });
-    const cards = selection.cards;
-
-    dependencies.logger.debug('Cards selected', {
-      conversationId: input.conversationId,
-      retrieved: ranked.length,
-      pool: selection.pool,
-      shown: cards.length,
-      fellBack: selection.fellBack
-    });
-
-    yield { type: TurnEventName.Cards, cards };
-
-    stage = TurnStage.Answer;
-    let answer = '';
-    const answerGenerator = answerDeltas(
+    const events = runPipeline(
       dependencies,
-      model,
-      text,
-      language,
-      cards
+      pipelineInput(dependencies, input)
     );
-    for await (const delta of answerGenerator) {
-      answer += delta;
-      yield { type: TurnEventName.AnswerDelta, text: delta };
+    for await (const event of events) {
+      switch (event.type) {
+        case 'search':
+          search = event;
+          await storeQuery(dependencies, input, event);
+
+          if (event.status !== undefined) {
+            yield { type: TurnEventName.Status, status: event.status };
+          }
+
+          // The event reports the search that is actually about to run, so a
+          // client rendering the chips shows what retrieval was asked for, even
+          // when the parse kept no free text of its own and the request was
+          // searched instead.
+          yield {
+            type: TurnEventName.Filters,
+            filters: event.filters,
+            query: event.query
+          };
+          break;
+        case 'ranked':
+          ranked = event.ranked.length;
+          break;
+        case 'selected':
+          cards = event.cards;
+          dependencies.logger.debug('Cards selected', {
+            conversationId: input.conversationId,
+            retrieved: ranked,
+            pool: event.pool,
+            shown: cards.length,
+            fellBack: event.fellBack
+          });
+          yield { type: TurnEventName.Cards, cards };
+          break;
+        case 'answer':
+          answer += event.text;
+          yield { type: TurnEventName.AnswerDelta, text: event.text };
+          break;
+      }
     }
 
     if (answer.trim().length === 0) {
@@ -133,7 +123,7 @@ export async function* runTurn(
       conversationId: input.conversationId,
       role: MessageRole.Assistant,
       content: answer,
-      filters: search.filters,
+      filters: search?.filters ?? [],
       cardIds: cards.map(card => card.id)
     });
 
@@ -146,6 +136,12 @@ export async function* runTurn(
 
     yield { type: TurnEventName.TurnEnd, messageId: message.id };
   } catch (error) {
+    // The pipeline tags the stage it died at. Anything this adapter throws after
+    // the sequence has run, an empty answer or a store that will not take the
+    // reply, belongs to the answer stage.
+    const stage =
+      error instanceof PipelineError ? error.stage : TurnStage.Answer;
+
     logFailure(dependencies, input, stage, error);
     yield {
       type: TurnEventName.Error,
@@ -153,6 +149,33 @@ export async function* runTurn(
       message: failureMessage(error)
     };
   }
+}
+
+/**
+ * The pipeline input a turn runs: the player's request and settings, with the
+ * toggles a turn always uses and the configured retrieval numbers.
+ */
+function pipelineInput(
+  dependencies: ServerDependencies,
+  input: TurnInput
+): PipelineInput {
+  return {
+    request: input.text,
+    language: input.language,
+    model: input.model,
+    supportsStructuredOutput: input.supportsStructuredOutput,
+    editedFilters: input.editedFilters,
+    parse: true,
+    filter: true,
+    answer: true,
+    ranking: {
+      topK: dependencies.config.retrieval.topK,
+      minScore: dependencies.config.retrieval.minScore
+    },
+    pool: dependencies.config.retrieval.filterPool,
+    shown: dependencies.config.retrieval.shown,
+    conversationId: input.conversationId
+  };
 }
 
 /**
@@ -166,12 +189,12 @@ export async function* runTurn(
 async function storeQuery(
   dependencies: ServerDependencies,
   input: TurnInput,
-  search: TurnSearch
+  search: { outcome?: ParseOutcome; query?: string }
 ): Promise<void> {
   if (
     search.outcome !== ParseOutcome.Parsed ||
-    search.text === undefined ||
-    search.text === input.text
+    search.query === undefined ||
+    search.query === input.text
   ) {
     return;
   }
@@ -179,7 +202,7 @@ async function storeQuery(
   try {
     await dependencies.store.messages.setQuery(
       input.userMessageId,
-      search.text
+      search.query
     );
   } catch (error) {
     dependencies.logger.warn('The rewritten query could not be stored', {
@@ -196,7 +219,8 @@ async function storeQuery(
  * message is not something to put in a stream.
  */
 function failureMessage(error: unknown): string {
-  return error instanceof DomainError ? error.message : TURN_FAILED_MESSAGE;
+  const cause = error instanceof PipelineError ? error.cause : error;
+  return cause instanceof DomainError ? cause.message : TURN_FAILED_MESSAGE;
 }
 
 /**
@@ -210,13 +234,14 @@ function logFailure(
   stage: TurnStage,
   error: unknown
 ): void {
+  const cause = error instanceof PipelineError ? error.cause : error;
   const context = {
     conversationId: input.conversationId,
     stage,
-    message: describeError(error)
+    message: describeError(cause)
   };
 
-  if (error instanceof DomainError) {
+  if (cause instanceof DomainError) {
     dependencies.logger.warn('Turn failed', context);
     return;
   }

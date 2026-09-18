@@ -1,7 +1,7 @@
 import type { Language } from '@ygo-assistant/cards';
 import type { RankedCard } from '@ygo-assistant/rag';
 
-import type { RagQueryEvent } from './runRagQuery.js';
+import type { PipelineEvent } from '../pipeline/runPipeline.js';
 
 const ANSWER_RULE = '-'.repeat(60);
 
@@ -38,7 +38,7 @@ export class RagReporter {
     );
   }
 
-  event(event: RagQueryEvent): void {
+  event(event: PipelineEvent): void {
     if (this._json) {
       this._print(JSON.stringify(event));
       return;
@@ -75,7 +75,7 @@ export class RagReporter {
   }
 
   private _printSearch(
-    event: Extract<RagQueryEvent, { type: 'search' }>
+    event: Extract<PipelineEvent, { type: 'search' }>
   ): void {
     this._print('');
     this._print(`Search (${this._takeStage()}s)`);
@@ -102,7 +102,7 @@ export class RagReporter {
   }
 
   private _printSelected(
-    event: Extract<RagQueryEvent, { type: 'selected' }>
+    event: Extract<PipelineEvent, { type: 'selected' }>
   ): void {
     const seconds = this._takeStage();
     this._print('');

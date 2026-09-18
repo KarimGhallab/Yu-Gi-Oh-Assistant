@@ -1,10 +1,10 @@
 import { type Card, Language } from '@ygo-assistant/cards';
 import { streamGroundedAnswer } from '@ygo-assistant/rag';
 
-import type { OllamaDependencies } from '../types.js';
+import type { OllamaDependencies } from '../server/types.js';
 
 /**
- * What the turn says when the search found nothing. The copy is a product
+ * What the pipeline says when the search found nothing. The copy is a product
  * decision rather than something a model should be left to improvise, so it is
  * written for each language the catalog is indexed in instead of being
  * translated by the machine: a model asked to say it found nothing can say
@@ -19,8 +19,8 @@ const NO_CARDS_ANSWERS: Record<Language, string> = {
 };
 
 /**
- * The prose a turn streams. A search that found nothing is answered without the
- * model: the reply is known before the answer stage would run, and a model
+ * The prose a pipeline streams. A search that found nothing is answered without
+ * the model: the reply is known before the answer stage would run, and a model
  * asked to say it found nothing can say something else instead.
  */
 export function answerDeltas(

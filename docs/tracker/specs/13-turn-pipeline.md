@@ -1,6 +1,6 @@
 # 13 - Turn pipeline
 
-- **Status:** `ready-for-agent`
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** 12
 - **Source:** architecture review, 2026-09-18

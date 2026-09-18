@@ -19,7 +19,6 @@ import {
   type TurnEvent,
   TurnEventName,
   TurnStage,
-  TurnStatus,
   conversationWithMessagesSchema,
   turnEventSchema
 } from '@ygo-assistant/contracts';
@@ -201,11 +200,6 @@ const answerText = (frames: Frame[]): string =>
 const filtersEvents = (frames: Frame[]): TurnEvent[] =>
   frames
     .filter(frame => frame.event.type === TurnEventName.Filters)
-    .map(frame => frame.event);
-
-const statusEvents = (frames: Frame[]): TurnEvent[] =>
-  frames
-    .filter(frame => frame.event.type === TurnEventName.Status)
     .map(frame => frame.event);
 
 /** The failure records, told apart from the request log by the stage they name. */
@@ -393,64 +387,6 @@ describe('turn routes', () => {
     });
   });
 
-  it('searches the free text the parse kept', async () => {
-    const client = createClient(PARSE_ANSWER);
-
-    await runTurn(client, await startConversation());
-
-    expect(client.embeddedInputs).toEqual([['banish cards']]);
-  });
-
-  it('searches the request itself when the model names no constraint', async () => {
-    const client = createClient(JSON.stringify({}));
-    const conversationId = await startConversation();
-
-    const frames = readFrames(
-      await (await postTurn(client, conversationId)).text()
-    );
-
-    expect(client.embeddedInputs).toEqual([[REQUEST]]);
-    expect(statusEvents(frames)).toEqual([
-      { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly }
-    ]);
-    expect(filtersEvents(frames)).toEqual([
-      { type: TurnEventName.Filters, filters: [], query: REQUEST }
-    ]);
-    expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
-  });
-
-  it('says the search runs on the player own words when the parse gives up', async () => {
-    const client = createClient([
-      'I would suggest Dark Magician.',
-      'Still not JSON, sorry.'
-    ]);
-    const conversationId = await startConversation();
-
-    const frames = await runTurn(client, conversationId);
-
-    expect(eventNames(frames)).toEqual([
-      TurnEventName.TurnStart,
-      TurnEventName.Status,
-      TurnEventName.Filters,
-      TurnEventName.Cards,
-      TurnEventName.AnswerDelta,
-      TurnEventName.AnswerDelta,
-      TurnEventName.AnswerEnd,
-      TurnEventName.TurnEnd
-    ]);
-    expect(statusEvents(frames)).toEqual([
-      { type: TurnEventName.Status, status: TurnStatus.FreeTextOnly }
-    ]);
-    expect(filtersEvents(frames)).toEqual([
-      { type: TurnEventName.Filters, filters: [], query: REQUEST }
-    ]);
-    expect(client.embeddedInputs).toEqual([[REQUEST]]);
-    expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
-    expect(answerText(frames)).toBe('Blue-Eyes fits.');
-    // The two parse attempts, the judgement, then the answer: a parse that
-    // degrades costs one extra call and never the turn.
-    expect(client.chatRequests).toHaveLength(4);
-  });
   it('stores what it searched when the parse gave up', async () => {
     const client = createClient(['not JSON', 'still not JSON']);
     const conversationId = await startConversation();
@@ -497,142 +433,6 @@ describe('turn routes', () => {
       content: REQUEST,
       query: 'banish cards'
     });
-  });
-
-  it('shows the cards the judgement kept', async () => {
-    const client = new FakeOllamaClient({
-      models: [CHAT_MODEL_CAPABILITY],
-      embeddings: [QUERY_VECTOR],
-      chatResponses: [
-        [{ content: PARSE_ANSWER, done: true }],
-        [
-          {
-            content: JSON.stringify({ keep: [CREATED_IDS[1]?.id] }),
-            done: true
-          }
-        ],
-        PROSE
-      ]
-    });
-    const conversationId = await startConversation();
-
-    const frames = await runTurn(client, conversationId);
-
-    // The search ranked Blue-Eyes first; the judgement kept Luster Dragon, and
-    // that is what the turn shows.
-    expect(shownCardNames(frames)).toEqual(['Luster Dragon']);
-  });
-
-  it('falls back to the search own ranking when the judgement fails', async () => {
-    const client = new FakeOllamaClient({
-      models: [CHAT_MODEL_CAPABILITY],
-      embeddings: [QUERY_VECTOR],
-      chatResponses: [
-        [{ content: PARSE_ANSWER, done: true }],
-        [{ content: 'I would keep Blue-Eyes.', done: true }],
-        PROSE
-      ]
-    });
-    const conversationId = await startConversation();
-
-    const frames = await runTurn(client, conversationId);
-
-    expect(shownCardNames(frames)).toEqual(['Blue-Eyes White Dragon']);
-  });
-
-  it('judges the candidates against the request the player wrote', async () => {
-    const client = createClient(PARSE_ANSWER);
-
-    await runTurn(client, await startConversation());
-
-    // The parse rewrote the request into "banish cards"; what a card has to
-    // answer is what the player asked for, so that is what the judgement reads.
-    expect(client.chatRequests[1]?.messages[1]?.content).toBe(REQUEST);
-    expect(client.chatRequests[1]?.format).toBeDefined();
-  });
-
-  it('searches the language the conversation is in', async () => {
-    const client = createClient(PARSE_ANSWER);
-
-    const frames = await runTurn(
-      client,
-      await startConversation(Language.French)
-    );
-
-    expect(shownCardNames(frames)).toEqual(['Magicien Sombre']);
-  });
-
-  it('constrains the parse with the selected model and leaves the answer free', async () => {
-    const client = createClient(PARSE_ANSWER);
-
-    await runTurn(client, await startConversation());
-
-    // The capability reaches the parse and the judgement as a schema and never
-    // reaches the answer, which is prose; this is what reading the model's
-    // capability buys.
-    expect(client.chatRequests).toHaveLength(3);
-    expect(client.chatRequests[0]?.model).toBe(CHAT_MODEL);
-    expect(client.chatRequests[0]?.format).toBeDefined();
-    expect(client.chatRequests[0]?.temperature).toBe(0);
-    expect(client.chatRequests[1]?.format).toBeDefined();
-    expect(client.chatRequests[1]?.temperature).toBe(0);
-    expect(client.chatRequests[2]?.format).toBeUndefined();
-    expect(client.chatRequests[2]?.temperature).toBe(0);
-    expect(client.chatRequests[2]?.messages[0]?.content).toContain(
-      CREATED_IDS[0]?.name
-    );
-  });
-
-  it('uses the filters the player edited instead of parsing the request', async () => {
-    const dark: CardFilters = [
-      {
-        field: CardFilterField.Attribute,
-        operator: FilterOperator.Eq,
-        value: CardAttribute.Dark
-      }
-    ];
-    const client = new FakeOllamaClient({
-      models: [CHAT_MODEL_CAPABILITY],
-      embeddings: [QUERY_VECTOR],
-      chatResponses: [[KEEP_EVERYTHING], PROSE]
-    });
-    const conversationId = await startConversation();
-
-    const frames = await runTurn(client, conversationId, {
-      text: REQUEST,
-      filters: dark
-    });
-
-    // The judgement and the answer: an edited filter set is what the parse would
-    // have said, so there is nothing left to parse.
-    expect(client.chatRequests).toHaveLength(2);
-    expect(statusEvents(frames)).toEqual([]);
-    expect(filtersEvents(frames)).toEqual([
-      { type: TurnEventName.Filters, filters: dark, query: REQUEST }
-    ]);
-    expect(client.embeddedInputs).toEqual([[REQUEST]]);
-    // The only dark card of the seeded ones, so this only passes if the search
-    // ran on the filters the player submitted rather than the request's words.
-    expect(shownCardNames(frames)).toEqual(['Red-Eyes Black Dragon']);
-  });
-
-  it('searches the words alone when the player cleared every filter', async () => {
-    const client = new FakeOllamaClient({
-      models: [CHAT_MODEL_CAPABILITY],
-      embeddings: [QUERY_VECTOR],
-      chatResponses: [[KEEP_EVERYTHING], PROSE]
-    });
-    const conversationId = await startConversation();
-
-    const frames = await runTurn(client, conversationId, {
-      text: REQUEST,
-      filters: []
-    });
-
-    expect(client.chatRequests).toHaveLength(2);
-    expect(filtersEvents(frames)).toEqual([
-      { type: TurnEventName.Filters, filters: [], query: REQUEST }
-    ]);
   });
 
   it('searches the language the player chose and keeps it on the conversation', async () => {
@@ -735,30 +535,6 @@ describe('turn routes', () => {
 
     expect(response.status).toBe(404);
     expect(client.chatRequests).toEqual([]);
-  });
-
-  it('answers a French conversation without the model when the search found nothing', async () => {
-    const client = createClient(
-      JSON.stringify({
-        filters: [
-          {
-            field: CardFilterField.Race,
-            operator: FilterOperator.Eq,
-            value: CardRace.DivineBeast
-          }
-        ]
-      })
-    );
-    const conversationId = await startConversation(Language.French);
-
-    const frames = await runTurn(client, conversationId);
-    const answer = answerText(frames);
-
-    // The reply is the sentence written for the language the conversation is in,
-    // and it is not the model's: the only call it made was the parse.
-    expect(client.chatRequests).toHaveLength(1);
-    expect(answer).toContain('aucune carte');
-    expect(answer).not.toContain('could not find');
   });
 
   it('answers without the model when the search found nothing', async () => {

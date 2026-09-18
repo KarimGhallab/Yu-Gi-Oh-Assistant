@@ -18,9 +18,11 @@ the product intent and constraints are in [`PRODUCT.md`](./PRODUCT.md).
 - **`apps/server`**, the API. A Hono application behind a small composition root
   that loads configuration once, guards the index, opens the SQLite store, and
   builds the Ollama client. It serves `/health`, `/api/conversations`,
-  `/api/models`, and `/api/archetypes`, and it owns the turn stream. The same
-  workspace also holds the `populate` and `rag:ask` commands, which run outside
-  the HTTP server.
+  `/api/models`, and `/api/archetypes`, and it owns the turn stream. Its pipeline
+  module owns the order of a turn's stages and yields one neutral event stream;
+  the stages themselves are `rag`'s, and the turn stream and the RAG command are
+  adapters over that stream. The same workspace also holds the `populate` and
+  `rag:ask` commands, which run outside the HTTP server.
 
 ### The packages
 
@@ -66,7 +68,9 @@ so a mismatched index fails at startup rather than answering badly.
 ## A turn, end to end
 
 A turn is one exchange. It crosses every layer, and its order is the pipeline's
-contract.
+contract. The server's pipeline module owns the sequence and reports it as one
+neutral event stream; the stages themselves are `rag`'s, and the turn's SSE
+frames are the server's adapter over that stream.
 
 1. **The request.** The client sends `POST /api/conversations/:id/messages` with
    the player's words, the settings in force, and any edited filters, and reads

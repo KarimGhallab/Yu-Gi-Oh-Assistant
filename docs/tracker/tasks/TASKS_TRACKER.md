@@ -68,6 +68,9 @@ numbering across specs, so blocking edges stay legible across features.
 | 58  | [The catalog is read behind a port](./58-the-catalog-is-read-behind-a-port.md)                                                              | Resolved (2026-09-18) | None       | [12](../specs/12-card-catalog-port.md)                                                |
 | 59  | [The callers and the suites move onto the port](./59-the-callers-and-the-suites-move-onto-the-port.md)                                      | Resolved (2026-09-18) | 58         | [12](../specs/12-card-catalog-port.md)                                                |
 | 60  | [The db entry narrows and the architecture doc follows](./60-the-db-entry-narrows-and-the-architecture-doc-follows.md)                      | Resolved (2026-09-18) | 59         | [12](../specs/12-card-catalog-port.md)                                                |
+| 61  | [The pipeline module owns the sequence](./61-the-pipeline-module-owns-the-sequence.md)                                                      | Resolved (2026-09-18) | None       | [13](../specs/13-turn-pipeline.md)                                                    |
+| 62  | [The command runs the pipeline directly](./62-the-command-runs-the-pipeline-directly.md)                                                    | Resolved (2026-09-18) | 61         | [13](../specs/13-turn-pipeline.md)                                                    |
+| 63  | [The suites rebalance and the docs follow](./63-the-suites-rebalance-and-the-docs-follow.md)                                                | Resolved (2026-09-18) | 61, 62     | [13](../specs/13-turn-pipeline.md)                                                    |
 
 ## Frontier
 
@@ -95,6 +98,8 @@ single-origin setup in ticket 06 and spec 01.
 Spec 12 (Card catalog port) is fully landed: 58 through 60 are resolved, the
 port and its in-memory substitute, the callers and the suites moved onto it, and
 the db entry narrowed with the architecture doc updated. The port is the
-architecture review's first candidate, recorded in ADR 0011. Specs 13 (Turn
-pipeline) and 14 (Filter predicate) both depended on 12 and are now unblocked;
-neither has tickets yet.
+architecture review's first candidate, recorded in ADR 0011. Spec 13 (Turn
+pipeline) is fully landed: 61 through 63 are resolved, the pipeline module owns
+the sequence behind its neutral events, the RAG command calls it directly, and
+the suites and docs follow. Spec 14 (Filter predicate) depended on 12 and is
+unblocked; it has no tickets yet.

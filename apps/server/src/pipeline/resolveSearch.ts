@@ -6,13 +6,13 @@ import {
   parseCardRequest
 } from '@ygo-assistant/rag';
 
-import type { OllamaDependencies } from '../types.js';
+import type { OllamaDependencies } from '../server/types.js';
 
 /**
- * The search a turn runs: the constraints and the free text, each of which the
- * turn always has an answer for, unlike a retrieval query where either may be
- * absent. The outcome says how the search was arrived at, and the status what
- * the player is owed about it.
+ * The search a pipeline runs: the constraints and the free text, each of which
+ * the pipeline always has an answer for, unlike a retrieval query where either
+ * may be absent. The outcome says how the search was arrived at, and the status
+ * what the player is owed about it.
  */
 export interface TurnSearch {
   text?: string;
@@ -38,11 +38,11 @@ export interface SearchInput {
 }
 
 /**
- * The search a turn runs. A request the player edited the filters of is taken
- * at their word: the filters are used as they stand and the text becomes the
- * free text, because parsing it again would overwrite the correction. Anything
- * else is parsed, and a parse that left the turn nothing of its own hands the
- * request over as the free text with a status saying so.
+ * The search a pipeline runs. A request the player edited the filters of is
+ * taken at their word: the filters are used as they stand and the text becomes
+ * the free text, because parsing it again would overwrite the correction.
+ * Anything else is parsed, and a parse that left the pipeline nothing of its own
+ * hands the request over as the free text with a status saying so.
  */
 export async function resolveSearch(
   dependencies: OllamaDependencies,
@@ -91,9 +91,9 @@ export async function resolveSearch(
 }
 
 /**
- * Whether the parse left the turn with nothing of its own: no constraints and
- * no free text either, so the search runs on the request as the player wrote it.
- * That is the state worth announcing, because an empty filter list on its own
+ * Whether the parse left the pipeline with nothing of its own: no constraints
+ * and no free text either, so the search runs on the request as the player wrote
+ * it. That is the state worth announcing, because an empty filter list on its own
  * does not say whether the request named nothing or the parse found nothing. A
  * parse that kept a query of its own is not this case, even when that query is
  * the request word for word: the model did read something into it.
@@ -106,10 +106,10 @@ function leftNothingToSearch(parse: ParseResult): boolean {
 }
 
 /**
- * The free text a turn searches on. The parse's own query is used whenever it
- * kept one, and a request it could not turn into anything at all is searched
- * itself, because handing retrieval neither a query nor a constraint returns
- * the catalog's arbitrary top cards rather than a search of what was asked.
+ * The free text a pipeline searches on. The parse's own query is used whenever
+ * it kept one, and a request it could not turn into anything at all is searched
+ * itself, because handing retrieval neither a query nor a constraint returns the
+ * catalog's arbitrary top cards rather than a search of what was asked.
  */
 function searchText(
   parse: ParseResult,

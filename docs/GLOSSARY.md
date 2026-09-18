@@ -73,6 +73,11 @@ Monster` or `Spell Card`. A filter field.
 - **Request**: what the player asks for, in prose. One request starts one turn.
 - **Turn**: one exchange: a stored request, the search it resolved to, the cards
   it found, and the answer it produced. The unit the stream reports.
+- **Turn pipeline** (or **pipeline**): the one module that owns the turn's stage
+  sequence, resolve, retrieve, select, answer, and yields one neutral event
+  stream (`runPipeline`). The turn and the RAG command are adapters over it, and
+  the stages themselves are `rag`'s; the server owns the sequence, not the
+  stages.
 - **Message**: one stored utterance in a conversation, from the player or the
   assistant. A turn writes the player's message first and the assistant's once
   the answer is complete.
@@ -131,9 +136,9 @@ Monster` or `Spell Card`. A filter field.
 - **Retrieval**: finding candidate cards in the index for a query
   (`retrieveCards`).
 - **Semantic search**: embedding the query text and returning the nearest
-  documents, closest first (`searchCardIndex`).
+  documents, closest first (the catalog's `search`).
 - **Filter-only lookup** (or **scan**): a search with no text, only filters,
-  which returns matching rows in a stable identity order (`scanCardIndex`).
+  which returns matching rows in a stable identity order (the catalog's `scan`).
 - **Ranked card** (`RankedCard`): a candidate with its score. A semantic match
   carries a cosine similarity, higher meaning closer. A filter-only match has no
   distance to report and carries 1 as a certain structural match, so the two
