@@ -2,8 +2,8 @@
 
 The glossary of the terms this project uses for its own concepts. It expands the
 short normative list in `docs/PRODUCT.md`: where the two disagree about a term,
-the product doc wins, and a term that is missing here is a gap in this file
-rather than a licence to invent a new word. Code and docs use these terms with
+the product doc wins, and a missing term is a gap in this file, not permission to
+invent a new word. Code and docs use these terms with
 these meanings, so a second name for an old idea is a defect.
 
 Two families live here. The game's own terms come from the card data. The

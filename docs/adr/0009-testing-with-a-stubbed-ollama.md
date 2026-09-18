@@ -27,10 +27,9 @@ gives a test an isolated data directory for its stores and index, live in
 dependency rules enforce, so production code cannot accidentally reach a fake and
 the ollama package's own surface stays the only way to start one.
 
-The consequences are a discipline and a cost. A fake is only as honest as its
-fixtures: the suites assert user-visible behavior and the end-to-end suite
-asserts the wire, which is what keeps the fake from quietly becoming the
-specification. A behavior that depends on a real model's judgment is out of scope
+A fake is only as honest as its fixtures: the suites assert user-visible behavior
+and the end-to-end suite asserts the wire, which is what keeps the fake from
+quietly becoming the specification. A behavior that depends on a real model's judgment is out of scope
 for the suites and is verified against the live stack when a ticket is landed,
 which the product's operating context already asks for. Extending the interface
 means extending both fakes, a deliberate tax that keeps the seam honest. And the

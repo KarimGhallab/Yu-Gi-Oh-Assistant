@@ -25,12 +25,12 @@ validated either way. Ollama exposes no capability for it, so the application
 answers the question with the completion capability it does report, on the
 reasoning that a model able to complete is the one that accepts a format. A model
 without it is not turned away: the parse falls back to a prompt plus one repair,
-and the judgement falls back to the search's own ranking. The model choice thus
-changes how reliable the first stage is, never whether a turn can run at all.
+and the judgement falls back to the search's own ranking. A weaker model makes
+the first stage less reliable, but it does not stop a turn from running.
 
-The consequences follow. The picker can only list what is installed, so a
-conversation whose stored model has since been removed is refused with a clear
-error rather than silently re-pointed. Because the model is validated before the
+The picker can only list what is installed, so a conversation whose stored model
+has since been removed is refused with a clear error rather than silently
+re-pointed. Because the model is validated before the
 turn starts, a bad choice fails fast instead of midway through a stream. Both the
 structured path and the prompt path have to be maintained, and the structured one
 is preferred whenever it is available. And the resolved model is carried to the

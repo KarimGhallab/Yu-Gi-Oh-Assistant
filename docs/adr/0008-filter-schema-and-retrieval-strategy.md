@@ -35,9 +35,9 @@ and scores as a certain structural match, so the two scales are not directly
 comparable; where relevance has to be judged, the judgement stage does it, not
 the score.
 
-The consequences are deliberate bounds. Race is equality-only, because the
-source keeps a monster's race and a Spell or Trap's property in one field and a
-substring match on it would be wrong more often than right. The frame type is
+The bounds are deliberate. Race is equality-only, because the source keeps a
+monster's race and a Spell or Trap's property in one field and a substring match
+on it would be wrong more often than right. The frame type is
 carried on a card but is not a filter field, so it cannot be searched on. And an
 XYZ monster's rank, which is 13 and up, is outside the level bounds, so it cannot
 be searched by level; that is accepted rather than papered over with a wider

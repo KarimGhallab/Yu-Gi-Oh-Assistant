@@ -26,9 +26,8 @@ written, so a drift between the two sides is caught at the wire. The suggested
 cards are emitted before the answer, which is what lets the grid render while the
 prose is still arriving.
 
-The consequences are the ones a stream implies. A turn is one request and is not
-resumable, so a dropped connection loses the stream rather than pausing it, even
-though the reply is stored when it completes. The stream carries a status code
+A turn is one request and is not resumable, so a dropped connection loses the
+stream rather than pausing it, even though the reply is stored when it completes. The stream carries a status code
 the client turns into a sentence, because the domain owns the code and the client
 owns the wording. And the history is private because the server is on loopback
 and unauthenticated, not because anything protects it.

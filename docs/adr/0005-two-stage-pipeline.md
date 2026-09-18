@@ -25,10 +25,9 @@ still handled: the parse falls back to a prompt plus a single repair, and the
 judgement to the search's own ranking. A capability Ollama does not report, so
 the application decides it per model.
 
-The consequences are the stages' independence and their cost. A turn makes
-several model calls (parse, judgement, answer) rather than one, so its latency
-is the sum, and the parse is skipped entirely when the player edited the
-filters, because parsing again would overwrite the correction. Each stage
+A turn makes several model calls (parse, judgement, answer) rather than one, so
+its latency is the sum, and the parse is skipped entirely when the player edited
+the filters, because parsing again would overwrite the correction. Each stage
 degrades on its own without failing the turn: a parse that gives up becomes a
 degraded search on the player's own words, a judgement that fails falls back to
 the top of the ranking, and an empty judgement is an honest empty result. The

@@ -2,9 +2,8 @@
 
 This is the single-context architecture for the Yu-Gi-Oh Assistant. It maps the
 components and the flow of a turn, and it states the layer boundaries that the
-dependency rules enforce. Those boundaries are normative: code that crosses one
-fails `depcruise`, and the reader should treat a crossing as a defect rather than
-a preference. The vocabulary here is the one in [`GLOSSARY.md`](./GLOSSARY.md);
+dependency rules enforce. Those boundaries are normative: `depcruise` fails a
+crossing. The vocabulary here is the one in [`GLOSSARY.md`](./GLOSSARY.md);
 the product intent and constraints are in [`PRODUCT.md`](./PRODUCT.md).
 
 ## Components

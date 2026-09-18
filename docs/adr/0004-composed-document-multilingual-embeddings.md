@@ -22,8 +22,8 @@ language the conversation is in. A card that exists in both languages has a row
 in each, so the same card id can surface from either partition, and the search
 deduplicates by id.
 
-The consequences are worth naming. The index stores as many rows as there are
-card entries across languages, not as many as there are cards. Switching a
+The index stores as many rows as there are card entries across languages, not as
+many as there are cards. Switching a
 conversation's language changes what is searched rather than translating an
 answer, which the product states as a constraint. The embedding model and its
 dimensions are recorded in the index metadata, so changing either is a rebuild,

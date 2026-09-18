@@ -1,10 +1,9 @@
 # Two stores: LanceDB for the catalog, SQLite for application state
 
 The card catalog is a LanceDB table and the application state is a SQLite
-database, both under `DATA_DIR`. The split is not an accident of which library
-was convenient: the two hold data with different shapes, different access
-patterns, and different lifetimes, and one store cannot serve both without
-bending one of them.
+database, both under `DATA_DIR`. The two stores hold data with different shapes,
+different access patterns, and different lifetimes; no single store serves both
+without bending one of them.
 
 The catalog is a read-mostly vector index. Retrieval embeds a query and asks for
 the nearest documents, and ingestion writes every card of two languages in one

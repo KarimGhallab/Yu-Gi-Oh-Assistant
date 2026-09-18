@@ -11,10 +11,10 @@ layering the architecture names is enforced by a gate, not by convention.
 
 Project references are what make the build order the dependency order. Each
 package compiles to `dist` behind an `exports` map, and a package that depends on
-another never reaches past its entry point. The consequence worth knowing is that
-a workspace package resolves to its built output, so a fresh checkout has to
-build before the suites that import a package can run; the pipeline builds the
-workspace before the tests for exactly this reason. Tests compile in a separate,
+another never reaches past its entry point. A workspace package resolves to its
+built output, so a fresh checkout has to build before the suites that import a
+package can run; the pipeline builds the workspace before the tests for exactly
+this reason. Tests compile in a separate,
 no-emit project so a test file cannot leak into a build.
 
 ESM everywhere (`"type": "module"`, `nodenext` resolution) matches the runtime
