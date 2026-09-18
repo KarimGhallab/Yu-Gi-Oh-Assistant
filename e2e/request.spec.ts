@@ -20,7 +20,7 @@ test('a request answers end to end', async ({ page }) => {
   await page.goto('/');
 
   await page.getByRole('textbox', { name: 'Your request' }).fill(REQUEST);
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
 
   const history = page.getByRole('region', { name: 'Messages' });
   await expect(history.getByText(ANSWER, { exact: true })).toBeVisible();

@@ -11,8 +11,10 @@ const CLIENT_ORIGIN = 'http://127.0.0.1:4173';
 
 export default defineConfig({
   testDir: '.',
-  fullyParallel: false,
-  workers: 1,
+  // Locally Playwright's own worker count runs the three engines and their
+  // files together; a CI job runs one worker, because the matrix already
+  // parallelizes the engines across runners.
+  workers: process.env.CI === undefined ? undefined : 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI === undefined ? 0 : 1,
   reporter:

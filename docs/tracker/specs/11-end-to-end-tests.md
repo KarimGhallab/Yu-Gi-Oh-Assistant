@@ -57,7 +57,8 @@ the status check a pull request is blocked on.
   `tsconfig.json`, keeps `tsc -b` covering it. The root scripts are `test:e2e`,
   `test:e2e:ui`, `build:e2e`, and `e2e:install`, each delegating to the package.
   The config declares three projects, `chromium`, `firefox`, and `webkit`, and
-  runs with `workers: 1`.
+  locally runs them and their files together on Playwright's own worker count;
+  a CI job, where the matrix already parallelizes the engines, runs one worker.
 - **Engine-agnostic by contract.** Assertions use roles, text, and the DOM only.
   The card's grow-from-tile is the View Transitions API, which only chromium
   implements; `runViewTransition` falls back to an instant update, so the suite
@@ -95,9 +96,11 @@ the status check a pull request is blocked on.
   ranks first. A failure fixture is keyed by the request's own words, never by a
   global switch, so it cannot leak into a parallel test.
 - **Determinism.** Fixture cards, the vector map, and scripted parse, filter,
-  and answer responses make ranking and prose stable. One worker, fixed ports,
-  and one temporary data directory per run keep runs from stepping on each
-  other.
+  and answer responses make ranking and prose stable, and the suite is
+  parallel-safe by construction: the fake keys every answer off the request, each
+  test runs in its own conversation and browser context, and the index is
+  read-only after seeding. Fixed ports and one temporary data directory per run
+  keep separate runs from stepping on each other.
 - **CI as reusable workflows.** `.github/workflows/verify.yml` holds lint,
   typecheck, and the vitest suites behind `on: workflow_call`.
   `.github/workflows/e2e.yml` holds the end-to-end run behind `workflow_call`
