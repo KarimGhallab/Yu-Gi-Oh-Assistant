@@ -12,7 +12,10 @@ fixed model for the deployment to configure and no server-side default that woul
 not be a guess. The instance is asked every time rather than remembered, because
 what is installed changes the moment a model is pulled or removed; the list is
 sorted by name so the same machine offers the same order, and a conversation
-that has not been told picks the first installed model that can complete. A model
+that has not been told picks the first installed model that can complete. The
+listing the server reports carries that default beside the models, so the client
+shows the model the server would pick rather than deriving it a second time, and
+the rule has one owner. A model
 the player names but the instance does not have is refused before anything is
 streamed, rather than quietly answered by another one, because a player who chose
 a model and got a different one has been misled. The choice being part of the
@@ -30,7 +33,10 @@ the first stage less reliable, but it does not stop a turn from running.
 
 The picker can only list what is installed, so a conversation whose stored model
 has since been removed is refused with a clear error rather than silently
-re-pointed. Because the model is validated before the
+re-pointed. What a model's capabilities mean for the player, the note on an
+option and the warning above the prompt, is written once in the client and read
+by every surface that offers the choice, because the same fact worded in two
+places is a fact that drifts. Because the model is validated before the
 turn starts, a bad choice fails fast instead of midway through a stream. Both the
 structured path and the prompt path have to be maintained, and the structured one
 is preferred whenever it is available. And the resolved model is carried to the

@@ -6,6 +6,7 @@ import {
 } from '@ygo-assistant/contracts';
 
 import PromptSurface from '../../shared/components/PromptSurface.js';
+import { describeModel } from '../../shared/modelPolicy.js';
 
 import SearchReadout from './SearchReadout.js';
 import type { RunningAnnouncement } from './turnAnnouncements.js';
@@ -74,26 +75,14 @@ export default function Composer({
   onLanguage,
   onModel
 }: ComposerProps) {
-  // A conversation can be left on a model the machine no longer has, which is a
-  // state the player should see rather than a control that shows nothing. The
-  // listing not having arrived yet is not that state, so it stays quiet.
-  const chosen = models?.find(candidate => candidate.name === model);
-  const missing = models !== undefined && chosen === undefined;
-
+  // What the listing and the chosen model mean for the player. The settings
+  // error is this surface's own, so it is read here rather than by the policy.
+  const policy = describeModel(models, model);
   const alerts = [
     ...(settingsError === undefined ? [] : [settingsError]),
-    ...(missing
-      ? [`${model} is not installed. Run ollama pull ${model} to install it.`]
-      : []),
-    ...(chosen !== undefined && !chosen.supportsCompletion
-      ? [`${chosen.name} cannot answer a turn.`]
-      : [])
+    ...policy.alerts
   ];
-  const note =
-    chosen?.supportsCompletion === true &&
-    chosen.supportsStructuredOutput === false
-      ? `${chosen.name} cannot produce structured filters, so a request is parsed from the prompt.`
-      : undefined;
+  const note = policy.note;
 
   return (
     <PromptSurface

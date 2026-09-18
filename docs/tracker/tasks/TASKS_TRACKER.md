@@ -75,6 +75,8 @@ numbering across specs, so blocking edges stay legible across features.
 | 65  | [The shipped predicate is pinned to the tested one](./65-the-shipped-predicate-is-pinned-to-the-tested-one.md)                              | Resolved (2026-09-18) | 64         | [14](../specs/14-filter-predicate.md)                                                 |
 | 66  | [The reply carries one search record](./66-the-reply-carries-one-search-record.md)                                                          | Resolved (2026-09-18) | None       | [15](../specs/15-search-interpretation.md)                                            |
 | 67  | [The readout and history read the stored record](./67-the-readout-and-history-read-the-stored-record.md)                                    | Resolved (2026-09-18) | 66         | [15](../specs/15-search-interpretation.md)                                            |
+| 68  | [The listing names the model a conversation starts on](./68-the-listing-names-the-model-a-conversation-starts-on.md)                        | Resolved (2026-09-18) | None       | [16](../specs/16-model-listing-and-policy.md)                                         |
+| 69  | [One owner for the model policy](./69-one-owner-for-the-model-policy.md)                                                                    | Resolved (2026-09-18) | 68         | [16](../specs/16-model-listing-and-policy.md)                                         |
 
 ## Frontier
 
@@ -112,5 +114,7 @@ The first architecture review's three candidates are done (specs 12 to 14). A
 second review surfaced six more, and its first is fully landed as spec 15 (Search
 interpretation): 66 and 67 are resolved, the reply carries one search record of
 the filters, the free text, and the status, the client reads it live and stored,
-and the old message fields are gone. The second review's remaining candidates are
-not yet ticketed.
+and the old message fields are gone. Spec 16 (Model listing and policy) is fully
+landed: 68 and 69 are resolved, the listing carries the server's default, and
+the client reads one policy for how a model is offered. The review's remaining
+candidates are not yet ticketed.

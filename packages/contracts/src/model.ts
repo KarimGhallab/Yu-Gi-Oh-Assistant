@@ -16,9 +16,17 @@ export const modelSchema = z.object({
   supportsStructuredOutput: z.boolean()
 });
 
-/**
- * The models a client can choose from, as the server reports them.
- */
-export const modelListSchema = z.array(modelSchema);
-
 export type Model = z.infer<typeof modelSchema>;
+
+/**
+ * The models the configured instance has, and the one a conversation starts on
+ * when the player has not chosen: the first that can answer a turn. The default
+ * is absent when nothing installed can answer, which is a machine that cannot
+ * hold a conversation yet.
+ */
+export const modelListingSchema = z.object({
+  models: z.array(modelSchema),
+  default: z.string().min(1).optional()
+});
+
+export type ModelListing = z.infer<typeof modelListingSchema>;

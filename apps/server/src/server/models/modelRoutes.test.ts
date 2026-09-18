@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { modelListSchema } from '@ygo-assistant/contracts';
+import { modelListingSchema } from '@ygo-assistant/contracts';
 import type { IAppStore } from '@ygo-assistant/db';
 import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { ILogger } from '@ygo-assistant/logger';
@@ -85,7 +85,10 @@ describe('the model routes', () => {
     const body: unknown = await response.json();
 
     expect(response.status).toBe(200);
-    expect(modelListSchema.parse(body)).toEqual([CHAT_MODEL, EMBEDDING_MODEL]);
+    expect(modelListingSchema.parse(body)).toEqual({
+      models: [CHAT_MODEL, EMBEDDING_MODEL],
+      default: CHAT_MODEL.name
+    });
   });
 
   it('lists the models by name, in the order the instance reported or not', async () => {
@@ -96,7 +99,21 @@ describe('the model routes', () => {
     const response = await app(client).request('/api/models');
     const body: unknown = await response.json();
 
-    expect(modelListSchema.parse(body)).toEqual([CHAT_MODEL, EMBEDDING_MODEL]);
+    expect(modelListingSchema.parse(body)).toEqual({
+      models: [CHAT_MODEL, EMBEDDING_MODEL],
+      default: CHAT_MODEL.name
+    });
+  });
+
+  it('names no default when nothing installed can answer', async () => {
+    const client = new FakeOllamaClient({ models: [EMBEDDING_MODEL] });
+
+    const response = await app(client).request('/api/models');
+    const body: unknown = await response.json();
+
+    expect(modelListingSchema.parse(body)).toEqual({
+      models: [EMBEDDING_MODEL]
+    });
   });
 
   it('refuses a listing it cannot read because Ollama is unreachable', async () => {

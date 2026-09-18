@@ -86,6 +86,10 @@ Monster` or `Spell Card`. A filter field.
 - **Settings**: the language and the model in force for a turn. They belong to
   the conversation and may be overridden per turn, and a turn only ever sees the
   resolved pair.
+- **Model listing**: what the configured Ollama instance has installed and what
+  each model can do, together with the model that answers when nobody has chosen.
+  The instance is asked for it rather than remembered, and the default is the
+  server's to name, so a client never derives a second answer.
 - **Filters** (or **card filters**): the structured constraints parsed from a
   request, a set combined with AND. An empty set matches every card. The set is
   the vocabulary shared by parsing, retrieval, and the interface.

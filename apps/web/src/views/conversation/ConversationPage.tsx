@@ -208,7 +208,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         failure={failure}
         language={language}
         model={model}
-        models={models.data}
+        models={models.data?.models}
         archetypes={archetypes.data}
         settingsError={update.error?.message}
         onLanguage={changeLanguage}

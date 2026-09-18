@@ -27,6 +27,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 13  | [Turn pipeline](./13-turn-pipeline.md)                                     | Resolved (2026-09-18) | 12         |
 | 14  | [Filter predicate](./14-filter-predicate.md)                               | Resolved (2026-09-18) | 12         |
 | 15  | [Search interpretation](./15-search-interpretation.md)                     | Resolved (2026-09-18) | 05, 07, 13 |
+| 16  | [Model listing and policy](./16-model-listing-and-policy.md)               | Resolved (2026-09-18) | 02, 09     |
 
 ## Critical path
 
@@ -41,4 +42,6 @@ depends on 12 and makes the schema's field kinds the one source both filter
 predicates render from; it is not on the critical path. It is resolved.
 Feature 15 depends on 05, 07, and 13 and makes the turn's search
 interpretation one record owned by the reply; it is not on the critical path. It
-is resolved.
+is resolved. Feature 16 depends on 02 and 09 and gives the model listing one wire
+shape and the client one policy for its choices, notes, and warnings; it is not
+on the critical path. It is resolved.
