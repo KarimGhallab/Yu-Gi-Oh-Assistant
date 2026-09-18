@@ -18,6 +18,7 @@
     "test:e2e:ui": "pnpm build:e2e && pnpm --filter @ygo-assistant/e2e test:e2e:ui",
     "e2e:install": "pnpm --filter @ygo-assistant/e2e e2e:install",
     "clean": "pnpm -r run clean",
+    "clean:all": "pnpm -r run clean:all",
     "lint": "eslint --cache --fix",
     "lint:check": "eslint --cache",
     "format": "npx prettier --list-different --write .",
@@ -38,15 +39,15 @@
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
     "husky": "^9.1.7",
-    "jsdom": "^30.0.1",
-    "knip": "^6.35.1",
+    "jsdom": "^30.1.0",
+    "knip": "^6.37.0",
     "lint-staged": "^17.5.1",
     "madge": "^8.0.0",
     "npm-check-updates": "^23.1.0",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.8",
     "syncpack": "15.3.3",
     "typescript-eslint": "^8.70.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   },
   "volta": {
     "node": "26.5.0",

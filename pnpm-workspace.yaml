@@ -14,3 +14,16 @@ minimumReleaseAgeExclude:
   - lodash-es@4.17.23 || 4.17.24
   - '@humanfs/node@0.16.8'
   - sharp@0.35.0 || 0.35.4
+  - '@lancedb/lancedb-darwin-arm64@0.39.0'
+  - '@lancedb/lancedb-linux-arm64-gnu@0.39.0'
+  - '@lancedb/lancedb-linux-arm64-musl@0.39.0'
+  - '@lancedb/lancedb-linux-x64-gnu@0.39.0'
+  - '@lancedb/lancedb-linux-x64-musl@0.39.0'
+  - '@lancedb/lancedb-win32-arm64-msvc@0.39.0'
+  - '@lancedb/lancedb-win32-x64-msvc@0.39.0'
+  - '@lancedb/lancedb@0.39.0'
+  - knip@6.37.0
+  - prettier@3.9.8
+
+ignoredOptionalDependencies:
+  - '@huggingface/transformers'
