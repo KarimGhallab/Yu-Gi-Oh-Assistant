@@ -7,7 +7,7 @@ import { buildIdClause, buildWhereClause } from './cardPredicates.js';
 import { CARDS_TABLE } from './constants.js';
 import { readIndexMetadata } from './indexMetadata.js';
 import { indexDirectory } from './indexPaths.js';
-import { normalizeCard } from './normalizeCard.js';
+import { normalizeCard, toArchetype } from './normalizeCard.js';
 import type { IndexMetadata, ScoredCard } from './types.js';
 
 const COSINE_DISTANCE_TYPE = 'cosine';
@@ -137,8 +137,8 @@ export class CardCatalog implements ICardCatalog {
 
     const archetypes = new Set<string>();
     for (const row of rows) {
-      const archetype = row.archetype;
-      if (typeof archetype === 'string' && archetype.length > 0) {
+      const archetype = toArchetype(row.archetype);
+      if (archetype !== undefined) {
         archetypes.add(archetype);
       }
     }

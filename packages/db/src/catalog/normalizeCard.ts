@@ -7,6 +7,7 @@ import {
   LinkMarker
 } from '@ygo-assistant/cards';
 
+import { createStoredValueReader, enumGuard } from '../storedValue.js';
 import type { IndexedCardRow } from './types.js';
 
 const LANGUAGES = new Set<string>(Object.values(Language));
@@ -15,32 +16,47 @@ const FRAME_TYPES = new Set<string>(Object.values(FrameType));
 const CARD_ATTRIBUTES = new Set<string>(Object.values(CardAttribute));
 const LINK_MARKERS = new Set<string>(Object.values(LinkMarker));
 
+const isLanguage = enumGuard<Language>(LANGUAGES);
+const isCardType = enumGuard<CardType>(CARD_TYPES);
+const isFrameType = enumGuard<FrameType>(FRAME_TYPES);
+const isCardAttribute = enumGuard<CardAttribute>(CARD_ATTRIBUTES);
+const isLinkMarker = enumGuard<LinkMarker>(LINK_MARKERS);
+
 /**
- * Turns a row read back from LanceDB into a typed card. LanceDB returns list
- * columns as Arrow vectors, nullable columns as null, and enum columns as plain
- * strings, so this is where a stored row becomes a domain card again.
+ * The card index's rows, read through the reader bound to it. LanceDB returns
+ * list columns as Arrow vectors, nullable columns as null, and enum columns as
+ * plain strings, so this is where a stored row becomes a domain card again.
+ */
+const index = createStoredValueReader('the card index');
+
+/**
+ * Turns a row read back from LanceDB into a typed card.
  */
 export function normalizeCard(row: Record<string, unknown>): Card {
   return {
-    id: toNumber(row.id, 'id'),
-    name: toString(row.name, 'name'),
-    language: toLanguage(row.language),
-    type: toCardType(row.type),
-    frameType: toFrameType(row.frameType),
-    typeLine: toStringArray(row.typeLine, 'typeLine'),
-    race: toString(row.race, 'race'),
-    attribute: toOptionalCardAttribute(row.attribute),
-    level: toOptionalNumber(row.level),
-    atk: toOptionalNumber(row.atk),
-    def: toOptionalNumber(row.def),
-    linkVal: toOptionalNumber(row.linkVal),
-    linkMarkers: toStringArray(row.linkMarkers, 'linkMarkers').map(
-      toLinkMarker
+    id: index.toNumber(row.id, 'id'),
+    name: index.toString(row.name, 'name'),
+    language: index.toEnum(row.language, isLanguage, 'language'),
+    type: index.toEnum(row.type, isCardType, 'type'),
+    frameType: index.toEnum(row.frameType, isFrameType, 'frameType'),
+    typeLine: index.toStringArray(row.typeLine, 'typeLine'),
+    race: index.toString(row.race, 'race'),
+    attribute: index.toOptionalEnum(
+      row.attribute,
+      isCardAttribute,
+      'attribute'
     ),
-    archetype: toOptionalString(row.archetype),
-    effect: toString(row.effect, 'effect'),
-    imageUrl: toString(row.imageUrl, 'imageUrl'),
-    sourceUrl: toString(row.sourceUrl, 'sourceUrl')
+    level: index.toOptionalNumber(row.level, 'level'),
+    atk: index.toOptionalNumber(row.atk, 'atk'),
+    def: index.toOptionalNumber(row.def, 'def'),
+    linkVal: index.toOptionalNumber(row.linkVal, 'linkVal'),
+    linkMarkers: index
+      .toStringArray(row.linkMarkers, 'linkMarkers')
+      .map(marker => index.toEnum(marker, isLinkMarker, 'linkMarkers')),
+    archetype: index.toOptionalString(row.archetype, 'archetype'),
+    effect: index.toString(row.effect, 'effect'),
+    imageUrl: index.toString(row.imageUrl, 'imageUrl'),
+    sourceUrl: index.toString(row.sourceUrl, 'sourceUrl')
   };
 }
 
@@ -51,120 +67,19 @@ export function normalizeCard(row: Record<string, unknown>): Card {
 export function normalizeCardRow(row: Record<string, unknown>): IndexedCardRow {
   return {
     ...normalizeCard(row),
-    vector: toNumberArray(row.vector, 'vector')
+    vector: index.toNumberArray(row.vector, 'vector')
   };
 }
 
-const isLanguage = (value: unknown): value is Language =>
-  typeof value === 'string' && LANGUAGES.has(value);
+/**
+ * Reads the archetype cell of a row for the list of archetypes. An absent or
+ * empty cell contributes nothing; a cell that is not a string means the index is
+ * corrupt, so the read raises.
+ */
+export function toArchetype(value: unknown): string | undefined {
+  const archetype = index.toOptionalString(value, 'archetype');
 
-const isCardType = (value: unknown): value is CardType =>
-  typeof value === 'string' && CARD_TYPES.has(value);
-
-const isFrameType = (value: unknown): value is FrameType =>
-  typeof value === 'string' && FRAME_TYPES.has(value);
-
-const isCardAttribute = (value: unknown): value is CardAttribute =>
-  typeof value === 'string' && CARD_ATTRIBUTES.has(value);
-
-const isLinkMarker = (value: unknown): value is LinkMarker =>
-  typeof value === 'string' && LINK_MARKERS.has(value);
-
-const isIterable = (value: unknown): value is Iterable<unknown> =>
-  value !== null && typeof value === 'object' && Symbol.iterator in value;
-
-function toLanguage(value: unknown): Language {
-  if (isLanguage(value)) {
-    return value;
-  }
-  throw unexpected('language', value);
-}
-
-function toCardType(value: unknown): CardType {
-  if (isCardType(value)) {
-    return value;
-  }
-  throw unexpected('type', value);
-}
-
-function toFrameType(value: unknown): FrameType {
-  if (isFrameType(value)) {
-    return value;
-  }
-  throw unexpected('frameType', value);
-}
-
-function toLinkMarker(value: string): LinkMarker {
-  if (isLinkMarker(value)) {
-    return value;
-  }
-  throw unexpected('linkMarkers', value);
-}
-
-function toOptionalCardAttribute(value: unknown): CardAttribute | undefined {
-  if (value === null || value === undefined) {
-    return undefined;
-  }
-  if (isCardAttribute(value)) {
-    return value;
-  }
-  throw unexpected('attribute', value);
-}
-
-function toString(value: unknown, field: string): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-  throw unexpected(field, value);
-}
-
-function toOptionalString(value: unknown): string | undefined {
-  if (value === null || value === undefined) {
-    return undefined;
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  throw unexpected('string', value);
-}
-
-function toNumber(value: unknown, field: string): number {
-  if (typeof value === 'number') {
-    return value;
-  }
-  throw unexpected(field, value);
-}
-
-function toOptionalNumber(value: unknown): number | undefined {
-  if (value === null || value === undefined) {
-    return undefined;
-  }
-  if (typeof value === 'number') {
-    return value;
-  }
-  throw unexpected('number', value);
-}
-
-function toStringArray(value: unknown, field: string): string[] {
-  return toList(value, field).map(item => toString(item, field));
-}
-
-function toNumberArray(value: unknown, field: string): number[] {
-  return toList(value, field).map(item => toNumber(item, field));
-}
-
-function toList(value: unknown, field: string): unknown[] {
-  if (Array.isArray(value)) {
-    return value;
-  }
-  if (isIterable(value)) {
-    return Array.from(value);
-  }
-  throw unexpected(field, value);
-}
-
-function unexpected(field: string, value: unknown): Error {
-  return new Error(
-    `Unexpected value for "${field}" in the card index: ${String(value)}`
-  );
+  return archetype !== undefined && archetype.length > 0
+    ? archetype
+    : undefined;
 }

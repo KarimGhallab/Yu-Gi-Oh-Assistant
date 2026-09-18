@@ -77,6 +77,9 @@ numbering across specs, so blocking edges stay legible across features.
 | 67  | [The readout and history read the stored record](./67-the-readout-and-history-read-the-stored-record.md)                                    | Resolved (2026-09-18) | 66         | [15](../specs/15-search-interpretation.md)                                            |
 | 68  | [The listing names the model a conversation starts on](./68-the-listing-names-the-model-a-conversation-starts-on.md)                        | Resolved (2026-09-18) | None       | [16](../specs/16-model-listing-and-policy.md)                                         |
 | 69  | [One owner for the model policy](./69-one-owner-for-the-model-policy.md)                                                                    | Resolved (2026-09-18) | 68         | [16](../specs/16-model-listing-and-policy.md)                                         |
+| 70  | [One reader for a stored value, and the store reads through it](./70-one-reader-for-a-stored-value.md)                                      | Resolved (2026-09-18) | None       | [17](../specs/17-stored-value-reader.md)                                              |
+| 71  | [The catalog reads its rows through the same reader](./71-the-catalog-reads-through-the-same-reader.md)                                     | Resolved (2026-09-18) | 70         | [17](../specs/17-stored-value-reader.md)                                              |
+| 72  | [A stored JSON column reads through one validated read](./72-a-stored-json-column-reads-through-one-validated-read.md)                      | Resolved (2026-09-18) | 70         | [17](../specs/17-stored-value-reader.md)                                              |
 
 ## Frontier
 
@@ -116,5 +119,8 @@ interpretation): 66 and 67 are resolved, the reply carries one search record of
 the filters, the free text, and the status, the client reads it live and stored,
 and the old message fields are gone. Spec 16 (Model listing and policy) is fully
 landed: 68 and 69 are resolved, the listing carries the server's default, and
-the client reads one policy for how a model is offered. The review's remaining
-candidates are not yet ticketed.
+the client reads one policy for how a model is offered. Spec 17 (One reader for a
+stored value) is the current review's first candidate, ticketed as 70 through
+72: 70 lands the reader and moves the store onto it, 71 moves the catalog onto
+it, and 72 moves the store's JSON reads onto it. 70 through 72 are all resolved. The review's remaining candidates are not yet
+ticketed.

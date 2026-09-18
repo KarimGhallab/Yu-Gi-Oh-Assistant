@@ -16,6 +16,7 @@ import { NotFoundError } from '@ygo-assistant/utils';
 
 import { openAppStore } from '../app/SqliteAppStore.js';
 
+import { StoredValueError } from '../../storedValue.js';
 import { databasePath } from '../databasePath.js';
 import type { IAppStore } from '../types.js';
 import { MessageRole } from '../types.js';
@@ -239,6 +240,31 @@ describe('app store messages', () => {
     store = await openAppStore(path);
 
     await expect(store.messages.list(conversation.id)).rejects.toThrow();
+  });
+
+  it('raises a stored search whose free text is not a string', async () => {
+    const path = databasePath(dataDir);
+    const conversation = await createConversation();
+
+    await store.messages.append({
+      conversationId: conversation.id,
+      role: MessageRole.Assistant,
+      content: 'Try these',
+      search: { filters: FILTERS }
+    });
+    await store.close();
+
+    const database = new DatabaseSync(path);
+    database.exec(
+      `UPDATE messages SET search_json = '{"filters":[],"query":7}'`
+    );
+    database.close();
+
+    store = await openAppStore(path);
+
+    await expect(store.messages.list(conversation.id)).rejects.toThrow(
+      StoredValueError
+    );
   });
 
   it('keeps the messages of one conversation out of another', async () => {

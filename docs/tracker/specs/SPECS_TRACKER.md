@@ -28,6 +28,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 14  | [Filter predicate](./14-filter-predicate.md)                               | Resolved (2026-09-18) | 12         |
 | 15  | [Search interpretation](./15-search-interpretation.md)                     | Resolved (2026-09-18) | 05, 07, 13 |
 | 16  | [Model listing and policy](./16-model-listing-and-policy.md)               | Resolved (2026-09-18) | 02, 09     |
+| 17  | [One reader for a stored value](./17-stored-value-reader.md)               | Resolved (2026-09-18) | 05, 12     |
 
 ## Critical path
 
@@ -44,4 +45,6 @@ Feature 15 depends on 05, 07, and 13 and makes the turn's search
 interpretation one record owned by the reply; it is not on the critical path. It
 is resolved. Feature 16 depends on 02 and 09 and gives the model listing one wire
 shape and the client one policy for its choices, notes, and warnings; it is not
-on the critical path. It is resolved.
+on the critical path. It is resolved. Feature 17 depends on 05 and 12 and gives
+the loose read of a stored value one module behind the store and the catalog
+adapters; it is not on the critical path. It is resolved.

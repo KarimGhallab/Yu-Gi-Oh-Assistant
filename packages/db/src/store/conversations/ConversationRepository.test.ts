@@ -1,6 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -9,6 +10,7 @@ import { NotFoundError, delay } from '@ygo-assistant/utils';
 
 import { openAppStore } from '../app/SqliteAppStore.js';
 
+import { StoredValueError } from '../../storedValue.js';
 import { databasePath } from '../databasePath.js';
 import { MessageRole } from '../types.js';
 import type { CreateConversationInput, IAppStore } from '../types.js';
@@ -64,6 +66,20 @@ describe('app store conversations', () => {
     });
 
     expect(conversation.title).toBe('Banishing light monsters');
+  });
+
+  it('raises when a stored column does not hold what the schema promised', async () => {
+    await createConversation({ title: 'A title' });
+    const path = databasePath(dataDir);
+    await store.close();
+
+    const database = new DatabaseSync(path);
+    database.exec("UPDATE conversations SET title = x'00'");
+    database.close();
+
+    store = await openAppStore(path);
+
+    await expect(store.conversations.list()).rejects.toThrow(StoredValueError);
   });
 
   it('lists nothing before anything was created', async () => {

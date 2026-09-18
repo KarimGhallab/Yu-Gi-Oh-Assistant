@@ -6,7 +6,13 @@ import { z } from 'zod';
 import { cardFiltersSchema } from '@ygo-assistant/cards';
 import { NotFoundError } from '@ygo-assistant/utils';
 
-import { toMessageRole, toOptionalString, toString } from '../storedValues.js';
+import {
+  readJson,
+  toMessageRole,
+  toOptionalString,
+  toString,
+  writeJson
+} from '../storedValues.js';
 import type {
   AppendMessageInput,
   IMessageRepository,
@@ -19,6 +25,12 @@ const COLUMNS =
   'id, conversation_id, role, content, search_json, card_ids_json, created_at';
 
 const cardIdsSchema = z.array(z.number().int().positive());
+
+const storedSearchSchema = z.object({
+  filters: cardFiltersSchema,
+  query: z.string().min(1).optional(),
+  status: z.string().optional()
+});
 
 /**
  * SQLite-backed messages, appended in one transaction each. Appending a user
@@ -85,7 +97,7 @@ function readTitle(
     throw new NotFoundError(`No conversation has id ${conversationId}`);
   }
 
-  return toOptionalString(row.title, 'title');
+  return toOptionalString(row.title, 'title') ?? null;
 }
 
 function insert(
@@ -104,8 +116,8 @@ function insert(
       input.conversationId,
       input.role,
       input.content,
-      storeJson(input.search),
-      storeJson(input.cardIds),
+      writeJson(input.search),
+      writeJson(input.cardIds),
       timestamp
     );
 
@@ -150,37 +162,14 @@ function toMessage(row: Record<string, unknown>): Message {
 
 /**
  * The search record is validated on the way back out, so a row whose filters no
- * longer satisfy the vocabulary is raised rather than reaching retrieval. The
- * free text and the status are carried as they were written; the status is a
- * code the turn vocabulary owns, and the server is where it becomes one.
+ * longer satisfy the vocabulary, or whose free text or status is not a string,
+ * is raised rather than reaching retrieval. The status is a code the turn
+ * vocabulary owns, and the server is where it becomes one.
  */
 function toSearch(value: unknown): StoredSearch | undefined {
-  const stored = toOptionalString(value, 'search_json');
-
-  if (stored === null) {
-    return undefined;
-  }
-
-  const record = JSON.parse(stored) as Record<string, unknown>;
-
-  return {
-    filters: cardFiltersSchema.parse(record.filters),
-    query: typeof record.query === 'string' ? record.query : undefined,
-    status: typeof record.status === 'string' ? record.status : undefined
-  };
+  return readJson(value, storedSearchSchema, 'search_json');
 }
 
 function toCardIds(value: unknown): number[] | undefined {
-  const stored = toOptionalString(value, 'card_ids_json');
-
-  if (stored === null) {
-    return undefined;
-  }
-
-  const parsed: unknown = JSON.parse(stored);
-  return cardIdsSchema.parse(parsed);
-}
-
-function storeJson(value: unknown): string | null {
-  return value === undefined ? null : JSON.stringify(value);
+  return readJson(value, cardIdsSchema, 'card_ids_json');
 }
