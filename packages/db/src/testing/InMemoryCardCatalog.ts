@@ -5,8 +5,12 @@ import {
   cardMatchesFilters
 } from '@ygo-assistant/cards';
 
+import {
+  ICardCatalog,
+  ScanOptions,
+  SearchOptions
+} from '../catalog/ICardCatalog.js';
 import type {
-  CardCatalog,
   IndexMetadata,
   IndexedCardRow,
   ScoredCard
@@ -24,7 +28,7 @@ export interface InMemoryCardCatalogOptions {
  * way the index reports it, and `scan` matches with the same in-process
  * predicate the index's SQL stands in for.
  */
-export class InMemoryCardCatalog implements CardCatalog {
+export class InMemoryCardCatalog implements ICardCatalog {
   private readonly _rows: IndexedCardRow[];
   private readonly _indexMetadata: IndexMetadata | undefined;
 
@@ -33,12 +37,7 @@ export class InMemoryCardCatalog implements CardCatalog {
     this._indexMetadata = options.metadata;
   }
 
-  async search(options: {
-    vector: number[];
-    language: Language;
-    filters: CardFilters;
-    limit: number;
-  }): Promise<ScoredCard[]> {
+  async search(options: SearchOptions): Promise<ScoredCard[]> {
     return this._matching(options)
       .map(row => ({
         card: toCard(row),
@@ -51,11 +50,7 @@ export class InMemoryCardCatalog implements CardCatalog {
       .slice(0, options.limit);
   }
 
-  async scan(options: {
-    language: Language;
-    filters: CardFilters;
-    limit: number;
-  }): Promise<Card[]> {
+  async scan(options: ScanOptions): Promise<Card[]> {
     return this._matching(options)
       .sort(byIdentity)
       .slice(0, options.limit)

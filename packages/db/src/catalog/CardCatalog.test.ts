@@ -21,9 +21,9 @@ import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 import { InMemoryCardCatalog } from '../testing/InMemoryCardCatalog.js';
 import { readCardIndex } from '../testing/readCardIndex.js';
-import { openCardCatalog } from './cardCatalog.js';
+import { CardCatalog } from './CardCatalog.js';
+import { ICardCatalog } from './ICardCatalog.js';
 import { buildCardIndex } from './index/cardIndex.js';
-import type { CardCatalog } from './types.js';
 
 const DIMENSIONS = 3;
 const EMBEDDING_MODEL = 'qwen3-embedding:0.6b';
@@ -82,7 +82,7 @@ const createPotOfGreed = (): Card =>
 
 interface Adapter {
   name: string;
-  catalog: CardCatalog;
+  catalog: ICardCatalog;
 }
 
 describe('CardCatalog', () => {
@@ -109,9 +109,10 @@ describe('CardCatalog', () => {
       datasetVersion: DATASET_VERSION
     });
     const { rows, metadata } = await readCardIndex(dataDir);
+    const catalog = await CardCatalog.getInstance(dataDir);
 
     return [
-      { name: 'the LanceDB adapter', catalog: openCardCatalog(dataDir) },
+      { name: 'the LanceDB adapter', catalog: catalog },
       {
         name: 'the in-memory adapter',
         catalog: new InMemoryCardCatalog({ rows, metadata })
@@ -121,7 +122,7 @@ describe('CardCatalog', () => {
 
   const forEachAdapter = async (
     adapters: Adapter[],
-    assertions: (catalog: CardCatalog) => Promise<void>
+    assertions: (catalog: ICardCatalog) => Promise<void>
   ): Promise<void> => {
     for (const adapter of adapters) {
       try {
@@ -654,8 +655,9 @@ describe('CardCatalog', () => {
 
     it('reports no metadata when the index was never built', async () => {
       dataDir = await mkdtemp(join(tmpdir(), 'ygo-catalog-'));
+      const catalog = await CardCatalog.getInstance(dataDir);
       const adapters: Adapter[] = [
-        { name: 'the LanceDB adapter', catalog: openCardCatalog(dataDir) },
+        { name: 'the LanceDB adapter', catalog: catalog },
         {
           name: 'the in-memory adapter',
           catalog: new InMemoryCardCatalog({ rows: [] })

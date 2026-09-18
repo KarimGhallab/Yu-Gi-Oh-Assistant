@@ -1,9 +1,14 @@
-export { openCardCatalog } from './catalog/cardCatalog.js';
+export { CardCatalog } from './catalog/CardCatalog.js';
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
+export type {
+  ICardCatalog,
+  ReadByIdsOptions,
+  ScanOptions,
+  SearchOptions
+} from './catalog/ICardCatalog.js';
 export { buildCardIndex } from './catalog/index/cardIndex.js';
 export type {
   BuildCardIndexOptions,
-  CardCatalog,
   IndexedCardRow,
   IndexMetadata,
   ScoredCard
@@ -31,7 +36,7 @@ export {
   convertCardInfoResponse,
   convertCards
 } from './ygoprodeck/convert/convertCards.js';
-export { fetchCardDump } from './ygoprodeck/fetchCardDump.js';
-export type { FetchCardDumpOptions } from './ygoprodeck/fetchCardDump.js';
 export { cardInfoResponseSchema } from './ygoprodeck/dumpSchemas.js';
 export type { YgoProdeckCard } from './ygoprodeck/dumpSchemas.js';
+export { fetchCardDump } from './ygoprodeck/fetchCardDump.js';
+export type { FetchCardDumpOptions } from './ygoprodeck/fetchCardDump.js';

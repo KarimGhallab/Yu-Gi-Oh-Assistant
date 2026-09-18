@@ -1,5 +1,5 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
-import type { CardCatalog } from '@ygo-assistant/db';
+import type { ICardCatalog } from '@ygo-assistant/db';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
 /**
@@ -39,7 +39,7 @@ export interface RankedCard {
  * what to look for, and how to rank it.
  */
 export interface RetrieveCardsOptions {
-  catalog: CardCatalog;
+  catalog: ICardCatalog;
   embedder: IOllamaClient;
   query: RetrievalQuery;
   ranking: RetrievalRanking;

@@ -1,6 +1,6 @@
 import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
 import { TurnStage, type TurnStatus } from '@ygo-assistant/contracts';
-import type { CardCatalog } from '@ygo-assistant/db';
+import type { ICardCatalog } from '@ygo-assistant/db';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 import {
@@ -44,7 +44,7 @@ export type PipelineEvent =
 export interface PipelineDependencies {
   logger: ILogger;
   ollama: IOllamaClient;
-  catalog: CardCatalog;
+  catalog: ICardCatalog;
 }
 
 /**

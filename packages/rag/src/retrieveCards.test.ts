@@ -10,7 +10,7 @@ import {
   FrameType,
   Language
 } from '@ygo-assistant/cards';
-import type { CardCatalog } from '@ygo-assistant/db';
+import type { ICardCatalog } from '@ygo-assistant/db';
 import { InMemoryCardCatalog } from '@ygo-assistant/db/testing';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -104,7 +104,7 @@ describe('retrieveCards', () => {
     });
 
   const retrieve = (
-    catalog: CardCatalog,
+    catalog: ICardCatalog,
     embedder: IOllamaClient,
     language: Language = Language.English,
     topK: number = 25,
@@ -118,7 +118,7 @@ describe('retrieveCards', () => {
     });
 
   const retrieveWith = (
-    catalog: CardCatalog,
+    catalog: ICardCatalog,
     embedder: IOllamaClient,
     query: Partial<RetrievalQuery>,
     ranking: Partial<RetrievalRanking> = {}

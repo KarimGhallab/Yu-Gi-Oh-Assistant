@@ -1,4 +1,4 @@
-import { openCardCatalog } from '@ygo-assistant/db';
+import { CardCatalog } from '@ygo-assistant/db';
 import {
   type ILogger,
   type LogDestination,
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
 
   const config = loadConfig(process.env);
   const logger = createRagLogger(args, config);
-  const catalog = openCardCatalog(config.dataDir);
+  const catalog = await CardCatalog.getInstance(config.dataDir);
 
   try {
     await ensureIndexMatchesConfig(catalog, config);

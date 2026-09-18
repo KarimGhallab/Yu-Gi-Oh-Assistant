@@ -23,7 +23,7 @@ import {
 
 import { readCardIndex } from '../../testing/readCardIndex.js';
 import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
-import { openCardCatalog } from '../cardCatalog.js';
+import { CardCatalog } from '../CardCatalog.js';
 import { buildCardIndex } from './cardIndex.js';
 
 const DIMENSIONS = 3;
@@ -139,10 +139,8 @@ describe('card index', () => {
       datasetVersion: 'ygoprodeck-2026-09-15'
     });
 
-    expect(await openCardCatalog(directory).archetypes()).toEqual([
-      'Blue-Eyes',
-      'Dark Magician'
-    ]);
+    const catalog = await CardCatalog.getInstance(directory);
+    expect(await catalog.archetypes()).toEqual(['Blue-Eyes', 'Dark Magician']);
   });
 
   it('lists no archetype at all when the index carries none', async () => {
@@ -159,7 +157,8 @@ describe('card index', () => {
       datasetVersion: 'ygoprodeck-2026-09-15'
     });
 
-    expect(await openCardCatalog(directory).archetypes()).toEqual([]);
+    const catalog = await CardCatalog.getInstance(directory);
+    expect(await catalog.archetypes()).toEqual([]);
   });
 
   it('builds one row per card and reads the rows, count, and metadata back', async () => {
@@ -404,7 +403,8 @@ describe('card index', () => {
       const greed = createPotOfGreed();
       await buildIndex(directory, [magician, greed]);
 
-      const cards = await openCardCatalog(directory).readByIds({
+      const catalog = await CardCatalog.getInstance(directory);
+      const cards = await catalog.readByIds({
         ids: [greed.id, magician.id],
         language: Language.English
       });
@@ -425,7 +425,8 @@ describe('card index', () => {
         })
       ]);
 
-      const cards = await openCardCatalog(directory).readByIds({
+      const catalog = await CardCatalog.getInstance(directory);
+      const cards = await catalog.readByIds({
         ids: [DARK_MAGICIAN_ID],
         language: Language.French
       });
@@ -437,7 +438,8 @@ describe('card index', () => {
       const directory = await createDataDir();
       await buildIndex(directory, [createDarkMagician()]);
 
-      const cards = await openCardCatalog(directory).readByIds({
+      const catalog = await CardCatalog.getInstance(directory);
+      const cards = await catalog.readByIds({
         ids: [DARK_MAGICIAN_ID],
         language: Language.French
       });
@@ -449,7 +451,8 @@ describe('card index', () => {
       const directory = await createDataDir();
       await buildIndex(directory, [createDarkMagician()]);
 
-      const cards = await openCardCatalog(directory).readByIds({
+      const catalog = await CardCatalog.getInstance(directory);
+      const cards = await catalog.readByIds({
         ids: [DARK_MAGICIAN_ID, 999999999],
         language: Language.English
       });
@@ -460,7 +463,8 @@ describe('card index', () => {
     it('reads nothing, and opens nothing, when it was asked for nothing', async () => {
       const directory = await createDataDir();
 
-      const cards = await openCardCatalog(directory).readByIds({
+      const catalog = await CardCatalog.getInstance(directory);
+      const cards = await catalog.readByIds({
         ids: [],
         language: Language.English
       });
@@ -509,7 +513,8 @@ describe('card index', () => {
         ]
       );
 
-      const results = await openCardCatalog(directory).search({
+      const catalog = await CardCatalog.getInstance(directory);
+      const results = await catalog.search({
         vector: QUERY,
         language: Language.English,
         filters: [],
@@ -538,7 +543,8 @@ describe('card index', () => {
         ]
       );
 
-      const results = await openCardCatalog(directory).search({
+      const catalog = await CardCatalog.getInstance(directory);
+      const results = await catalog.search({
         vector: QUERY,
         language: Language.English,
         filters: [],
@@ -562,13 +568,14 @@ describe('card index', () => {
         ]
       );
 
-      const english = await openCardCatalog(directory).search({
+      const catalog = await CardCatalog.getInstance(directory);
+      const english = await catalog.search({
         vector: QUERY,
         language: Language.English,
         filters: [],
         limit: 1
       });
-      const french = await openCardCatalog(directory).search({
+      const french = await catalog.search({
         vector: QUERY,
         language: Language.French,
         filters: [],
@@ -587,7 +594,8 @@ describe('card index', () => {
       const directory = await createDataDir();
       await buildIndex(directory, [createDarkMagician()], [[1, 0, 0]]);
 
-      const results = await openCardCatalog(directory).search({
+      const catalog = await CardCatalog.getInstance(directory);
+      const results = await catalog.search({
         vector: QUERY,
         language: Language.French,
         filters: [],
@@ -697,7 +705,10 @@ describe('card index', () => {
       directory: string,
       filters: CardFilters,
       language: Language = Language.English
-    ) => openCardCatalog(directory).scan({ language, filters, limit: 100 });
+    ) =>
+      CardCatalog.getInstance(directory).then(catalog =>
+        catalog.scan({ language, filters, limit: 100 })
+      );
 
     it('returns filter matches in a stable identity order', async () => {
       const directory = await createDataDir();
@@ -783,7 +794,8 @@ describe('card index', () => {
         ]
       );
 
-      const results = await openCardCatalog(directory).search({
+      const catalog = await CardCatalog.getInstance(directory);
+      const results = await catalog.search({
         vector: [1, 0, 0],
         language: Language.English,
         filters: [

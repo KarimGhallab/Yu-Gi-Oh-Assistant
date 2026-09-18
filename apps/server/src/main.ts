@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 
 import type { IAppStore } from '@ygo-assistant/db';
-import { databasePath, openAppStore, openCardCatalog } from '@ygo-assistant/db';
+import { CardCatalog, databasePath, openAppStore } from '@ygo-assistant/db';
 import { hasErrorMessage } from '@ygo-assistant/utils';
 
 import { loadConfig } from './config/index.js';
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
     logLevel: config.logLevel
   });
 
-  const catalog = openCardCatalog(config.dataDir);
+  const catalog = await CardCatalog.getInstance(config.dataDir);
 
   logger.debug('Checking the card index', { dataDir: config.dataDir });
   try {

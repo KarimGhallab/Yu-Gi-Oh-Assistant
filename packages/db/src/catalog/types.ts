@@ -1,4 +1,4 @@
-import type { Card, CardFilters, Language } from '@ygo-assistant/cards';
+import type { Card } from '@ygo-assistant/cards';
 import type { ILogger } from '@ygo-assistant/logger';
 import type { IOllamaClient } from '@ygo-assistant/ollama';
 
@@ -49,28 +49,6 @@ export interface CardIndexContents {
   rows: IndexedCardRow[];
   count: number;
   metadata: IndexMetadata;
-}
-
-/**
- * The read-only view of the card index. It is what every caller above the data
- * layer reaches, so a caller never knows the catalog is LanceDB. Ingestion is
- * not on it: a build replaces the whole table and runs before the server starts.
- */
-export interface CardCatalog {
-  search(options: {
-    vector: number[];
-    language: Language;
-    filters: CardFilters;
-    limit: number;
-  }): Promise<ScoredCard[]>;
-  scan(options: {
-    language: Language;
-    filters: CardFilters;
-    limit: number;
-  }): Promise<Card[]>;
-  readByIds(options: { ids: number[]; language: Language }): Promise<Card[]>;
-  archetypes(): Promise<string[]>;
-  metadata(): Promise<IndexMetadata | undefined>;
 }
 
 /**

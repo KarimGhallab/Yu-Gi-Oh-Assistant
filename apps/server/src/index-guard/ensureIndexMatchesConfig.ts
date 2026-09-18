@@ -1,4 +1,4 @@
-import type { CardCatalog } from '@ygo-assistant/db';
+import type { ICardCatalog } from '@ygo-assistant/db';
 
 import type { AppConfig } from '../config/index.js';
 
@@ -22,7 +22,7 @@ export class StaleIndexError extends Error {
  * directory is named only to tell whoever reads the failure where to rebuild.
  */
 export async function ensureIndexMatchesConfig(
-  catalog: CardCatalog,
+  catalog: ICardCatalog,
   config: AppConfig
 ): Promise<void> {
   const metadata = await catalog.metadata();
