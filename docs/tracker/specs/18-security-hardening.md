@@ -1,6 +1,6 @@
 # 18 - Security hardening of the untrusted boundaries
 
-- **Status:** ready-for-agent
+- **Status:** Resolved (2026-09-18)
 - **Kind:** spec
 - **Blocked by:** None
 - **Source:** security review, 2026-09-18

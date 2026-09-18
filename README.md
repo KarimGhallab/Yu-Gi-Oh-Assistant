@@ -121,6 +121,11 @@ variable it understands, with its default and what it does. A few worth knowing:
   origins and hostnames the API accepts. The API refuses a request from any
   other origin or host with `403`, so a web page you visit cannot reach the
   loopback API by rebinding its DNS to `127.0.0.1`.
+- `CARD_DUMP_SHA256` and `CARD_DATASET_VERSION` (both unset by default): the
+  ingestion pins. Set the first to the SHA-256 of a card dump you verified, and
+  populate refuses any other dump. Set the second to the version that
+  `pnpm db:populate` reported, and the server refuses an index that holds a
+  different one.
 
 The client reads `apps/web/.env`; `apps/web/.env.example` documents its one
 variable. Leave `VITE_API_BASE_URL` empty to use the same origin, which the dev

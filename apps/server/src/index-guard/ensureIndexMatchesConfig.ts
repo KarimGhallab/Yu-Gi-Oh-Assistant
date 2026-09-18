@@ -17,9 +17,11 @@ export class StaleIndexError extends Error {
 
 /**
  * Verifies that the local card index was built with the configured embedding
- * model and dimensions, aborting startup otherwise. The embedding contract is
- * durable, so a mismatch would otherwise return silently wrong results. The
- * directory is named only to tell whoever reads the failure where to rebuild.
+ * model and dimensions, and, when the operator pinned one, that it holds the
+ * expected dataset version. A mismatch aborts startup, because the embedding
+ * contract is durable and a substituted index would otherwise answer silently.
+ * The directory is named only to tell whoever reads the failure where to
+ * rebuild.
  */
 export async function ensureIndexMatchesConfig(
   catalog: ICardCatalog,
@@ -42,6 +44,14 @@ export async function ensureIndexMatchesConfig(
   if (metadata.dimensions !== config.ollama.embeddingDimensions) {
     differences.push(
       `the index was built with ${metadata.dimensions} dimensions but ${config.ollama.embeddingDimensions} are configured`
+    );
+  }
+  if (
+    config.expectedDatasetVersion !== undefined &&
+    metadata.datasetVersion !== config.expectedDatasetVersion
+  ) {
+    differences.push(
+      `the index holds dataset version "${metadata.datasetVersion}" but "${config.expectedDatasetVersion}" is expected`
     );
   }
 

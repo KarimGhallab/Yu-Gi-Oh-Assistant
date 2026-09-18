@@ -13,6 +13,11 @@ const environmentSchema = z.object({
   LOG_DIR: z.string().min(1).default('./logs'),
   CORS_ORIGIN: z.string().optional(),
   ALLOWED_HOSTS: z.string().optional(),
+  CARD_DUMP_SHA256: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/i, 'must be a SHA-256 hex digest')
+    .optional(),
+  CARD_DATASET_VERSION: z.string().min(1).optional(),
   OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
   OLLAMA_EMBEDDING_BASE_URL: z.url().optional(),
   OLLAMA_EMBEDDING_MODEL: z.string().min(1).default('qwen3-embedding:0.6b'),
@@ -60,6 +65,8 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     logDir: parsed.LOG_DIR,
     corsOrigin: splitList(parsed.CORS_ORIGIN),
     allowedHosts: splitList(parsed.ALLOWED_HOSTS),
+    expectedDumpSha256: parsed.CARD_DUMP_SHA256?.toLowerCase(),
+    expectedDatasetVersion: parsed.CARD_DATASET_VERSION,
     ollama: {
       baseUrl: parsed.OLLAMA_BASE_URL,
       embeddingBaseUrl:

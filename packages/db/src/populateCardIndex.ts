@@ -22,6 +22,10 @@ export interface PopulateCardIndexOptions {
   embeddingModel: string;
   dimensions: number;
   baseUrl?: string;
+  /**
+   * The SHA-256 every fetched dump must have, when the operator pinned one.
+   */
+  expectedDumpSha256?: string;
 }
 
 export interface PopulateCardIndexSummary {
@@ -43,7 +47,8 @@ export async function populateCardIndex(
     const payload = await fetchCardDump({
       dataDir: options.dataDir,
       language,
-      baseUrl: options.baseUrl
+      baseUrl: options.baseUrl,
+      expectedSha256: options.expectedDumpSha256
     });
 
     const converted = convertCardInfoResponse(payload, language);

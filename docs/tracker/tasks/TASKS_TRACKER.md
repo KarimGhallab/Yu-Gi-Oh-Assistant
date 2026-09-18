@@ -82,7 +82,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 72  | [A stored JSON column reads through one validated read](./72-a-stored-json-column-reads-through-one-validated-read.md)                      | Resolved (2026-09-18) | 70         | [17](../specs/17-stored-value-reader.md)                                              |
 | 73  | [The API refuses requests from another origin](./73-the-api-refuses-another-origin.md)                                                      | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 74  | [Card text is data, not instructions, in the model prompts](./74-card-text-is-data-in-the-prompts.md)                                       | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
-| 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | ready-for-agent       | None       | [18](../specs/18-security-hardening.md)                                               |
+| 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 
 ## Frontier
 
@@ -135,4 +135,4 @@ review on 2026-09-18 ranked twelve threats, and the three the maintainer picked
 are ticketed as 73 through 75 under spec 18 (Security hardening of the untrusted
 boundaries): 73 puts a host and origin checkpoint in front of the API, 74 carries
 card text as delimited data in the prompts, and 75 verifies the dump and
-constrains its URLs. 73 and 74 are resolved. 75 is ready-for-agent.
+constrains its URLs. 73 through 75 are all resolved.

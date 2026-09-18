@@ -69,6 +69,28 @@ describe('ensureIndexMatchesConfig', () => {
     expect(error.message).toContain('db:populate');
   });
 
+  it('passes when the index holds the pinned dataset version', async () => {
+    await expect(
+      ensureIndexMatchesConfig(
+        catalogWith(),
+        configFor({ CARD_DATASET_VERSION: 'ygoprodeck-test' })
+      )
+    ).resolves.toBeUndefined();
+  });
+
+  it('fails when the index holds a different dataset version than pinned', async () => {
+    const error = await captureError(
+      ensureIndexMatchesConfig(
+        catalogWith(),
+        configFor({ CARD_DATASET_VERSION: 'ygoprodeck-something-else' })
+      )
+    );
+
+    expect(error).toBeInstanceOf(StaleIndexError);
+    expect(error.message).toContain('ygoprodeck-something-else');
+    expect(error.message).toContain('db:populate');
+  });
+
   it('fails when there is no index', async () => {
     const error = await captureError(
       ensureIndexMatchesConfig(

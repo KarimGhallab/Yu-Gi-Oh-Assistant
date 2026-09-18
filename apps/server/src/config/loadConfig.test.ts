@@ -91,6 +91,30 @@ describe('loadConfig', () => {
     expect(config.allowedHosts).toEqual(['assistant.example', '192.168.1.5']);
   });
 
+  it('leaves the ingestion pins undefined when not configured', () => {
+    const config = loadConfig({});
+
+    expect(config.expectedDumpSha256).toBeUndefined();
+    expect(config.expectedDatasetVersion).toBeUndefined();
+  });
+
+  it('reads the dump digest and dataset version pins', () => {
+    const digest = 'a'.repeat(64);
+    const config = loadConfig({
+      CARD_DUMP_SHA256: digest.toUpperCase(),
+      CARD_DATASET_VERSION: 'ygoprodeck-0123456789abcdef'
+    });
+
+    expect(config.expectedDumpSha256).toBe(digest);
+    expect(config.expectedDatasetVersion).toBe('ygoprodeck-0123456789abcdef');
+  });
+
+  it('refuses a dump digest that is not a SHA-256', () => {
+    expect(() => loadConfig({ CARD_DUMP_SHA256: 'not-a-digest' })).toThrow(
+      /CARD_DUMP_SHA256/
+    );
+  });
+
   it('refuses to start and names the offending variable', () => {
     expect(() => loadConfig({ PORT: 'not-a-port' })).toThrow(
       ConfigurationError

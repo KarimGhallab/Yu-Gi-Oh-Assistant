@@ -29,7 +29,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 15  | [Search interpretation](./15-search-interpretation.md)                       | Resolved (2026-09-18) | 05, 07, 13 |
 | 16  | [Model listing and policy](./16-model-listing-and-policy.md)                 | Resolved (2026-09-18) | 02, 09     |
 | 17  | [One reader for a stored value](./17-stored-value-reader.md)                 | Resolved (2026-09-18) | 05, 12     |
-| 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md) | ready-for-agent       | -          |
+| 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md) | Resolved (2026-09-18) | -          |
 
 ## Critical path
 
@@ -50,5 +50,4 @@ on the critical path. It is resolved. Feature 17 depends on 05 and 12 and gives
 the loose read of a stored value one module behind the store and the catalog
 adapters; it is not on the critical path. It is resolved. Feature 18 has no spec
 dependency and hardens the three untrusted boundaries the 2026-09-18 security
-review ranked first; it is not on the critical path, and it is ready for an
-agent.
+review ranked first; it is not on the critical path. It is resolved.
