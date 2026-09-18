@@ -11,8 +11,17 @@ import {
   EMBEDDING_DIMENSIONS,
   FIXTURE_CARDS,
   MONSTER_REBORN,
+  SECOND_CHAT_MODEL,
   SOLEMN_JUDGMENT
 } from './cards.js';
+
+/**
+ * The lead of the answer each model writes. The second model's lead is
+ * different on purpose: it is how a test sees which model a turn was carried
+ * by, since nothing else about the fake changes with the name.
+ */
+export const ANSWER_LEAD = 'Based on your request, these cards stand out:';
+export const SECOND_MODEL_ANSWER_LEAD = 'The second model read your request:';
 
 interface ChatMessage {
   role: string;
@@ -20,6 +29,7 @@ interface ChatMessage {
 }
 
 interface ChatBody {
+  model?: string;
   messages?: ChatMessage[];
   format?: { properties?: Record<string, unknown> };
 }
@@ -70,7 +80,9 @@ async function respondTo(
 ): Promise<FakeOllamaResponse> {
   switch (route) {
     case 'GET /api/tags':
-      return { json: { models: [{ name: CHAT_MODEL }] } };
+      return {
+        json: { models: [{ name: CHAT_MODEL }, { name: SECOND_CHAT_MODEL }] }
+      };
     case 'POST /api/show':
       return { json: { capabilities: ['completion'] } };
     case 'POST /api/embed':
@@ -104,7 +116,7 @@ function chat(request: FakeOllamaRequest): string[] {
     return structured(parseFor(userText(body)));
   }
 
-  return answer(systemText(body));
+  return answer(systemText(body), body?.model);
 }
 
 function parseFor(request: string): ParseAnswer {
@@ -116,13 +128,15 @@ function keptIds(system: string): number[] {
   return [...system.matchAll(/^- (\d+):/gm)].map(match => Number(match[1]));
 }
 
-function answer(system: string): string[] {
+function answer(system: string, model: string | undefined): string[] {
   const names = [...system.matchAll(/^- (.+?) \(/gm)].map(match => match[1]);
+  const lead =
+    model === SECOND_CHAT_MODEL ? SECOND_MODEL_ANSWER_LEAD : ANSWER_LEAD;
   const markdown =
     names.length === 0
       ? 'I could not find a card that answers that request.'
       : [
-          'Based on your request, these cards stand out:',
+          lead,
           '',
           ...names.map(name => `- **${name}** fits what you asked for.`)
         ].join('\n');

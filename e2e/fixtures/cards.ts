@@ -22,6 +22,7 @@ const sourceFor = (id: number): string => `https://example.test/cards/${id}`;
  * model and dimensions, or its boot guard refuses the index.
  */
 export const CHAT_MODEL = 'e2e-chat:1b';
+export const SECOND_CHAT_MODEL = 'e2e-chat:2b';
 export const EMBEDDING_MODEL = 'e2e-embedding:0.1b';
 export const EMBEDDING_DIMENSIONS = 1024;
 
