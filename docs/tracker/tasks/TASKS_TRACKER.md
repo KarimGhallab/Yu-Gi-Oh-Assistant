@@ -86,6 +86,10 @@ numbering across specs, so blocking edges stay legible across features.
 | 76  | [An unanswered request says so and can be asked again](./76-an-unanswered-request-says-so.md)                                               | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 | 77  | [A search that found nothing names what to relax](./77-a-no-result-search-names-what-to-relax.md)                                           | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 | 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 79  | [The machine facts clear the contrast minimum](./79-the-machine-facts-clear-the-contrast-minimum.md)                                        | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 80  | [Searched as is readable without a pointer](./80-searched-as-is-readable-without-a-pointer.md)                                              | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 81  | [The dialog shows the region that took the room](./81-the-dialog-shows-the-region-that-took-the-room.md)                                    | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 82  | [The model control is readable and its rows explain themselves](./82-the-model-control-is-readable-and-explains-itself.md)                  | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
 
 ## Frontier
 
@@ -148,6 +152,14 @@ fields it ran with, show them beside its answer, and say when it ran on the
 player's own words. 78 draws the workbench on the home and empty-conversation
 surfaces, so a conversation that was started but not spoken in is the start it
 was. Spec 19 is complete, and the design track has no ticket left.
+
+The design track continues with spec 20 (Readable and reachable controls),
+ticketed as 79 through 82. 79 is resolved: the token the small machine facts are
+set in is raised to `oklch(65% 0 none)`, measured clear on Room Black, Bench
+Slate, and Rail Grey. 80 makes `Searched as` readable without a pointer, 81 makes
+a dialog show the region that took the room, and 82 makes the model control's
+rows and its chosen name readable. The three are independent and unblocked; they
+are the frontier.
 
 A small refactor pruned directly: the words a filter's field and operator are
 read as now have one source in the card domain and are carried through contracts,

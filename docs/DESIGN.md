@@ -7,7 +7,7 @@ colors:
   rail: 'oklch(26.9% 0 none)'
   ink: 'oklch(97% 0 none)'
   ink-muted: 'oklch(70.8% 0 none)'
-  ink-faint: 'oklch(55.6% 0 none)'
+  ink-faint: 'oklch(65% 0 none)'
   accent: 'oklch(76.9% 0.188 70.08)'
   accent-hover: 'oklch(82.8% 0.189 84.429)'
   accent-ring: 'oklch(87.9% 0.169 91.605)'
@@ -226,7 +226,7 @@ the accent and failure.
   fill of the row that is open.
 - **Bone White** (`oklch(97% 0 none)`): primary text.
 - **Ash Grey** (`oklch(70.8% 0 none)`): secondary text, inactive navigation.
-- **Dust Grey** (`oklch(55.6% 0 none)`): tertiary text and placeholders.
+- **Dust Grey** (`oklch(65% 0 none)`): tertiary text and placeholders.
 - **Signal Red** (`oklch(70.4% 0.191 22.216)`): failure text. The one color that
   is not the lamp, and it is only ever a sentence about something going wrong.
 

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-neutral-500: oklch(65% 0 none);
+}
+
 /* The app is dark-only for now, so the browser paints its own chrome to match. */
 @layer base {
   html {

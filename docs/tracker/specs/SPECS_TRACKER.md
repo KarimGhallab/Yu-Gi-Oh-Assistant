@@ -56,7 +56,9 @@ dependency and hardens the three untrusted boundaries the 2026-09-18 security
 review ranked first; it is not on the critical path. It is resolved. Features 19,
 20, and 21 come from the 2026-09-18 design critique of the web client and have no
 spec dependency. 19 is resolved: it carried the turn recovery, the empty-answer
-copy, and the empty bench. 20 carries the contrast, focus, and reachability
-fixes, and 21 resolves the One Lamp Rule and the chrome around an empty
+copy, and the empty bench. 20 is ticketed as 79 through 82: it carries the
+contrast, focus, and reachability fixes. 79 is resolved, raising the token the
+small machine facts are set in; 80 through 82 remain, all unblocked. 21 resolves
+the One Lamp Rule and the chrome around an empty
 conversation, which now starts with the bench 19 landed. Neither is on the
 critical path; they are the next work.

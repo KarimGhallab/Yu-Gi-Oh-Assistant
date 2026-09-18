@@ -23,7 +23,7 @@ export interface RunningAnnouncement {
  */
 const STATUS_NOTES: Record<TurnStatus, string> = {
   [TurnStatus.FreeTextOnly]:
-    'No filters were understood, so the search is running on your own words.'
+    '(No filters were understood, so the search is running on your own words.)'
 };
 
 /**
