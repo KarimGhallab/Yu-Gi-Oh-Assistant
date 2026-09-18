@@ -23,6 +23,14 @@ import {
 export const ANSWER_LEAD = 'Based on your request, these cards stand out:';
 export const SECOND_MODEL_ANSWER_LEAD = 'The second model read your request:';
 
+/**
+ * A request carrying this word fails at the answer. Keying the failure to the
+ * request's own words rather than a switch is what keeps it from leaking into a
+ * test running beside it.
+ */
+export const FAILURE_MARKER = 'meltdown';
+const FAILURE_MESSAGE = 'the model could not answer';
+
 interface ChatMessage {
   role: string;
   content: string;
@@ -88,7 +96,7 @@ async function respondTo(
     case 'POST /api/embed':
       return { json: { embeddings: embed(request) } };
     case 'POST /api/chat':
-      return { stream: chat(request) };
+      return chat(request);
     default:
       return { status: 404, json: { error: 'not found' } };
   }
@@ -102,21 +110,27 @@ function embed(request: FakeOllamaRequest): number[][] {
 /**
  * A chat call is told apart by the shape it is constrained by: the filter's
  * format carries `keep`, the parse's carries `filters` and `query`, and the
- * answer's carries none at all, which is the only call that streams prose.
+ * answer's carries none at all, which is the only call that streams prose. A
+ * request carrying {@link FAILURE_MARKER} fails at the answer, which is the
+ * only place a turn's model call can fail and still leave the question stored.
  */
-function chat(request: FakeOllamaRequest): string[] {
+function chat(request: FakeOllamaRequest): FakeOllamaResponse {
   const body = request.body as ChatBody | undefined;
   const properties = body?.format?.properties ?? {};
 
   if ('keep' in properties) {
-    return structured({ keep: keptIds(systemText(body)) });
+    return { stream: structured({ keep: keptIds(systemText(body)) }) };
   }
 
   if ('filters' in properties || 'query' in properties) {
-    return structured(parseFor(userText(body)));
+    return { stream: structured(parseFor(userText(body))) };
   }
 
-  return answer(systemText(body), body?.model);
+  if (userText(body).includes(FAILURE_MARKER)) {
+    return { status: 500, json: { error: FAILURE_MESSAGE } };
+  }
+
+  return { stream: answer(systemText(body), body?.model) };
 }
 
 function parseFor(request: string): ParseAnswer {
