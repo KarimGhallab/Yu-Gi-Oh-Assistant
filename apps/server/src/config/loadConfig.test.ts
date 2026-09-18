@@ -79,6 +79,18 @@ describe('loadConfig', () => {
     ]);
   });
 
+  it('leaves the allowed hosts undefined when not configured', () => {
+    expect(loadConfig({}).allowedHosts).toBeUndefined();
+  });
+
+  it('parses a comma-separated list of allowed hosts', () => {
+    const config = loadConfig({
+      ALLOWED_HOSTS: 'assistant.example, 192.168.1.5'
+    });
+
+    expect(config.allowedHosts).toEqual(['assistant.example', '192.168.1.5']);
+  });
+
   it('refuses to start and names the offending variable', () => {
     expect(() => loadConfig({ PORT: 'not-a-port' })).toThrow(
       ConfigurationError

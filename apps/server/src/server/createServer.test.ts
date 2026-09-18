@@ -108,6 +108,24 @@ describe('createServer', () => {
     );
   });
 
+  it('refuses an API request named for another host', async () => {
+    const app = createServer(createDependencies());
+
+    const response = await app.request('http://evil.example/api/conversations');
+
+    expect(response.status).toBe(403);
+  });
+
+  it('serves the API to a same-origin request', async () => {
+    const app = createServer(createDependencies());
+
+    const response = await app.request(
+      'http://127.0.0.1:3000/api/conversations'
+    );
+
+    expect(response.status).toBe(200);
+  });
+
   it('maps a domain error to its HTTP status and logs it', async () => {
     const dependencies = createDependencies();
     const app = createServer(dependencies);

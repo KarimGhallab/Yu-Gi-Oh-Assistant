@@ -12,6 +12,7 @@ const environmentSchema = z.object({
   LOG_LEVEL: z.enum(LogLevel).default(LogLevel.Info),
   LOG_DIR: z.string().min(1).default('./logs'),
   CORS_ORIGIN: z.string().optional(),
+  ALLOWED_HOSTS: z.string().optional(),
   OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
   OLLAMA_EMBEDDING_BASE_URL: z.url().optional(),
   OLLAMA_EMBEDDING_MODEL: z.string().min(1).default('qwen3-embedding:0.6b'),
@@ -57,12 +58,8 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
     nodeEnv: parsed.NODE_ENV,
     logLevel: parsed.LOG_LEVEL,
     logDir: parsed.LOG_DIR,
-    corsOrigin:
-      parsed.CORS_ORIGIN === undefined
-        ? undefined
-        : parsed.CORS_ORIGIN.split(',')
-            .map(origin => origin.trim())
-            .filter(origin => origin.length > 0),
+    corsOrigin: splitList(parsed.CORS_ORIGIN),
+    allowedHosts: splitList(parsed.ALLOWED_HOSTS),
     ollama: {
       baseUrl: parsed.OLLAMA_BASE_URL,
       embeddingBaseUrl:
@@ -77,4 +74,19 @@ export function loadConfig(env: Record<string, string | undefined>): AppConfig {
       filterPool: parsed.RETRIEVAL_FILTER_POOL
     }
   };
+}
+
+/**
+ * Splits a comma-separated environment list into its members, dropping the empty
+ * ones so a trailing comma or a stray space does not become an entry.
+ */
+function splitList(value: string | undefined): string[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return value
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
 }

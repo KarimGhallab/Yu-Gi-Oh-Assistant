@@ -117,6 +117,10 @@ variable it understands, with its default and what it does. A few worth knowing:
 - `HOST` (default `127.0.0.1`): the interface the server binds to. It is
   unauthenticated and holds private conversations, so leave it on loopback
   unless you knowingly put an authenticating proxy in front of it.
+- `CORS_ORIGIN` and `ALLOWED_HOSTS` (both unset by default): the extra browser
+  origins and hostnames the API accepts. The API refuses a request from any
+  other origin or host with `403`, so a web page you visit cannot reach the
+  loopback API by rebinding its DNS to `127.0.0.1`.
 
 The client reads `apps/web/.env`; `apps/web/.env.example` documents its one
 variable. Leave `VITE_API_BASE_URL` empty to use the same origin, which the dev

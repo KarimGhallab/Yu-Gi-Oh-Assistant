@@ -142,7 +142,11 @@ shape.
 - Configuration is read and validated once at boot from the environment, so a
   missing or invalid setting fails fast. The server binds loopback by default and
   is unauthenticated: conversation history is private because it is unreachable,
-  not because it is protected.
+  not because it is protected. Because the browser, not the network, carries the
+  attack against a loopback API, an origin guard in front of `/api` refuses a
+  request whose `Host` or `Origin` is not the machine's or a configured one, and
+  a body must be `application/json`; the loopback binding and the guard are two
+  layers of defense-in-depth.
 
 ## Deployment shapes
 
