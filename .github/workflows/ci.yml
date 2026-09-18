@@ -13,28 +13,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Unit Tests
+  verify:
+    name: Verify
+    uses: ./.github/workflows/verify.yml
+
+  unit:
+    name: Unit
+    needs: verify
+    uses: ./.github/workflows/unit.yml
+
+  e2e:
+    name: End-to-end
+    needs: unit
+    uses: ./.github/workflows/e2e.yml
+
+  pipeline-success:
+    name: Pipeline successful
+    needs:
+      - verify
+      - unit
+      - e2e
+    if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: package.json
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Run unit test
-        run: pnpm test:unit
+      - name: Check every job succeeded
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = "true" ]; then
+            echo "A required job did not succeed."
+            exit 1
+          fi

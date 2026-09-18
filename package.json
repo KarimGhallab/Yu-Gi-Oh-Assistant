@@ -19,6 +19,7 @@
     "e2e:install": "pnpm --filter @ygo-assistant/e2e e2e:install",
     "clean": "pnpm -r run clean",
     "lint": "eslint --cache --fix",
+    "lint:check": "eslint --cache",
     "format": "npx prettier --list-different --write .",
     "script:unused-code": "npx knip",
     "script:check-updates": "npx ncu --workspaces --interactive",
