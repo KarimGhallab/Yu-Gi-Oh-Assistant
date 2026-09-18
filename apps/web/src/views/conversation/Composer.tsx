@@ -84,53 +84,58 @@ export default function Composer({
   ];
   const note = policy.note;
 
+  // The surface is wrapped rather than named itself so the readout and the
+  // status line above the field travel with the field: when a card's face takes
+  // the room the whole composer steps aside, not only the box the words are in.
   return (
-    <PromptSurface
-      onSend={onSend}
-      running={running}
-      language={language}
-      model={model}
-      models={models}
-      onLanguage={onLanguage}
-      onModel={onModel}
-      head={
-        <>
-          {readout === undefined ? null : (
-            <SearchReadout
-              interpretation={readout}
-              archetypes={archetypes}
-              onCorrect={onCorrect}
-            />
-          )}
-
-          {failure === undefined ? null : (
-            <p role="alert" className="text-sm text-red-400">
-              {failure}
-            </p>
-          )}
-
-          {alerts.map(alert => (
-            <p key={alert} role="alert" className="text-sm text-red-400">
-              {alert}
-            </p>
-          ))}
-
-          {note === undefined ? null : (
-            <p className="text-sm text-neutral-500">{note}</p>
-          )}
-
-          <p role="status" className="text-sm text-neutral-400">
-            {announcement === undefined ? null : (
-              <>
-                <WorkingLine>{`${announcement.working}…`}</WorkingLine>
-                {announcement.note === undefined
-                  ? null
-                  : ` ${announcement.note}`}
-              </>
+    <div className="composer-surface">
+      <PromptSurface
+        onSend={onSend}
+        running={running}
+        language={language}
+        model={model}
+        models={models}
+        onLanguage={onLanguage}
+        onModel={onModel}
+        head={
+          <>
+            {readout === undefined ? null : (
+              <SearchReadout
+                interpretation={readout}
+                archetypes={archetypes}
+                onCorrect={onCorrect}
+              />
             )}
-          </p>
-        </>
-      }
-    />
+
+            {failure === undefined ? null : (
+              <p role="alert" className="text-sm text-red-400">
+                {failure}
+              </p>
+            )}
+
+            {alerts.map(alert => (
+              <p key={alert} role="alert" className="text-sm text-red-400">
+                {alert}
+              </p>
+            ))}
+
+            {note === undefined ? null : (
+              <p className="text-sm text-neutral-500">{note}</p>
+            )}
+
+            <p role="status" className="text-sm text-neutral-400">
+              {announcement === undefined ? null : (
+                <>
+                  <WorkingLine>{`${announcement.working}…`}</WorkingLine>
+                  {announcement.note === undefined
+                    ? null
+                    : ` ${announcement.note}`}
+                </>
+              )}
+            </p>
+          </>
+        }
+      />
+    </div>
   );
 }

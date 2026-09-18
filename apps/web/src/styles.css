@@ -100,6 +100,35 @@
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /*
+   * The prompt steps out of the room while a card's face is in it. The face is
+   * what the player is reading, so the composer sinks to the bottom edge and
+   * fades rather than standing dimmed behind it, and it rises back from that
+   * edge when the face is put down. It is the prompt's own movement in a
+   * different direction, so it keeps the prompt's 420ms and decelerating curve,
+   * and it is carried by the card's view transition rather than running beside
+   * it. The name is what lets the whole composer, readout and status included,
+   * move as one surface instead of cross-fading in place.
+   */
+  .composer-surface {
+    view-transition-name: composer;
+  }
+
+  ::view-transition-group(composer) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /*
+   * A card's face open is a dialog in the conversation, and the composer is
+   * what stands aside for it. The rule is the whole trigger: no state is
+   * threaded to the composer, it simply answers the room it is in.
+   */
+  .conversation-surface:has(.card-detail-overlay) .composer-surface {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
   ::view-transition-old(root) {
     animation-duration: 180ms;
     animation-timing-function: ease-out;
@@ -159,6 +188,7 @@
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(prompt),
     ::view-transition-group(card-detail),
+    ::view-transition-group(composer),
     ::view-transition-old(root),
     ::view-transition-new(root) {
       animation-duration: 0.01ms;

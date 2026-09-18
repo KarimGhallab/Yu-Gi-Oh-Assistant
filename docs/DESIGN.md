@@ -343,6 +343,13 @@ change itself rather than an effect laid over it:
   settling faster as it dims, and closing carries the face back down onto the
   tile. The name the two share is on exactly one of them at any moment, the tile
   on the way out and the face on the way in.
+- **The composer, stepping aside for a card.** A card's face takes the room, so
+  the prompt leaves it: the whole composer, readout and status included, sinks
+  toward the bottom edge and fades, and rises back from that edge when the face is
+  put down. It is the prompt's own movement in the other direction, 420ms on
+  `cubic-bezier(0.16, 1, 0.3, 1)`, carried by the card's transition rather than
+  running beside it, and the composer answers the room it is in rather than being
+  handed a state to move for.
 - **A caret, turning over.** A setting's caret turns while the list it opens is
   open, 150ms, so the control says which of its two states it is in.
 - **The sidebar, folding and arriving.** On a wide window the panel's width is
@@ -362,7 +369,8 @@ change itself rather than an effect laid over it:
 
 A player who has asked for reduced motion gets the state changes without the
 movement: the prompt where it lands and the cross-fade, the card face where it
-lands, the caret already turned, and the panel already at its width.
+lands, the composer where it lands, the caret already turned, and the panel
+already at its width.
 
 ## Browser surfaces
 
@@ -684,7 +692,10 @@ level deep.
   the field keeps its words, so a start that failed leaves the request where it
   was typed. Sending is also when the prompt is seen moving: the card is named in
   the view transition that carries it from the middle of the home surface to the
-  foot of the conversation that request just started.
+  foot of the conversation that request just started. A card's face takes the room
+  in the same surface, and the composer steps out of it: the whole surface, readout
+  and status included, sinks toward the bottom edge and fades, and rises back when
+  the face is put down.
 - **Surface:** the field and the actions the request is run with share one
   surface, because they are one act rather than a field with a row of controls
   under it. It is the field's own Bench Slate surface grown to hold them: 4px

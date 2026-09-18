@@ -87,7 +87,7 @@ export default function CardDetail({ card, onClose }: CardDetailProps) {
           onClose();
         }
       }}
-      className="fixed inset-0 z-40 flex items-center justify-center bg-neutral-950/70 p-6">
+      className="card-detail-overlay fixed inset-0 z-40 flex items-center justify-center bg-neutral-950/70 p-6">
       <div
         ref={dialog}
         role="dialog"

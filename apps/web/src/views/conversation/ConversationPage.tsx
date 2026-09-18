@@ -285,7 +285,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="conversation-surface flex min-h-0 flex-1 flex-col">
       {header}
       <section
         aria-label="Messages"
