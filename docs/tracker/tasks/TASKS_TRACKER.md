@@ -66,7 +66,8 @@ reads, the chips that show, correct, and extend a parse, the language a
 conversation is in, the reply an empty search gives, the marker on a card that is
 not in that language, and the model chooser. No ticket of it is left.
 
-Spec 10 (Local run, CI, and documentation) is the frontier and is free to be
-ticketed, and owns the local-only end-to-end suite, including the Playwright flow
-and the fake Ollama server that the specs' testing decisions mention but do not
-build here. Ticket 11 supersedes the single-origin setup in ticket 06 and spec 01.
+Spec 10 (Local run, CI, and documentation) and spec 11 (End-to-end tests) are the
+frontier and are free to be ticketed. Spec 11 owns the end-to-end suite, its three
+browser engines, the fake Ollama server, and the reusable CI workflows that end in
+the pipeline gate; spec 10 keeps the runbook, the containers, and the docs. Ticket
+11 supersedes the single-origin setup in ticket 06 and spec 01.
