@@ -19,10 +19,12 @@ import {
   type TurnStream,
   arrives,
   json,
+  pickSetting,
   playerMessage,
   renderApp,
   said,
   send,
+  settingControl,
   stubFetch,
   turnStream,
   uuid,
@@ -118,12 +120,13 @@ describe('the search readout', () => {
       screen.getByRole('button', { name: 'Change Race is beast-warrior' })
     );
 
+    expect(await settingControl('Value')).toHaveTextContent('beast-warrior');
+
+    await userEvent.click(await settingControl('Value'));
+
     expect(
-      within(screen.getByLabelText('Value')).getByRole('option', {
-        name: 'beast-warrior'
-      })
+      screen.getByRole('option', { name: 'beast-warrior' })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Value')).toHaveValue(CardRace.BeastWarrior);
   });
 
   it('opens a conversation on the filters it was last searched with', async () => {
@@ -230,7 +233,7 @@ describe('the search readout', () => {
     await userEvent.click(
       await screen.findByRole('button', { name: 'Change Attribute is dark' })
     );
-    await userEvent.selectOptions(screen.getByLabelText('Value'), 'LIGHT');
+    await pickSetting('Value', 'light');
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(
@@ -422,12 +425,22 @@ describe('the search readout', () => {
     await userEvent.click(
       await screen.findByRole('button', { name: 'Add a filter' })
     );
-    await userEvent.selectOptions(screen.getByLabelText('Field'), 'type');
+
+    // The field is the control the keyboard arrives on, and picking from it is
+    // what gathers the rest of the filter.
+    await userEvent.click(
+      await screen.findByRole('button', { name: /^Field Level/ })
+    );
+    await userEvent.click(screen.getByRole('option', { name: 'Type' }));
 
     // A field with a fixed set of values comes with one of them, so the filter
     // is one the search accepts before the player touches anything but the field.
-    expect(screen.getByLabelText('Operator')).toHaveValue(FilterOperator.Eq);
-    expect(screen.getByLabelText('Value')).toHaveValue(CardType.NormalMonster);
+    expect(
+      screen.getByRole('button', { name: /^Operator is/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Value normal monster/ })
+    ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
 
@@ -492,25 +505,31 @@ describe('the search readout', () => {
 
     // An archetype is any words at all, and the operators are the ones text
     // takes rather than the ones a number takes.
-    await userEvent.selectOptions(screen.getByLabelText('Field'), 'archetype');
+    await userEvent.click(screen.getByRole('button', { name: /^Field Level/ }));
+    await userEvent.click(screen.getByRole('option', { name: 'Archetype' }));
 
     expect(screen.getByLabelText('Value')).toHaveAttribute('type', 'text');
+
+    await userEvent.click(screen.getByRole('button', { name: /^Operator / }));
+
+    expect(screen.queryByRole('option', { name: 'above' })).toBeNull();
     expect(
-      within(screen.getByLabelText('Operator')).queryByRole('option', {
-        name: 'above'
-      })
-    ).toBeNull();
-    expect(
-      within(screen.getByLabelText('Operator')).getByRole('option', {
-        name: 'contains'
-      })
+      screen.getByRole('option', { name: 'contains' })
     ).toBeInTheDocument();
+
+    // Picking one closes the list and leaves the filter being said alone.
+    await userEvent.click(screen.getByRole('option', { name: 'contains' }));
 
     // A frame type is one of a fixed set, so the value is offered rather than
     // spelled, and it arrives with one of them.
-    await userEvent.selectOptions(screen.getByLabelText('Field'), 'race');
+    await userEvent.click(
+      screen.getByRole('button', { name: /^Field Archetype/ })
+    );
+    await userEvent.click(screen.getByRole('option', { name: 'Race' }));
 
-    expect(screen.getByLabelText('Value').tagName).toBe('SELECT');
+    expect(
+      screen.getByRole('button', { name: /^Field Race/ })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
   });
 
@@ -546,7 +565,9 @@ describe('the search readout', () => {
     expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
 
     // Attack points run from 0 to 9000.
-    await userEvent.selectOptions(screen.getByLabelText('Field'), 'atk');
+    await userEvent.click(screen.getByRole('button', { name: /^Field Level/ }));
+    await userEvent.click(screen.getByRole('option', { name: 'Atk' }));
+
     expect(screen.getByLabelText('Value')).toHaveAttribute('min', '0');
     expect(screen.getByLabelText('Value')).toHaveAttribute('max', '9000');
   });

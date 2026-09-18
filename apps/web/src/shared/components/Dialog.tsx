@@ -11,11 +11,13 @@ import { type KeyboardEvent, type ReactNode, useEffect, useRef } from 'react';
  * because the screen is this. It carries no shadow, because this system has none
  * and the dimmed room is what says the dialog stands above it.
  *
- * The keyboard is put on the first thing the dialog offers, which is the field in
- * a question about a name and the answer that changes nothing in a question
- * about a deletion. It stays there: Escape and a press in the room outside call
- * the whole thing off, and focus goes back to the row that asked, which the list
- * owns.
+ * The keyboard is put on the dialog itself, and the surface draws the focus ring
+ * so the region that just took the room is shown to be the one with the
+ * keyboard, whether the dialog was opened by pointer or by key. The first thing
+ * it offers is one Tab away, which is the field in a question about a name and
+ * the answer that changes nothing in a question about a deletion. Escape and a
+ * press in the room outside call the whole thing off, and focus goes back to the
+ * row that asked, which the list owns.
  */
 interface DialogProps {
   title: string;
@@ -51,7 +53,7 @@ export default function Dialog({
   const dialog = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    dialog.current?.querySelector<HTMLElement>('input, button')?.focus();
+    dialog.current?.focus();
   }, []);
 
   // A press in the room outside is one of the ways out. It is watched on the
@@ -83,13 +85,19 @@ export default function Dialog({
     }
 
     // The keyboard stays on what the question offers rather than walking off
-    // into a list that is not being read.
+    // into a list that is not being read. Shift+Tab from the dialog itself
+    // lands on the last thing it offers, because the dialog is where the
+    // keyboard starts and nothing tables before it.
     const inside =
       dialog.current?.querySelectorAll<HTMLElement>('input, button') ?? [];
     const first = inside[0];
     const last = inside[inside.length - 1];
 
-    if (event.shiftKey && document.activeElement === first) {
+    if (
+      event.shiftKey &&
+      (document.activeElement === first ||
+        document.activeElement === dialog.current)
+    ) {
       event.preventDefault();
       last?.focus();
     }
@@ -109,7 +117,8 @@ export default function Dialog({
         aria-labelledby={TITLE_ID}
         aria-describedby={BODY_ID}
         onKeyDown={keys}
-        className="w-full max-w-md rounded bg-neutral-900 p-6">
+        tabIndex={-1}
+        className="w-full max-w-md rounded bg-neutral-900 p-6 focus:outline-2 focus:outline-offset-2 focus:outline-amber-300">
         <h2 id={TITLE_ID} className="text-lg font-semibold text-neutral-100">
           {title}
         </h2>

@@ -305,4 +305,77 @@ describe('the conversation settings', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
     expect(control).toHaveFocus();
   });
+
+  it('says why a model cannot answer, and cannot take it', async () => {
+    const fetchMock = stubFetch(
+      url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD)),
+      [
+        {
+          name: 'llama3.1:8b',
+          supportsCompletion: true,
+          supportsStructuredOutput: true
+        },
+        {
+          name: 'nomic-embed-text',
+          supportsCompletion: false,
+          supportsStructuredOutput: false
+        }
+      ]
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderApp(`/c/${uuid(2)}`);
+
+    await userEvent.click(await settingControl('Answered by'));
+
+    const row = screen.getByRole('option', {
+      name: /nomic-embed-text.*cannot answer/
+    });
+
+    // The row says it cannot be taken and reads it, rather than being dimmed
+    // until the reason is the hardest thing in it to read.
+    expect(row).toHaveAttribute('aria-disabled', 'true');
+    expect(row).not.toHaveClass('opacity-50');
+
+    await userEvent.click(row);
+
+    expect(fetchMock.mock.calls.some(call => call[1]?.method === 'PATCH')).toBe(
+      false
+    );
+    expect(await settingControl('Answered by')).toHaveTextContent(
+      'llama3.1:8b'
+    );
+  });
+
+  it('reads the chosen model in full where it stands', async () => {
+    const long = 'jobautomation/OpenEuroLLM-French:latest';
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(
+        url =>
+          url === '/api/conversations'
+            ? json([createConversation(2, { model: long })])
+            : json(withMessages(createConversation(2, { model: long }))),
+        [
+          {
+            name: long,
+            supportsCompletion: true,
+            supportsStructuredOutput: true
+          }
+        ]
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    // The control keeps its truncation in the layout and offers the whole name
+    // where it stands, so who is answering is read without opening the list.
+    const control = await settingControl('Answered by');
+
+    expect(control).toHaveAttribute('title', long);
+    expect(control).toHaveTextContent(long);
+  });
 });

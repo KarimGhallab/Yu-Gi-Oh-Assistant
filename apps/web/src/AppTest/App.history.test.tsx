@@ -55,13 +55,13 @@ describe('reading a conversation', () => {
 
     const caption = await screen.findByText('Searched as');
 
-    expect(caption.parentElement).toHaveClass('sr-only');
+    // A stored request keeps its search on the page: no pointer, no hover, and
+    // no focus needed to read what it ran on.
+    expect(caption.parentElement).not.toHaveClass('sr-only');
+    expect(caption.parentElement).toHaveClass('flex');
     expect(
       screen.getByText('add 1 Spell from your GY to your hand')
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Searched as' })
-    ).not.toBeInTheDocument();
   });
 
   it('shows the filters a no-result answer was searched with', async () => {

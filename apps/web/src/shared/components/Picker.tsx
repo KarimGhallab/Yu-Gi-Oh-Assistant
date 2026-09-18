@@ -14,7 +14,7 @@ export interface SettingChoice {
   disabled?: boolean;
 }
 
-interface SettingPickerProps {
+interface PickerProps {
   /** The setting's name, which the control reads with its value. */
   label: string;
   value: string;
@@ -41,7 +41,23 @@ const PANEL_CLASS =
   'quiet-scroll absolute bottom-full z-20 mb-2 max-h-64 w-max min-w-44 max-w-80 overflow-y-auto rounded bg-neutral-800 p-1';
 
 const ROW_CLASS =
-  'flex w-full items-baseline justify-between gap-3 rounded px-2 py-1.5 text-left text-sm hover:bg-neutral-700';
+  'flex w-full items-baseline justify-between gap-3 rounded px-2 py-1.5 text-left text-sm';
+
+/**
+ * What one row is, and what it can be: the row in force is filled and bright,
+ * the rest are quiet until pointed at, and a row that cannot answer a turn is
+ * muted and has no highlight, because a highlight is a promise that pressing it
+ * does something.
+ */
+const rowState = (choice: SettingChoice, chosen: string): string => {
+  if (choice.disabled === true) {
+    return 'cursor-default text-neutral-500';
+  }
+
+  return choice.value === chosen
+    ? 'bg-neutral-800 text-neutral-100 hover:bg-neutral-700'
+    : 'text-neutral-400 hover:bg-neutral-700';
+};
 
 /**
  * A setting of the request: what it is set to, and the list of what it could be
@@ -54,13 +70,13 @@ const ROW_CLASS =
  * closes it and comes back too, and moving the keyboard out of it closes it
  * without taking the focus anywhere.
  */
-export default function SettingPicker({
+export default function Picker({
   label,
   value,
   choices,
   onPick,
   align = 'end'
-}: SettingPickerProps) {
+}: PickerProps) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const options = useRef<(HTMLButtonElement | null)[]>([]);
@@ -98,7 +114,10 @@ export default function SettingPicker({
 
   const keys = (event: KeyboardEvent<HTMLElement>): void => {
     if (event.key === 'Escape') {
+      // Escape closes the list, not whatever the list was opened inside: a
+      // filter being edited offers three of these, and one Escape closes one.
       event.preventDefault();
+      event.stopPropagation();
       close();
       trigger.current?.focus();
     }
@@ -129,6 +148,7 @@ export default function SettingPicker({
       <button
         ref={trigger}
         type="button"
+        aria-label={`${label} ${current?.name ?? value}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => (open ? close() : openAt(currentIndex))}
@@ -147,8 +167,8 @@ export default function SettingPicker({
             close();
           }
         }}
+        title={current?.name ?? value}
         className={TRIGGER_CLASS}>
-        <span className="sr-only">{label}</span>
         <span className="truncate">{current?.name ?? value}</span>
         <span
           aria-hidden="true"
@@ -180,11 +200,7 @@ export default function SettingPicker({
                   pick(choice);
                 }
               }}
-              className={`${ROW_CLASS} ${
-                choice.value === value
-                  ? 'bg-neutral-800 text-neutral-100'
-                  : 'text-neutral-400'
-              } ${choice.disabled === true ? 'cursor-default opacity-50' : ''}`}>
+              className={`${ROW_CLASS} ${rowState(choice, value)}`}>
               <span className="truncate">{choice.name}</span>
               {choice.note === undefined ? null : (
                 <span className="font-mono text-xs text-neutral-500">

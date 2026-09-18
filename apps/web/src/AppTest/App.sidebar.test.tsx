@@ -351,8 +351,12 @@ describe('the conversation list', () => {
       screen.getByRole('alertdialog', { name: 'Delete this conversation?' })
     ).toBeInTheDocument();
 
-    // The question takes the keyboard with it, onto the answer that changes
-    // nothing.
+    // The question takes the keyboard with it, onto its own surface; the answer
+    // that changes nothing is one Tab away.
+    expect(screen.getByRole('alertdialog')).toHaveFocus();
+
+    await userEvent.tab();
+
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
   });
 

@@ -10,7 +10,7 @@ import {
 import { Language, type Model } from '@ygo-assistant/contracts';
 
 import { describeModel } from '../modelPolicy.js';
-import SettingPicker from './SettingPicker.js';
+import Picker from './Picker.js';
 import SendIcon from './icons/SendIcon.js';
 
 /**
@@ -154,7 +154,7 @@ export default function PromptSurface({
         />
 
         <div className="mt-2 flex min-w-0 items-center gap-3">
-          <SettingPicker
+          <Picker
             label="Cards in"
             value={language}
             choices={LANGUAGES.map(candidate => ({
@@ -174,7 +174,7 @@ export default function PromptSurface({
           />
 
           <span className="ml-auto flex min-w-0 items-center gap-2">
-            <SettingPicker
+            <Picker
               label="Answered by"
               value={model}
               choices={modelChoices}

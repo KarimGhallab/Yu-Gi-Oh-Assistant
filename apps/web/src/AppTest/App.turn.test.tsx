@@ -222,16 +222,13 @@ describe('running a turn', () => {
       query: 'add 1 Spell from your GY to your hand'
     });
 
-    // The words the search ran on stay with the request they answered, out of
-    // the way until the request is pointed at. There is nothing to press: the
-    // pointer is what shows them, and nothing keeps them once it leaves.
-    expect(
-      screen.queryByRole('button', { name: 'Searched as' })
-    ).not.toBeInTheDocument();
-
+    // The words the search ran on stay with the request they answered, in the
+    // layout for everyone: what a search ran on is the request's own claim, so
+    // it does not wait for a pointer to be read.
     const caption = screen.getByText('Searched as');
-    expect(caption.parentElement).toHaveClass('sr-only');
-    expect(caption.parentElement).toHaveClass('group-hover:not-sr-only');
+
+    expect(caption.parentElement).not.toHaveClass('sr-only');
+    expect(caption.parentElement).toHaveClass('flex');
     expect(
       screen.getByText('add 1 Spell from your GY to your hand')
     ).toBeInTheDocument();

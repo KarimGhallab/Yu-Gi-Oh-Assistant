@@ -1,6 +1,6 @@
 import type { Model } from '@ygo-assistant/contracts';
 
-import type { SettingChoice } from './components/SettingPicker.js';
+import type { SettingChoice } from './components/Picker.js';
 
 /**
  * What the listing and the chosen name mean for the player: the model the name

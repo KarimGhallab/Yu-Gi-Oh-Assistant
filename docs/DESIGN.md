@@ -609,7 +609,9 @@ level deep.
   is Ash Grey, stepping to Bone White over a Rail Grey surface when it is pointed
   at, and it takes the same 2px Halo Amber outline as every other control. Its
   name is the setting and the value it holds, read as one, so what it is set to
-  is never a control that only says what it is for.
+  is never a control that only says what it is for. The whole value is offered
+  where it stands, because the control truncates in the layout and who is
+  answering should not be behind opening the list.
 - **The list a setting opens:** drawn rather than borrowed from the platform, so
   a choice can carry what it is beside its name. It opens above the control, one
   surface step up over the card and carrying no shadow, because this system has
@@ -617,8 +619,11 @@ level deep.
   choice, the row in force filled a step further and in Bone White, the rest in
   Ash Grey, and a model's note in 12px mono after its name, because what a model
   can and cannot do is a machine fact rather than prose. A row that says a model
-  cannot answer is a row that cannot be taken: it is readable, and not selectable,
-  because offering a choice that cannot work is offering a mistake. The keyboard
+  cannot answer is a row that cannot be taken: it is muted and carries no
+  highlight, so it reads as unavailable while its note stays readable, rather
+  than being dimmed under an opacity that would make the reason the hardest thing
+  in it to read. It is not selectable, because offering a choice that cannot work
+  is offering a mistake. The keyboard
   walks the list with the arrows, Escape calls it off and comes back to the control,
   picking closes it and comes back too, and moving the keyboard out of it closes
   it without taking the focus anywhere.
@@ -711,13 +716,10 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   is over.
 - **Searched as:** the words a request was searched with, when the parse rewrote
   it into card wording rather than searching the player's own. It sits under the
-  request it answered, in the readout's 12px mono, and pointing at the turn, the
-  name and the request together, is the only thing that shows it: there is no
-  control to press, and nothing keeps it once the pointer leaves. It is kept out
-  of the layout while it is hidden,
-  which is what its arrival costs, and it stays in the page whether or not it is
-  in front of you, so a reader that cannot point at it is told it with the
-  request rather than never. A request whose search ran on the player's own words
+  request it answered, in the readout's 12px mono, for everyone: the words a
+  search ran on are the request's own claim, so they do not wait for a pointer,
+  and a player reading by keyboard or on a touch screen reads them the same as
+  one pointing at the turn. A request whose search ran on the player's own words
   has nothing to show: the readout already says it was searched as written.
 - **A filter being corrected or added:** the readout becomes the controls that
   say it: the field it constrains, then the operator and the value, gathered the
@@ -759,12 +761,15 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   changes nothing as a plain text button in Bone White, and the answer that acts
   as the lamp. It is the only region being read while it is open, which is what
   lets it carry a fill of its own.
-- **Keyboard:** the keyboard is put on the first thing the dialog offers, which is
-  the field of a question about a name and the answer that changes nothing of a
-  question about a deletion, and it stays among what the dialog offers rather than
-  walking off into a list that is not being read. Escape, and a press anywhere in
-  the room outside, call the whole thing off. Focus goes back to the row that
-  asked, which the list owns.
+- **Keyboard:** the keyboard is put on the dialog itself, and the surface draws
+  the focus ring, so the region that just took the room is shown to be the one
+  holding the keyboard whether the dialog was opened by pointer or by key. The
+  first thing it offers, the field of a question about a name or the answer that
+  changes nothing of a question about a deletion, is one Tab away, and the
+  keyboard stays among what the dialog offers rather than walking off into a list
+  that is not being read. Escape, and a press anywhere in the room outside, call
+  the whole thing off. Focus goes back to the row that asked, which the list
+  owns.
 - **Use it for:** the two things a row's own controls ask that need the room: a
   deletion, and a name. Anything that can be answered without it is answered in
   the row it is about.

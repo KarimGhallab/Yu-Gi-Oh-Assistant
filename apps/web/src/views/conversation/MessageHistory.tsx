@@ -20,15 +20,12 @@ const ASSISTANT = 'Assistant';
  */
 const REQUEST_CLASS = 'whitespace-pre-wrap text-sm text-neutral-400';
 /*
- * The words a search ran on, in the readout's mono. It is taken out of the flow
- * until the request is pointed at, which is the only thing that shows it, and
- * it stays in the page while it is out of the way so a reader that cannot point
- * at it is told it with the request rather than never. sr-only is what its
- * absence from the layout costs: the two lines are there for the pointer, and
- * they move what follows them when they arrive.
+ * The words a search ran on, in the readout's mono. It is a line under the
+ * request for everyone: a search ran on those words whether the player is
+ * pointing at the request, tabbing through it, or reading on a touch screen, and
+ * what it ran on is the claim the request makes.
  */
-const SEARCHED_AS_CLASS =
-  'sr-only group-hover:not-sr-only flex flex-col gap-1 font-mono text-xs';
+const SEARCHED_AS_CLASS = 'flex flex-col gap-1 font-mono text-xs';
 const SEARCHED_AS_LABEL_CLASS = 'text-neutral-500';
 const SEARCHED_AS_QUERY_CLASS = 'whitespace-pre-wrap text-neutral-400';
 /*
@@ -139,13 +136,7 @@ function MessageTurn({ message, language, onRetry }: MessageTurnProps) {
       : undefined;
 
   return (
-    /*
-     * The whole turn is the thing to point at, its name included: the words a
-     * search ran on belong to the request the name introduces, and asking the
-     * reader to hit the request's own line and nothing else is a smaller target
-     * than the turn they are looking at.
-     */
-    <li className="group flex flex-col gap-1">
+    <li className="flex flex-col gap-1">
       <p className="text-sm font-medium text-neutral-400">
         {fromPlayer ? PLAYER : ASSISTANT}
       </p>
@@ -233,7 +224,7 @@ interface SearchedWithProps {
 function SearchedWith({ search }: SearchedWithProps) {
   return (
     <div className={SEARCHED_WITH_CLASS}>
-      <p className={SEARCHED_WITH_LABEL_CLASS}>Searched with</p>
+      <p className={SEARCHED_WITH_LABEL_CLASS}>Searched with:</p>
       <ul
         aria-label="Filters the search ran with"
         className={SEARCHED_WITH_LIST_CLASS}>

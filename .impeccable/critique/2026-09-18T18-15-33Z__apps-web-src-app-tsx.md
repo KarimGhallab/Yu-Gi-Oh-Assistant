@@ -25,7 +25,7 @@ Method: dual-agent (A: general · B: general)
 | 3         | User Control and Freedom            | 3         | Escape, Cancel, skip link, and focus return are thorough, but a running turn cannot be stopped, and a prior request cannot be edited or resent.                                  |
 | 4         | Consistency and Standards           | 4         | One icon set, one radius, one focus treatment, one red. The two amber fills are the sole documented inconsistency.                                                               |
 | 5         | Error Prevention                    | 3         | Delete confirms and Send disables, but the destructive action wears the same amber lamp as Save/New/Send, and New instantly creates an untitled conversation with no undo.       |
-| 6         | Recognition Rather Than Recall      | 3         | The readout and examples remove recall, but the chosen model truncates at `max-w-40` (`SettingPicker.tsx:38`) and "Searched as" is reveal-on-hover only.                         |
+| 6         | Recognition Rather Than Recall      | 3         | The readout and examples remove recall, but the chosen model truncates at `max-w-40` (`Picker.tsx:38`) and "Searched as" is reveal-on-hover only.                                |
 | 7         | Flexibility and Efficiency          | 3         | Enter sends, Shift+Enter newlines, filters are correctable; no shortcut for a new conversation or jumping to the list.                                                           |
 | 8         | Aesthetic and Minimalist Design     | 4         | Genuinely restrained; density as craft is real.                                                                                                                                  |
 | 9         | Error Recovery                      | 3         | Verbatim alert lines, retry on load failure, and pull guidance, but a dead turn gives no diagnosis or recovery and the empty-result answer names no filter to relax.             |
@@ -81,9 +81,9 @@ This is a beautifully constrained app with one genuinely original interaction, w
 
 ## Persona Red Flags
 
-**Alex (Power User)**: the chosen model truncates to `max-w-40` (`SettingPicker.tsx:38`), so a long model name reads as `jobautomation/Op...` and identifying the answering model means reopening the picker every time. Every conversation row carries two always-tabbed controls, so traversal costs two stops per row, and the skip link only exists on a conversation address (`ChatFrame.tsx:31`). "Searched as" cannot be read with the keyboard at all.
+**Alex (Power User)**: the chosen model truncates to `max-w-40` (`Picker.tsx:38`), so a long model name reads as `jobautomation/Op...` and identifying the answering model means reopening the picker every time. Every conversation row carries two always-tabbed controls, so traversal costs two stops per row, and the skip link only exists on a conversation address (`ChatFrame.tsx:31`). "Searched as" cannot be read with the keyboard at all.
 
-**Sam (Accessibility)**: Dust Grey 12px facts at 4.18:1 / 3.19:1 (above). Pointer-opened dialogs show no initial focus. The disabled model row (`nomic-embed-text cannot answer`) uses `opacity-50` on a dark panel, so the _reason_ the row is not selectable is effectively unreadable (`SettingPicker.tsx:187`).
+**Sam (Accessibility)**: Dust Grey 12px facts at 4.18:1 / 3.19:1 (above). Pointer-opened dialogs show no initial focus. The disabled model row (`nomic-embed-text cannot answer`) uses `opacity-50` on a dark panel, so the _reason_ the row is not selectable is effectively unreadable (`Picker.tsx:187`).
 
 **Casey (Mobile, 390px)**: "Searched as" is hover-only, so the parse rewrite is never visible on touch. The conversation title truncates with no `title`, so a long auto-title is unreachable, and `PromptSurface.tsx:89-91` focuses the field on mount, raising the soft keyboard over the example prompts before they are read.
 

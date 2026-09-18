@@ -197,6 +197,11 @@ describe('renaming and deleting a conversation', () => {
       await screen.findByRole('button', { name: 'Rename Graveyard toolbox' })
     );
 
+    // The dialog takes the keyboard; the field is the first stop it offers.
+    expect(screen.getByRole('alertdialog')).toHaveFocus();
+
+    await userEvent.tab();
+
     const field = screen.getByRole('textbox', { name: 'Conversation name' });
     expect(field).toHaveFocus();
 
@@ -238,14 +243,20 @@ describe('renaming and deleting a conversation', () => {
       screen.getByRole('link', { name: 'Graveyard toolbox' })
     ).toBeInTheDocument();
 
-    // The name it has is what the question starts from, offered selected.
+    // The name it has is what the question starts from, offered selected, and
+    // the dialog holds the keyboard with the field one Tab away.
     const field = screen.getByRole('textbox', {
       name: 'Conversation name'
     }) as HTMLInputElement;
-    expect(field).toHaveFocus();
     expect(field).toHaveValue('Graveyard toolbox');
     expect(field.selectionStart).toBe(0);
     expect(field.selectionEnd).toBe('Graveyard toolbox'.length);
+
+    expect(screen.getByRole('alertdialog')).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(field).toHaveFocus();
   });
 
   it('leaves a rename alone when it is called off', async () => {
@@ -324,7 +335,7 @@ describe('renaming and deleting a conversation', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps the keyboard on the two answers a dialog asks', async () => {
+  it('shows the region that took the room, and keeps the keyboard on its two answers', async () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
@@ -340,15 +351,26 @@ describe('renaming and deleting a conversation', () => {
       await screen.findByRole('button', { name: 'Delete Graveyard toolbox' })
     );
 
-    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    // The dialog itself takes the keyboard and draws the ring, whoever opened
+    // it, so the region that just took the room is the one that reads as
+    // focused.
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveFocus();
+    expect(dialog).toHaveClass('focus:outline-2');
 
-    await userEvent.tab();
+    // Shift+Tab from the surface lands on the last answer, so the keyboard
+    // never walks off into the list behind; Tab then moves to the first.
+    await userEvent.tab({ shift: true });
 
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
 
     await userEvent.tab();
 
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
   });
 
   it('calls a deletion off from the keyboard, and from the room outside it', async () => {

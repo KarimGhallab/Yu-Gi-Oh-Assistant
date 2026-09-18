@@ -87,9 +87,9 @@ numbering across specs, so blocking edges stay legible across features.
 | 77  | [A search that found nothing names what to relax](./77-a-no-result-search-names-what-to-relax.md)                                           | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 | 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 | 79  | [The machine facts clear the contrast minimum](./79-the-machine-facts-clear-the-contrast-minimum.md)                                        | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
-| 80  | [Searched as is readable without a pointer](./80-searched-as-is-readable-without-a-pointer.md)                                              | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
-| 81  | [The dialog shows the region that took the room](./81-the-dialog-shows-the-region-that-took-the-room.md)                                    | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
-| 82  | [The model control is readable and its rows explain themselves](./82-the-model-control-is-readable-and-explains-itself.md)                  | ready-for-agent       | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 80  | [Searched as is readable without a pointer](./80-searched-as-is-readable-without-a-pointer.md)                                              | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 81  | [The dialog shows the region that took the room](./81-the-dialog-shows-the-region-that-took-the-room.md)                                    | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 82  | [The model control is readable and its rows explain themselves](./82-the-model-control-is-readable-and-explains-itself.md)                  | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
 
 ## Frontier
 
@@ -154,12 +154,17 @@ surfaces, so a conversation that was started but not spoken in is the start it
 was. Spec 19 is complete, and the design track has no ticket left.
 
 The design track continues with spec 20 (Readable and reachable controls),
-ticketed as 79 through 82. 79 is resolved: the token the small machine facts are
-set in is raised to `oklch(65% 0 none)`, measured clear on Room Black, Bench
-Slate, and Rail Grey. 80 makes `Searched as` readable without a pointer, 81 makes
-a dialog show the region that took the room, and 82 makes the model control's
-rows and its chosen name readable. The three are independent and unblocked; they
-are the frontier.
+ticketed as 79 through 82, and all four are resolved. 79 raises the token the
+small machine facts are set in to `oklch(65% 0 none)`, measured clear on Room
+Black, Bench Slate, and Rail Grey. 80 makes `Searched as` readable without a
+pointer, 81 makes a dialog show the region that took the room, and 82 makes the
+model control's rows and its chosen name readable. Spec 20 is complete.
+
+A follow-on change to the filter readout, asked for while 80 through 82 landed:
+the chip editor's field, operator, and value controls are now the same picker the
+composer settings use, opening above the control, instead of native selects. It
+is recorded here rather than in a ticket because it extends spec 09's controls
+rather than closing a review finding.
 
 A small refactor pruned directly: the words a filter's field and operator are
 read as now have one source in the card domain and are carried through contracts,
