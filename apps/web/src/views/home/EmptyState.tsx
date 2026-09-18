@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 
 import { Language } from '@ygo-assistant/contracts';
 
+import Bench from '../../shared/components/Bench.js';
 import PromptSurface from '../../shared/components/PromptSurface.js';
 import {
   seedConversation,
@@ -13,13 +14,11 @@ import {
 import { navigateWithTransition } from '../../shared/navigateWithTransition.js';
 import { pendingRequestState } from '../../shared/pendingRequest.js';
 
-import { ExamplePromptList } from '../conversation/ExamplePrompts.js';
-
 /**
- * What the chat shows when no conversation is open: the request, ready to be
- * typed, and the settings it will be run with. Sending it starts the
- * conversation with those settings and asks the request in it, which is what the
- * sidebar's New does with the request already in hand.
+ * What the chat shows when no conversation is open: the bench, with the request
+ * ready to be typed on it and the requests that can be asked beside it. Sending
+ * one starts the conversation with those settings and asks the request in it,
+ * which is what the sidebar's New does with the request already in hand.
  *
  * The words stay in the field until the conversation exists, because until then
  * the field is the only place they are, and a conversation that could not be
@@ -69,41 +68,31 @@ export default function EmptyState() {
     }
   };
 
-  // Centred while it fits and scrollable when it does not, which a column that
-  // centres its content cannot do at the same time.
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <div className="m-auto flex w-full flex-col gap-6">
-        <section className="px-6 text-center">
-          <h1 className="text-lg font-semibold text-neutral-100">
-            Start a conversation
-          </h1>
-          <p className="mx-auto mt-3 max-w-md text-sm text-neutral-400">
-            Describe the cards you are looking for.
-          </p>
-          <div className="mx-auto mt-4 max-w-md">
-            <ExamplePromptList onChoose={prompt => void begin(prompt)} />
-          </div>
-        </section>
-
-        <PromptSurface
-          onSend={request => void begin(request)}
-          running={start.isPending}
-          language={language}
-          model={model}
-          models={listing.data?.models}
-          onLanguage={setLanguage}
-          onModel={setChosen}
-          clearOnSend={false}
-          head={
-            start.error === null ? undefined : (
-              <p role="alert" className="text-sm text-red-400">
-                {start.error.message}
-              </p>
-            )
-          }
-        />
-      </div>
+      <Bench
+        heading="Start a conversation"
+        onChoose={request => void begin(request)}
+        prompt={
+          <PromptSurface
+            onSend={request => void begin(request)}
+            running={start.isPending}
+            language={language}
+            model={model}
+            models={listing.data?.models}
+            onLanguage={setLanguage}
+            onModel={setChosen}
+            clearOnSend={false}
+            head={
+              start.error === null ? undefined : (
+                <p role="alert" className="text-sm text-red-400">
+                  {start.error.message}
+                </p>
+              )
+            }
+          />
+        }
+      />
     </div>
   );
 }

@@ -85,7 +85,7 @@ numbering across specs, so blocking edges stay legible across features.
 | 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 76  | [An unanswered request says so and can be asked again](./76-an-unanswered-request-says-so.md)                                               | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 | 77  | [A search that found nothing names what to relax](./77-a-no-result-search-names-what-to-relax.md)                                           | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
-| 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | ready-for-agent       | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
 
 ## Frontier
 
@@ -141,12 +141,13 @@ card text as delimited data in the prompts, and 75 verifies the dump and
 constrains its URLs. 73 through 75 are all resolved.
 
 A design track opens with spec 19 (Turn recovery and the empty bench), ticketed
-as 76 through 78. 76 and 77 are resolved: an unanswered request now says so, can
-be asked again on the search it ran with, and no longer wears the previous search
-as its readout, and a search that found nothing names the fields it ran with,
-shows them beside its answer, and says when it ran on the player's own words. 78
-keeps the workbench in view on the home and empty-conversation surfaces. It is
-independent and unblocked; it is the frontier.
+as 76 through 78, and all three are resolved. 76 makes an unanswered request say
+so and be asked again on the search it ran with, and stops it wearing the
+previous search as its readout. 77 makes a search that found nothing name the
+fields it ran with, show them beside its answer, and say when it ran on the
+player's own words. 78 draws the workbench on the home and empty-conversation
+surfaces, so a conversation that was started but not spoken in is the start it
+was. Spec 19 is complete, and the design track has no ticket left.
 
 A small refactor pruned directly: the words a filter's field and operator are
 read as now have one source in the card domain and are carried through contracts,

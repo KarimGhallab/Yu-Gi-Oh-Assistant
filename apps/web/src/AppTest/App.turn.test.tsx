@@ -107,7 +107,12 @@ describe('running a turn', () => {
         })
       })
     );
-    expect(field).toHaveValue('');
+
+    // The request fills the bench, so the prompt is drawn at the foot of the
+    // conversation now and the field the words were in is gone with the bench.
+    expect(
+      await screen.findByRole('textbox', { name: 'Your request' })
+    ).toHaveValue('');
 
     await act(async () => {
       turn.close();

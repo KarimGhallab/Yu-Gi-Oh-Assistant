@@ -260,7 +260,7 @@ describe('reading a conversation', () => {
     ).toBeInTheDocument();
   });
 
-  it('says what can be asked in a conversation with nothing in it', async () => {
+  it('keeps the bench in a conversation with nothing in it', async () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
@@ -272,9 +272,19 @@ describe('reading a conversation', () => {
 
     renderApp(`/c/${uuid(2)}`);
 
+    // An empty conversation is the start it was, so it draws the same bench the
+    // home surface does: the words, the request field, and the requests that can
+    // be asked. Its own header names it, so the bench holds no second title.
     expect(
-      await screen.findByRole('heading', { name: 'Ask for cards' })
+      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
     ).toBeInTheDocument();
+    expect(
+      screen.getByText('Describe the cards you are looking for.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: 'Your request' })
+    ).toBeInTheDocument();
+
     // Four of the fifty are drawn, so the test counts them rather than naming
     // them: which four is the point of drawing.
     expect(

@@ -10,6 +10,7 @@ import {
 } from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/apiClient.js';
+import Bench from '../../shared/components/Bench.js';
 import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
 import {
   useArchetypes,
@@ -19,9 +20,9 @@ import {
 } from '../../shared/conversationQueries.js';
 import { conversationTitle } from '../../shared/conversationTitle.js';
 import { pendingRequest } from '../../shared/pendingRequest.js';
+import { runViewTransition } from '../../shared/runViewTransition.js';
 
 import Composer from './Composer.js';
-import ExamplePrompts from './ExamplePrompts.js';
 import MessageHistory, { type ChatTurn } from './MessageHistory.js';
 import {
   failureAnnouncement,
@@ -220,21 +221,75 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         ? undefined
         : (interpretation ?? lastSearch(conversation.data.messages));
 
+  // The bench is drawn only when the conversation is at rest with nothing in
+  // it. A request handed over from the home surface has a turn on its way and
+  // belongs at the foot already, which is what keeps the prompt docking rather
+  // than jumping back to the middle for the frame before it is asked.
+  const restful = turns.length === 0 && !isRunning && request === undefined;
+
+  const ask = (text: string): void => {
+    if (restful) {
+      // Asking from the bench fills the conversation, so the prompt is carried
+      // down to the foot of it in the movement the home surface already makes,
+      // with no navigation to hang it on.
+      runViewTransition(() => {
+        void send(text, { language, model });
+      });
+      return;
+    }
+
+    void send(text, { language, model });
+  };
+
+  const composer = (
+    <Composer
+      onSend={ask}
+      running={isRunning}
+      announcement={announcement}
+      readout={readout}
+      onCorrect={correct}
+      failure={failure}
+      language={language}
+      model={model}
+      models={models.data?.models}
+      archetypes={archetypes.data}
+      settingsError={update.error?.message}
+      onLanguage={changeLanguage}
+      onModel={changeModel}
+    />
+  );
+
+  const header = (
+    <header className="border-b border-neutral-800 px-6 py-4">
+      <h1 className="truncate text-lg font-semibold text-neutral-100">
+        {conversationTitle(conversation.data)}
+      </h1>
+    </header>
+  );
+
+  // A conversation with nothing in it is the start it was, so its content is
+  // the bench the home surface draws, under the name the header gives it. The
+  // bench holds the prompt, so the foot has none while the bench is up.
+  if (restful) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        {header}
+        <section
+          aria-label="Messages"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <Bench onChoose={ask} prompt={composer} />
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="border-b border-neutral-800 px-6 py-4">
-        <h1 className="truncate text-lg font-semibold text-neutral-100">
-          {conversationTitle(conversation.data)}
-        </h1>
-      </header>
+      {header}
       <section
         aria-label="Messages"
         className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
-        {turns.length === 0 ? (
-          <ExamplePrompts
-            onChoose={text => void send(text, { language, model })}
-          />
-        ) : (
+        {turns.length === 0 ? null : (
           <MessageHistory
             messages={turns}
             language={language}
@@ -244,21 +299,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
           />
         )}
       </section>
-      <Composer
-        onSend={text => void send(text, { language, model })}
-        running={isRunning}
-        announcement={announcement}
-        readout={readout}
-        onCorrect={correct}
-        failure={failure}
-        language={language}
-        model={model}
-        models={models.data?.models}
-        archetypes={archetypes.data}
-        settingsError={update.error?.message}
-        onLanguage={changeLanguage}
-        onModel={changeModel}
-      />
+      {composer}
     </div>
   );
 }

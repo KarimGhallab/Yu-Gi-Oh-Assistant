@@ -30,7 +30,7 @@ in order; the `Blocked by` column is the dependency edge.
 | 16  | [Model listing and policy](./16-model-listing-and-policy.md)                   | Resolved (2026-09-18) | 02, 09     |
 | 17  | [One reader for a stored value](./17-stored-value-reader.md)                   | Resolved (2026-09-18) | 05, 12     |
 | 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md)   | Resolved (2026-09-18) | -          |
-| 19  | [Turn recovery and the empty bench](./19-turn-recovery-and-the-empty-bench.md) | ready-for-agent       | -          |
+| 19  | [Turn recovery and the empty bench](./19-turn-recovery-and-the-empty-bench.md) | Resolved (2026-09-18) | -          |
 | 20  | [Readable and reachable controls](./20-readable-and-reachable-controls.md)     | ready-for-agent       | -          |
 | 21  | [One lamp and honest chrome](./21-one-lamp-and-honest-chrome.md)               | ready-for-agent       | -          |
 
@@ -55,8 +55,8 @@ adapters; it is not on the critical path. It is resolved. Feature 18 has no spec
 dependency and hardens the three untrusted boundaries the 2026-09-18 security
 review ranked first; it is not on the critical path. It is resolved. Features 19,
 20, and 21 come from the 2026-09-18 design critique of the web client and have no
-spec dependency; 19 is the maintainer's first priority and carries the
-turn-recovery, empty-answer copy, and empty-bench work, 20 carries the contrast,
-focus, and reachability fixes, and 21 resolves the One Lamp Rule and the chrome
-around an empty conversation. None is on the critical path; they are the next
-work.
+spec dependency. 19 is resolved: it carried the turn recovery, the empty-answer
+copy, and the empty bench. 20 carries the contrast, focus, and reachability
+fixes, and 21 resolves the One Lamp Rule and the chrome around an empty
+conversation, which now starts with the bench 19 landed. Neither is on the
+critical path; they are the next work.

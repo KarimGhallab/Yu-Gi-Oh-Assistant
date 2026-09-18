@@ -47,6 +47,9 @@ describe('the home surface', () => {
     expect(
       await screen.findByRole('heading', { name: 'Start a conversation' })
     ).toBeInTheDocument();
+    expect(
+      screen.getByText('Describe the cards you are looking for.')
+    ).toBeInTheDocument();
 
     // The request can be typed here, so the keyboard is already in it, and the
     // settings it will be run with are on it, on the first model the machine can

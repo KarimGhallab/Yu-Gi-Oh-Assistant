@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import Notice from '../../shared/components/Notice.js';
-
 /**
  * What a player can ask for, shown where there is nothing to read yet. They are
  * the requests themselves rather than a description of what the assistant does,
@@ -84,7 +82,7 @@ const drawPrompts = (): string[] => {
   );
 };
 
-interface ExamplePromptsProps {
+interface ExamplePromptListProps {
   onChoose(prompt: string): void;
 }
 
@@ -93,7 +91,7 @@ interface ExamplePromptsProps {
  * rather than controls with fills: a request is something to say, and four of
  * them beside each other would be four lamps.
  */
-export function ExamplePromptList({ onChoose }: ExamplePromptsProps) {
+export function ExamplePromptList({ onChoose }: ExamplePromptListProps) {
   const [prompts] = useState(drawPrompts);
 
   return (
@@ -109,21 +107,5 @@ export function ExamplePromptList({ onChoose }: ExamplePromptsProps) {
         </li>
       ))}
     </ul>
-  );
-}
-
-/**
- * The way into an empty conversation: what the assistant can be asked, in the
- * player's own words, and a way to ask it without typing. The home surface shows
- * the same list without this wrapper, because its own words are already above it.
- */
-export default function ExamplePrompts({ onChoose }: ExamplePromptsProps) {
-  return (
-    <Notice headingLevel={2} title="Ask for cards">
-      <p>Describe what you are looking for. For example:</p>
-      <div className="mt-3">
-        <ExamplePromptList onChoose={onChoose} />
-      </div>
-    </Notice>
   );
 }

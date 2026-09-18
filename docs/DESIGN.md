@@ -74,6 +74,12 @@ components:
   pane-setting-control:
     textColor: '{colors.ink-muted}'
     typography: '{typography.body}'
+  bench-heading:
+    textColor: '{colors.ink}'
+    typography: '{typography.title}'
+  bench-words:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
   notice-panel:
     backgroundColor: '{colors.surface}'
     textColor: '{colors.ink}'
@@ -282,10 +288,13 @@ width at the same time. The frame is one screen tall at every size and its regio
 scroll inside it, so the bar stays where it is when the prompt takes the keyboard.
 The main region is the only thing that scrolls vertically, and a
 conversation surface holds one header, one content area, and one prompt docked at
-its bottom edge. The home surface holds the same prompt, standing nearer the
-middle of an otherwise empty screen, because typing a request is how a
+its bottom edge. Until it has anything to say, that prompt stands in the middle
+of the region with the requests that can be asked above it, because a
+conversation that was started but not spoken in is still the start it was; the
+prompt moves down to the foot as the first request is asked. The home surface
+draws the same bench under its own title, because typing a request is how a
 conversation begins: sending it starts the conversation and asks the request in
-it, and the prompt moves down to the foot of it as it opens. The header carries
+it. The header carries
 the conversation's name and nothing else, because the language its cards are read
 in and the model that answers belong to the act of asking: they live on the
 prompt's own surface, beside the field they are sent with. That surface is the
@@ -764,26 +773,42 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
 
 - **Shape:** a centred column, nothing enclosed, maximum 28rem of body text.
 - **Heading:** Title, Bone White, when the notice is the whole page. A notice
-  standing in for content inside a page, such as an empty conversation, is below
-  that page's own heading, so it takes a `h2` at the Label scale instead and the
-  page keeps a single title.
+  standing in for content inside a page is below that page's own heading, so it
+  takes a `h2` at the Label scale instead and the page keeps a single title.
 - **Body:** Body, Ash Grey.
 - **Action:** one primary button or link, or none.
-- **Use it for:** everything that stands in for content that is not there, so the
-  empty state, a conversation that does not exist, and a request that failed all
-  speak in the same voice.
-- **What can be asked:** a conversation with nothing in it offers the requests
-  themselves as things to press, in the player's own words, because a request that
-  is written out is a request that can be sent without typing one. They are plain
-  text in Ash Grey, stepping to Bone White when pointed at, since four requests
-  beside each other as fills would be four lamps. The home surface shows the same
-  list directly under its own words rather than inside a notice, because there it
-  is the content rather than something standing in for content. Fifty requests are
-  kept and four are drawn from them, without repeating, once per surface: a player
-  who comes back meets a different handful, and the list stays short enough to
-  read. They are drawn rather than listed because a player who has read all fifty
-  would stop seeing them, and because a request the assistant already knows the
-  name of is not the request this app is for.
+- **Use it for:** everything that stands in for content that is not there, so a
+  conversation that is opening, one that does not exist, and one that could not be
+  opened all speak in the same voice. The empty surface is not one of these: it is
+  the bench, which is content rather than something standing in for it.
+
+### Bench (the home surface and an empty conversation)
+
+- **What it is:** the workbench before there is anything on it: the request to be
+  typed as the object, and the requests that can be asked as its tools. The home
+  surface and a conversation with nothing in it draw the same one, because a
+  conversation that was started but not spoken in is still the start it was.
+- **Composition:** a centred column. The title and its words, then the requests,
+  then the prompt. The prompt keeps the width it has at the foot of a
+  conversation, because the two are one card and the move between them is what
+  says so; only the words and the tools are held to a 28rem measure and centred.
+- **Title:** Title scale in Bone White on the home surface. A conversation names
+  itself in its header, so its bench leaves the title out and the words stand
+  under that name instead.
+- **Words:** Body in Ash Grey, one line: they say what to do, not what the tool
+  is.
+- **Tools:** the requests themselves, as plain text in Ash Grey, stepping to Bone
+  White when pointed at, because a request is something to say and four of them as
+  fills would be four lamps. They sit above the prompt, so what can be asked is
+  read before the field it is typed in. Fifty are kept and four are drawn
+  from them, without repeating, once per surface, so a player who comes back meets
+  a different handful, and none of them is a card they had to know the name of
+  first.
+- **Leaving:** asking a request fills the bench, so the prompt is carried down to
+  the foot of the conversation it just filled, in the movement the home surface
+  already makes. The bench is drawn only when the conversation is at rest: a
+  request handed over from the home surface is already on its way and its prompt
+  lands at the foot rather than passing through the middle.
 
 ### Alert line
 
