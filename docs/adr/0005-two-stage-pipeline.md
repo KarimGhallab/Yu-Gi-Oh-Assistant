@@ -9,7 +9,7 @@ from the cards the first stage kept, at temperature 0, in the conversation's
 language. Structured output is the first stage's tool; the answer is prose and
 is not constrained by a schema.
 
-Separating *what* to recommend from *why* is what the split buys. The suggestion
+Separating _what_ to recommend from _why_ is what the split buys. The suggestion
 is an exact, inspectable set of card ids before any prose is written, so the
 interface can render the cards while the answer streams, and the player can
 correct the filters and run the turn again. The answer is written from those
