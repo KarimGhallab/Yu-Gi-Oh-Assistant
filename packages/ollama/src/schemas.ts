@@ -29,10 +29,22 @@ export const embedResponseSchema = z.object({
 });
 
 /**
- * One line of the `POST /api/chat` stream, narrowed to the fields the client
+ * The response of `POST /api/chat`, narrowed to the fields the client
  * uses. The final line carries an empty content and `done: true`.
  */
 export const chatChunkSchema = z.object({
   message: z.object({ content: z.string() }),
   done: z.boolean()
+});
+
+/**
+ * The failure the `ollama` library throws when the server answers with a
+ * non-2xx status. The library does not export its `ResponseError` class, so the
+ * client recognises that failure by shape: the name the class sets, the status,
+ * and the message it carries from the server.
+ */
+export const responseErrorSchema = z.object({
+  name: z.literal('ResponseError'),
+  status_code: z.number(),
+  message: z.string()
 });

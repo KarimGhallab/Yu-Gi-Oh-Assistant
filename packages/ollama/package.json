@@ -25,6 +25,7 @@
   "packageManager": "pnpm@11.20.0",
   "dependencies": {
     "@ygo-assistant/utils": "workspace:*",
+    "ollama": "^0.6.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
