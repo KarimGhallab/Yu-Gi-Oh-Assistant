@@ -1,0 +1,32 @@
+{
+  "name": "@ygo-assistant/e2e",
+  "version": "0.1.0",
+  "description": "End-to-end browser suite over the built client, server, and index.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e:install": "playwright install --with-deps chromium firefox webkit",
+    "stack": "tsx stack.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@11.20.0",
+  "dependencies": {
+    "@ygo-assistant/cards": "workspace:*",
+    "@ygo-assistant/db": "workspace:*",
+    "@ygo-assistant/ollama": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "26.6.1",
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3"
+  },
+  "volta": {
+    "node": "26.5.0",
+    "pnpm": "11.20.0"
+  }
+}

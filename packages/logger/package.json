@@ -16,7 +16,7 @@
     "build": "tsc -b",
     "dev": "tsc -b --watch --preserveWatchOutput",
     "watch": "tsc -b --watch --preserveWatchOutput",
-    "clean-all": "rm -rf dist && rm -rf node_modules",
+    "clean:all": "rm -rf dist && rm -rf node_modules",
     "clean": "rm -rf dist"
   },
   "keywords": [],
@@ -29,7 +29,7 @@
     "rotating-file-stream": "^3.2.10"
   },
   "devDependencies": {
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.1",
     "typescript": "^6.0.3"
   },
   "volta": {

@@ -7,11 +7,11 @@ client provides the chat experience.
 
 ## Read first
 
+- `docs/GLOSSARY.md` - where the glossary of the project lives.
 - `docs/DOMAIN.md` - where the product and architecture docs live, and how to
   consume them.
 - `docs/PRODUCT.md` - product intent, users, constraints, principles (authored
   during the implementation bootstrap).
-- `docs/ARCHITECTURE.md` - component map, data flow, layer boundaries
   (authored during the implementation bootstrap).
 - `docs/adr/` - architecture decision records.
 
@@ -31,14 +31,13 @@ client provides the chat experience.
 
 ## Guardrails
 
-- Git is out of bounds. Never run any git command (status, add, commit, push,
-  branch, hooks): the maintainer handles all staging and committing. This
+- Git is out of bounds. The maintainer handles all staging and committing. This
   overrides any skill that tells an agent to commit its work.
 - ESM everywhere. Node and pnpm versions are pinned with volta; do not drift.
-- The card index and the raw card dump are gitignored. Never commit them.
 - The server binds to loopback by default. Never expose conversation history
   without an explicit decision.
 - Never use em dashes in generated text.
+- Do not run prettier manually, the prettify is triggered automatically.
 
 ## Agent skills
 

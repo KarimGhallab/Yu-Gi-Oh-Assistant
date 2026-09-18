@@ -1,5 +1,11 @@
 #!/bin/sh
+set -e
+
+# Block the push when a dependency that is installed carries a known
+# vulnerability: pnpm audit is the lockfile-aware form of npm audit.
+echo "(1) Auditing the installed dependencies..."
+pnpm audit --audit-level=high
 
 # Run the full test suite before pushing
-echo "(1) Running the test suite..."
+echo "(2) Running the test suite..."
 pnpm test

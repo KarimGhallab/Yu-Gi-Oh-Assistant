@@ -12,7 +12,7 @@
     "start": "node --env-file-if-exists=.env dist/main.js",
     "db:populate": "tsc -b && tsx --env-file-if-exists=.env src/populate/populateCommand.ts",
     "rag:ask": "tsc -b && tsx --env-file-if-exists=.env src/rag/ragCommand.ts",
-    "clean-all": "rm -rf dist && rm -rf node_modules",
+    "clean:all": "rm -rf dist && rm -rf node_modules",
     "clean": "rm -rf dist"
   },
   "keywords": [],
@@ -28,11 +28,11 @@
     "@ygo-assistant/ollama": "workspace:*",
     "@ygo-assistant/rag": "workspace:*",
     "@ygo-assistant/utils": "workspace:*",
-    "hono": "^4.13.7",
-    "zod": "^4.4.3"
+    "hono": "^4.13.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.1",
     "@ygo-assistant/test-support": "workspace:*",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3"

@@ -172,7 +172,9 @@ module.exports = {
           '^(?:apps|packages)/[^/]+/src/index[.]ts$', // package entry points are roots
           '^(?:apps|packages)/[^/]+/src/main[.]tsx?$', // app entry points are roots
           '^(?:apps|packages)/[^/]+/src/test-setup[.]ts$', // test runner setup is a root
-          '^(?:apps|packages)/[^/]+/vite[.]config[.](?:js|mjs|ts|mts)$' // build config
+          '^(?:apps|packages)/[^/]+/vite[.]config[.](?:js|mjs|ts|mts)$', // build config
+          '^e2e/', // the end-to-end suite is a root, not imported by anything
+          '(^|/)playwright[.]config[.](?:js|cjs|mjs|ts|cts|mts)$' // end-to-end config
         ]
       },
       to: {}
