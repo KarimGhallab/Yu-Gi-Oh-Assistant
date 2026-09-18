@@ -49,12 +49,15 @@ the status check a pull request is blocked on.
 
 ## Implementation Decisions
 
-- **Suite home.** The suite lives under `e2e/` at the repository root, with
-  `playwright.config.ts` beside it and `@playwright/test` as a root
-  devDependency. A dedicated `e2e/tsconfig.json`, referenced from the root
-  `tsconfig.json`, keeps `tsc -b` covering it. The root scripts are `test:e2e`
-  (`playwright test`) and `test:e2e:ui`. The config declares three projects,
-  `chromium`, `firefox`, and `webkit`, and runs with `workers: 1`.
+- **Suite home.** The suite is its own workspace package, `@ygo-assistant/e2e`,
+  living under `e2e/` at the repository root with `playwright.config.ts` beside
+  it. It owns the imports it needs, the cards, db, and ollama packages among
+  them, and its own devDependencies, so the root stays free of tooling it does
+  not run. A dedicated `e2e/tsconfig.json`, referenced from the root
+  `tsconfig.json`, keeps `tsc -b` covering it. The root scripts are `test:e2e`,
+  `test:e2e:ui`, `build:e2e`, and `e2e:install`, each delegating to the package.
+  The config declares three projects, `chromium`, `firefox`, and `webkit`, and
+  runs with `workers: 1`.
 - **Engine-agnostic by contract.** Assertions use roles, text, and the DOM only.
   The card's grow-from-tile is the View Transitions API, which only chromium
   implements; `runViewTransition` falls back to an instant update, so the suite
