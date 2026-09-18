@@ -56,7 +56,7 @@ describe('the conversation settings', () => {
     renderApp(`/c/${uuid(2)}`);
 
     expect(
-      await screen.findByRole('link', { name: 'Dark Magician' })
+      await screen.findByRole('button', { name: 'Dark Magician' })
     ).toBeInTheDocument();
 
     await pickSetting('Cards in', 'French');
@@ -64,9 +64,9 @@ describe('the conversation settings', () => {
     // The same turn comes back in the other language, and it is the same turn:
     // the cards were read again rather than the question answered twice.
     expect(
-      await screen.findByRole('link', { name: 'Magicien Sombre' })
+      await screen.findByRole('button', { name: 'Magicien Sombre' })
     ).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Dark Magician' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Dark Magician' })).toBeNull();
     expect(screen.getAllByText('Assistant')).toHaveLength(1);
 
     // The turn that follows is searched in the language that is on screen.
@@ -112,7 +112,7 @@ describe('the conversation settings', () => {
 
     expect(await settingControl('Cards in')).toHaveTextContent('French');
     expect(
-      await screen.findByRole('link', { name: 'Magicien Sombre' })
+      await screen.findByRole('button', { name: 'Magicien Sombre' })
     ).toBeInTheDocument();
   });
 

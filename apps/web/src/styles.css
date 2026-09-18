@@ -63,6 +63,19 @@
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /*
+   * A card opening: the tile the player pressed and the centred face are one
+   * object in two states, so the tile is what travels and grows into the face
+   * and shrinks back to the tile when the face is closed. It takes the same
+   * 420ms on the system's decelerating curve as the prompt docking, while the
+   * room settles faster, and reduced motion gets the face where it lands with no
+   * travel.
+   */
+  ::view-transition-group(card-detail) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   ::view-transition-old(root) {
     animation-duration: 180ms;
     animation-timing-function: ease-out;
@@ -121,6 +134,7 @@
    */
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(prompt),
+    ::view-transition-group(card-detail),
     ::view-transition-old(root),
     ::view-transition-new(root) {
       animation-duration: 0.01ms;

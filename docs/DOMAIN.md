@@ -1,18 +1,22 @@
 # Domain docs
 
-Single-context layout. The product docs are the domain model; there is no
-separate glossary file.
+Single-context layout. The product docs are the domain model, and the glossary
+that names it is a companion file.
 
-| What                          | Where                  |
-| ----------------------------- | ---------------------- |
-| Product intent and vocabulary | `docs/PRODUCT.md`      |
-| Architecture and data flow    | `docs/ARCHITECTURE.md` |
-| Architecture decisions        | `docs/adr/`            |
+| What                         | Where                  |
+| ---------------------------- | ---------------------- |
+| Product intent               | `docs/PRODUCT.md`      |
+| Domain vocabulary (glossary) | `docs/GLOSSARY.md`     |
+| Architecture and data flow   | `docs/ARCHITECTURE.md` |
+| Architecture decisions       | `docs/adr/`            |
 
 ## Consumer rules
 
 - Read `docs/PRODUCT.md` before changing anything user-facing: its vocabulary
   and constraints are normative.
+- Read `docs/GLOSSARY.md` when naming a domain concept, so code and docs keep
+  using one word per idea. Where it overlaps `docs/PRODUCT.md`, the product doc
+  is normative.
 - Read `docs/ARCHITECTURE.md` before changing the server, the pipeline, or the
   data layer. Its layer boundaries are normative.
 - Record non-obvious technical decisions as ADRs in `docs/adr/`.

@@ -173,8 +173,8 @@ describe('reading a conversation', () => {
       )
     ).toEqual([BLUE_EYES.imageUrl, DARK_MAGICIAN.imageUrl, RED_EYES.imageUrl]);
     expect(
-      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
-    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+      within(cards).getByRole('button', { name: 'Blue-Eyes White Dragon' })
+    ).toBeInTheDocument();
   });
 
   it('keeps a card readable when its image cannot be loaded', async () => {
@@ -206,8 +206,8 @@ describe('reading a conversation', () => {
     expect(cards.querySelector('img')).toBeNull();
     expect(within(cards).getByText('No image')).toBeInTheDocument();
     expect(
-      within(cards).getByRole('link', { name: 'Blue-Eyes White Dragon' })
-    ).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+      within(cards).getByRole('button', { name: 'Blue-Eyes White Dragon' })
+    ).toBeInTheDocument();
   });
 
   it('says what can be asked in a conversation with nothing in it', async () => {
@@ -234,7 +234,7 @@ describe('reading a conversation', () => {
     ).toHaveLength(4);
   });
 
-  it("reaches a card's source without a mouse", async () => {
+  it('reaches each card, and the prompt after them, without a mouse', async () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
@@ -270,12 +270,12 @@ describe('reading a conversation', () => {
     await userEvent.tab();
 
     expect(
-      screen.getByRole('link', { name: 'Blue-Eyes White Dragon' })
+      screen.getByRole('button', { name: 'Blue-Eyes White Dragon' })
     ).toHaveFocus();
 
     await userEvent.tab();
 
-    expect(screen.getByRole('link', { name: 'Dark Magician' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Dark Magician' })).toHaveFocus();
 
     // The prompt comes after the conversation, because that is the order the
     // surface is read in, and it holds everything the request is run with: the
@@ -295,6 +295,69 @@ describe('reading a conversation', () => {
     // The Send is out of the tab order while there is nothing to send, so the
     // prompt's own controls are where the surface's stops end.
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it("opens a card's printed face, with its source, and gives focus back", async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'I want a dragon'),
+                assistantMessage(12, 'These are the ones to look at.', [
+                  BLUE_EYES,
+                  DARK_MAGICIAN
+                ])
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+    const cards = within(history).getByRole('list', {
+      name: 'Suggested cards'
+    });
+    const tile = within(cards).getByRole('button', {
+      name: 'Blue-Eyes White Dragon'
+    });
+
+    await userEvent.click(tile);
+
+    // The card is the whole of what the face carries: the facts are on the
+    // printed face itself, so nothing is restated beside it.
+    const face = screen.getByRole('dialog', {
+      name: 'Blue-Eyes White Dragon'
+    });
+    expect(face.querySelector('img')).toHaveAttribute(
+      'src',
+      BLUE_EYES.imageUrl
+    );
+    expect(within(face).queryByText(BLUE_EYES.effect)).toBeNull();
+
+    // The tile's own link is gone; the source travels with the face instead.
+    const source = within(face).getByRole('link', {
+      name: 'View on YGOPRODeck'
+    });
+    expect(source).toHaveAttribute('href', BLUE_EYES.sourceUrl);
+    expect(source).toHaveAttribute('target', '_blank');
+
+    // The keyboard is on the way out, and the source is the next stop.
+    expect(
+      within(face).getByRole('button', { name: 'Close the card' })
+    ).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(source).toHaveFocus();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(tile).toHaveFocus();
   });
 
   it("marks a card the conversation's language has no printing of", async () => {
@@ -326,13 +389,13 @@ describe('reading a conversation', () => {
     // name alone: the marker of the other one is not part of any card's label.
     expect(within(magicien).queryByText('FR only')).toBeNull();
     expect(
-      within(magicien).getByRole('link', { name: 'Magicien Sombre' })
+      within(magicien).getByRole('button', { name: 'Magicien Sombre' })
     ).toBeInTheDocument();
 
     // The card only in English says which language it is in.
     expect(within(greed).getByText('EN only')).toBeInTheDocument();
     expect(
-      within(greed).getByRole('link', { name: 'Pot of Greed' })
+      within(greed).getByRole('button', { name: 'Pot of Greed' })
     ).toBeInTheDocument();
   });
 });

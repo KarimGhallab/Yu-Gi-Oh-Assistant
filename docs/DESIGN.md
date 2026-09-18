@@ -88,10 +88,20 @@ components:
     typography: '{typography.body}'
   card-tile-hover:
     borderColor: '{colors.accent}'
+  card-detail:
+    backgroundColor: 'oklch(14.5% 0 none / 0.7)'
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+  card-detail-source:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
   message-label:
     textColor: '{colors.ink-muted}'
     typography: '{typography.label}'
   message-prose:
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+  message-prose-link:
     textColor: '{colors.ink}'
     typography: '{typography.body}'
   message-searched-as-label:
@@ -160,9 +170,10 @@ built: its history, its grid of framed cards, and the readout of what a search
 was understood as are in place, and the amber rail around the active turn and the
 model's reading set as marginalia follow.
 
-Flatness is deliberate and the system has no motion yet. Depth is tonal: three
-steps of near-black do the work shadows would do elsewhere, and the only
-transition in the app is a color change that happens instantly.
+Flatness is deliberate. Depth is tonal: three steps of near-black do the work
+shadows would do elsewhere, and state changes are instant color swaps. Motion is
+a small vocabulary rather than none: a few things move, each because the movement
+is the change itself, and they are listed under Elevation.
 
 **Key Characteristics:**
 
@@ -241,7 +252,6 @@ stats, and identifiers.
   notice. The largest type in the system.
 - **Base** (400, 16px / 24px): the document default. Rarely used directly.
 - **Body** (400, 14px / 20px): answers, messages, navigation rows, controls.
-  Prose is held to about 68 characters per line.
 - **Label** (500, 14px / 20px): buttons and the brand mark. The brand also
   carries 0.025em of tracking.
 - **Mono** (400, 12px / 16px): the interpretation readout, counts, card stats.
@@ -277,7 +287,7 @@ says which conversation this is.
 Density is set by a 0.25rem spacing base: 0.75rem inside a row, 1rem for panel
 padding and control height, 1.5rem for page padding on the horizontal axis, 2rem
 for a notice's breathing room. Notice panels cap at 28rem so a sentence never
-becomes a line; prose caps at 68 characters for the same reason. Structure comes
+becomes a line. Structure comes
 from 1px hairlines in Rail Grey, not from enclosed boxes.
 
 There is exactly one breakpoint in use, `48rem`. The system is otherwise fluid:
@@ -293,7 +303,7 @@ Grey draws the edge or fills the row that is open. A surface that needs to feel
 closer moves up one step, not forward.
 
 Motion is the exception, and it has a small vocabulary rather than none. State
-changes are instant color swaps; three things move, and each of them is the
+changes are instant color swaps; a few things move, and each of them is the
 change itself rather than an effect laid over it:
 
 - **The prompt, docking.** Sending the first request of a conversation carries the
@@ -304,6 +314,13 @@ change itself rather than an effect laid over it:
   prompt lands on it. It keeps its size on the way, because it is one card in both
   places and only its position changes, and the words that were in it are the
   message that appears above it.
+- **A card, opening.** Pressing a suggested card carries its printed face from
+  the tile to the middle of the room, growing it as it goes, because the tile and
+  the face are one object in two states and the move is what says so. It is the
+  prompt's own movement: 420ms on `cubic-bezier(0.16, 1, 0.3, 1)`, with the room
+  settling faster as it dims, and closing carries the face back down onto the
+  tile. The name the two share is on exactly one of them at any moment, the tile
+  on the way out and the face on the way in.
 - **A caret, turning over.** A setting's caret turns while the list it opens is
   open, 150ms, so the control says which of its two states it is in.
 - **The sidebar, folding and arriving.** On a wide window the panel's width is
@@ -322,8 +339,8 @@ change itself rather than an effect laid over it:
   still announces the sentence once.
 
 A player who has asked for reduced motion gets the state changes without the
-movement: the prompt where it lands and the cross-fade, the caret already turned,
-and the panel already at its width.
+movement: the prompt where it lands and the cross-fade, the card face where it
+lands, the caret already turned, and the panel already at its width.
 
 ## Shapes
 
@@ -444,6 +461,36 @@ level deep.
   A touch screen has nothing to hover, so folded marks are not this surface's
   business: there is no rail below the breakpoint, only the list.
 
+### Prose (an answer)
+
+- **What it is:** the assistant's answer, rendered from the Markdown the model
+  writes rather than shown as it typed it. What a model may use is asked for in
+  its prompt, and what it uses anyway is mapped onto the system here, so an answer
+  cannot reach a size, a colour, or a container this system does not have.
+- **Bold:** the same Bone White at weight 600. Emphasis is weight rather than
+  scale, the way the rest of the system carries hierarchy.
+- **Headings:** every level a model reaches for comes out at Body scale and weight
+  600 in Bone White. It is a heading to a screen reader and never a display size,
+  because the conversation's own title is the only thing at Title scale.
+- **Lists:** plain, one indent step, markers in Dust Grey, and no box: a list is a
+  list rather than another container.
+- **Code:** 12px mono in Ash Grey, inline or in a block, because mono is the voice
+  of machine facts here.
+- **Links:** Bone White with a 1px Rail Grey underline at 2px offset, the
+  underline stepping to Lamp Amber on hover, with the recorded focus ring. A link
+  is an action, which is what lets it take the lamp, and it opens in a new tab
+  like a card's own link. It is the only action the prose carries.
+- **Blockquote and rule:** the hairline the system divides with, in Rail Grey,
+  with quoted words in Ash Grey.
+- **Raw HTML and images:** dropped, never rendered. Nothing an answer carries may
+  be a picture this app did not choose, and the only images it loads are the
+  cards' printed faces under the answer.
+- **While it arrives:** the prose is Markdown from the first token, and the
+  announcement is drawn apart from it. A visually hidden live region carries one
+  node per piece, so a screen reader hears the answer arriving rather than the
+  whole of it again on every piece, which is the same drawing twice that the
+  status line makes.
+
 ### Cards (the grid)
 
 - **Shape:** square corners, 1px Rail Grey border, image at its native
@@ -451,22 +498,51 @@ level deep.
   a card is never letterboxed by a guess.
 - **Background:** the card image is the surface; the frame behind it is Bench
   Slate.
-- **Name:** Body, Bone White, under the frame. It is the link's label, so a card
-  is announced by its name and the image itself carries no text.
+- **Name:** Body, Bone White, under the frame. It is the control's label, so a
+  card is announced by its name and the image itself carries no text.
+- **Pressing:** a card is a button, not a link. Pressing it opens its printed face
+  in the middle of the room, where the effect and the stats can be read, and the
+  source link travels with the face rather than sitting on the tile.
 - **Selection:** hovering or focusing a card steps its border to Lamp Amber. This
   is the accent doing the work the One Lamp Rule allows it.
 - **Layout:** a wrapping grid, `repeat(auto-fill, minmax(9rem, 1fr))` with 0.75rem
   gutters and no sideways scroll. A suggestion is a set to compare, so it reflows
   to two cards wide on a phone and six or more on a desktop window.
 - **Missing image:** the frame stands and says so in Body scale, Ash Grey, and
-  silent to assistive technology; the name and the link remain, so a card is
-  never an empty box.
+  silent to assistive technology; the name remains, so a card is never an empty
+  box.
 - **Not in this language:** a card the conversation's language has no printing of
   still appears, saying which language it is in under its name. It is 12px mono
-  in Dust Grey, text of its own rather than part of the link, so the card is
+  in Dust Grey, text of its own rather than part of the control, so the card is
   still announced by its name and the note is read after it. Nothing about it is
   a color or a shape, because a card being in the other language is a fact worth
   knowing rather than a warning.
+
+### Card detail (the face opened)
+
+- **What it is:** the printed face of one suggested card, in the middle of the
+  room, large enough to read. The card is the whole of the content: the facts the
+  tile cannot make legible are on the face itself, so nothing is drawn over it and
+  nothing restates it. It is what the tile's own link used to be for, done in the
+  room instead of in another tab.
+- **Surface:** the room dimmed a step further behind the face, which keeps its
+  printed ratio, uncropped and unrounded, inside 78% of the window's height and
+  the width it is given. There is no panel and no frame: the card is the object
+  and the room is behind it.
+- **Chrome:** two controls and nothing else. A close mark at the room's top right,
+  drawn in the icon set's stroke, and the card's source as a quiet 12px mono link
+  under the face, underlined in Rail Grey and stepping to Lamp Amber on hover. A
+  dialog takes the room while it is open, so it carries its own close and its own
+  action, and it introduces no second accent: the face and the close stay neutral,
+  and only the focus ring lights.
+- **Accessible name:** the printed name is already in the face, so the dialog's
+  own name is the card's name, visually hidden, and the card is announced by it.
+- **Keyboard:** the close mark takes the keyboard as the face opens, Tab stays
+  between it and the source, Escape and a press in the room outside call it off,
+  and focus goes back to the tile that asked.
+- **Motion:** the tile grows into the face and the face shrinks back onto the
+  tile, 420ms on `cubic-bezier(0.16, 1, 0.3, 1)`, with reduced motion getting the
+  face where it lands with no travel.
 
 ### Cards / Containers (panels)
 
@@ -691,8 +767,7 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   the amber elements on a screen; more than two is usually one too many.
 - **Do** step surfaces by one token (Room Black, Bench Slate, Rail Grey) when
   something needs to come forward, and keep them square.
-- **Do** use 1px Rail Grey hairlines to separate, and cap prose at about 68
-  characters and notices at 28rem.
+- **Do** use 1px Rail Grey hairlines to separate, and cap notices at 28rem.
 - **Do** set machine facts (filters, counts, card stats, identifiers) in 12px
   mono, and everything a person reads in the platform stack.
 - **Do** give a new full-page surface its own Room Black background. The frame
