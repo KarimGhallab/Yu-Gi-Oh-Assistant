@@ -274,7 +274,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   // is up.
   if (restful) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <div className="quiet-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
         <Bench
           heading="Start a conversation"
           onChoose={ask}
@@ -289,7 +289,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
       {header}
       <section
         aria-label="Messages"
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+        className="quiet-scroll flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
         {turns.length === 0 ? null : (
           <MessageHistory
             messages={turns}

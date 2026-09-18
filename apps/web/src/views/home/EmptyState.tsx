@@ -69,7 +69,7 @@ export default function EmptyState() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="quiet-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
       <Bench
         heading="Start a conversation"
         onChoose={request => void begin(request)}

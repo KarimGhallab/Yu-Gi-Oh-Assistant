@@ -286,7 +286,10 @@ to start a conversation, and pressing its mark brings the whole sidebar across
 with the chat dimmed behind it, because on a narrow window the two cannot want the
 width at the same time. The frame is one screen tall at every size and its regions
 scroll inside it, so the bar stays where it is when the prompt takes the keyboard.
-The main region is the only thing that scrolls vertically, and a
+Every region that scrolls carries the system's own rail rather than the browser's
+default, so the scrollbar is part of the workbench and not a strip of chrome
+against the window's edge. The main region is the only thing that scrolls
+vertically, and a
 conversation surface holds one header, one content area, and one prompt docked at
 its bottom edge. Until it has anything to say, that prompt stands in the middle
 of the region with the requests that can be asked above it, because a
@@ -360,6 +363,31 @@ change itself rather than an effect laid over it:
 A player who has asked for reduced motion gets the state changes without the
 movement: the prompt where it lands and the cross-fade, the card face where it
 lands, the caret already turned, and the panel already at its width.
+
+## Browser surfaces
+
+The parts of the screen the system did not draw still carry it. A scrollbar, the
+pointer's caret, and the platform's own menu are all surfaces the browser paints,
+and left alone each arrives in a grey from no palette and a size from no scale.
+They are themed from the palette like anything the app draws itself.
+
+A scrollbar is a rail, and the system has exactly one grey for a rail: its thumb
+is Rail Grey and its track is transparent, so the rail is the only thing on it
+and nothing is drawn beside the one the player is dragging. It is thin, and it is
+thumb-only, with no arrow buttons at its ends. It goes on every region that
+scrolls and nowhere else: the request field, the list a setting opens, the
+conversation and the bench, and the sidebar's own list and its folded rail. The
+standard `scrollbar-width` and `scrollbar-color` properties are what draw it,
+because reaching for the browser's non-standard scrollbar pseudo-elements puts
+the engine back on the path that draws the arrow buttons and fights the thing it
+was meant to remove.
+
+The distinction is not cosmetic. A scrolling region that does not opt in does not
+merely get a plainer bar: on a window whose scrollbars are overlaid, the unthemed
+bar is drawn wider, in a grey the palette does not contain, and against the edge
+of the window rather than the edge of the region, so it reads as chrome that
+belongs to the browser and not to the app. Opting in is what makes a scrollbar
+part of the workbench.
 
 ## Shapes
 
@@ -665,7 +693,8 @@ level deep.
   The keyboard lights the whole of it rather than a box inside it.
 - **Field:** a textarea on that surface, Body text in Bone White, Dust Grey
   placeholder, five lines tall before it scrolls so a request of a few lines can
-  be read back at once. Its scrollbar is thin, without a track, and thumb only.
+  be read back at once. Its scrollbar is the system's own rail, thin, without a
+  track, thumb only, and in Rail Grey, like every other scrollbar in the app.
   Opening the app, as much as opening a conversation, puts the keyboard in this
   field, because arriving is how a player comes to ask, so no address needs a
   further stop to start typing. Enter sends and Shift+Enter is a line, because a

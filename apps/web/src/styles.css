@@ -4,6 +4,18 @@
   --color-neutral-500: oklch(65% 0 none);
 }
 
+/*
+ * A scrollbar is a browser surface the system did not draw, so it is themed
+ * from the palette like anything else. The thumb is Rail Grey, the same step
+ * that draws every divider and fills the open row, because a scrollbar is a
+ * rail and the system has exactly one grey for one. The track is the surface
+ * behind it, which is why it is transparent: a track painted a color would be a
+ * second rail beside the one the player is dragging.
+ */
+:root {
+  --scrollbar-thumb: oklch(26.9% 0 none);
+}
+
 /* The app is dark-only for now, so the browser paints its own chrome to match. */
 @layer base {
   html {
@@ -13,8 +25,10 @@
 
 @layer components {
   /*
-   * A scrollbar that is thin, without a track, and only ever the thumb body, for
-   * the request field and the list a setting opens above it.
+   * A scrollbar that is thin, without a track, and only ever the thumb body. It
+   * is the app's one rail, so it goes on every region that scrolls: the request
+   * field, the list a setting opens above it, the conversation and the bench,
+   * and the sidebar's own list and folded rail.
    *
    * This deliberately uses the two standard properties and nothing else. Styling
    * `::-webkit-scrollbar` at all puts Chrome back on its legacy scrollbar path,
@@ -22,10 +36,16 @@
    * hiding them with `::-webkit-scrollbar-button` is fighting the very thing that
    * brought them. Left to the standard properties, Chrome and Firefox both
    * render a thin bar that is thumb and nothing else.
+   *
+   * A region that does not carry this class does not fall back to something
+   * quieter: on a window with overlay scrollbars the bar is drawn unthemed,
+   * wider, and in a grey from no palette, which is what the conversation surface
+   * used to do. The class is the difference between a rail and a strip of the
+   * browser's own chrome.
    */
   .quiet-scroll {
     scrollbar-width: thin;
-    scrollbar-color: #404040 transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
   /*
