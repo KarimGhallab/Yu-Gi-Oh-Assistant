@@ -152,6 +152,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
       content: message.content,
       cards: message.cards,
       query: rewrittenQuery(stored, index),
+      search: message.search,
       retry:
         waitingForReply && index === stored.length - 1
           ? { filters: storedSearch }
@@ -179,7 +180,11 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
             role: MessageRole.Assistant,
             content: turn.pieces.join(''),
             cards: turn.cards,
-            pieces: turn.pieces
+            pieces: turn.pieces,
+            search:
+              turn.search === undefined
+                ? undefined
+                : { filters: turn.search, query: turn.query }
           }
         ])
   ];

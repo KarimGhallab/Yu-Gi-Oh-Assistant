@@ -1,12 +1,14 @@
 import {
   type CardFilters,
   type Language,
-  MessageRole
+  MessageRole,
+  type SearchInterpretation
 } from '@ygo-assistant/contracts';
 
 import MessageProse from '../../shared/components/MessageProse.js';
 
 import CardGrid, { type SuggestedCard } from './CardGrid.js';
+import { describeFilter } from './describeFilter.js';
 
 const PLAYER = 'You';
 const ASSISTANT = 'Assistant';
@@ -36,6 +38,19 @@ const SEARCHED_AS_QUERY_CLASS = 'whitespace-pre-wrap text-neutral-400';
  */
 const RETRY_CLASS =
   'rounded text-sm font-medium text-neutral-100 underline decoration-neutral-800 underline-offset-2 hover:decoration-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
+/*
+ * The filters a search ran with, under an answer that found nothing. It is the
+ * readout's own vocabulary, set in mono, but read rather than reached: the
+ * controls for removing a filter are the readout's, and this is the record of
+ * what the search was.
+ */
+const SEARCHED_WITH_CLASS =
+  'flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono text-xs';
+const SEARCHED_WITH_LABEL_CLASS = 'text-neutral-500';
+const SEARCHED_WITH_LIST_CLASS =
+  'flex flex-wrap items-baseline gap-x-4 gap-y-1';
+const SEARCHED_WITH_FIELD_CLASS = 'text-neutral-500';
+const SEARCHED_WITH_SAYS_CLASS = 'text-neutral-400';
 
 /**
  * A turn as the history renders it. A stored turn and one that is still being
@@ -50,6 +65,7 @@ export interface ChatTurn {
   content: string;
   cards?: SuggestedCard[];
   query?: string;
+  search?: SearchInterpretation;
   /*
    * A request whose turn never produced a reply, with the search it ran with
    * when the turn reported one. A request without it was answered, or is the
@@ -108,6 +124,19 @@ interface MessageTurnProps {
 function MessageTurn({ message, language, onRetry }: MessageTurnProps) {
   const fromPlayer = message.role === MessageRole.User;
   const cards = message.cards ?? [];
+  // A search is shown beside the answer only when the answer is a search that
+  // found nothing and the search carried filters to name. The answer being
+  // written shows it once it has something to say, so the line does not arrive
+  // before the cards have been reported.
+  const searchedWith =
+    !fromPlayer &&
+    message.cards !== undefined &&
+    message.cards.length === 0 &&
+    message.search !== undefined &&
+    message.search.filters.length > 0 &&
+    (message.pieces === undefined || message.pieces.length > 0)
+      ? message.search
+      : undefined;
 
   return (
     /*
@@ -153,6 +182,9 @@ function MessageTurn({ message, language, onRetry }: MessageTurnProps) {
           </div>
         </div>
       )}
+      {searchedWith === undefined ? null : (
+        <SearchedWith search={searchedWith} />
+      )}
       {message.retry === undefined ? null : (
         <UnansweredRequest
           onRetry={() => onRetry(message.content, message.retry?.filters)}
@@ -184,6 +216,38 @@ function UnansweredRequest({ onRetry }: UnansweredRequestProps) {
       <button type="button" onClick={onRetry} className={RETRY_CLASS}>
         Ask it again
       </button>
+    </div>
+  );
+}
+
+interface SearchedWithProps {
+  search: SearchInterpretation;
+}
+
+/**
+ * The filters an answer that found nothing was searched with, in the readout's
+ * own words: the field it constrains set quietly and what it asked of that field
+ * beside it. It is a record rather than a control, which is why nothing here is
+ * pressable: the controls that remove a filter are the readout's, below.
+ */
+function SearchedWith({ search }: SearchedWithProps) {
+  return (
+    <div className={SEARCHED_WITH_CLASS}>
+      <p className={SEARCHED_WITH_LABEL_CLASS}>Searched with</p>
+      <ul
+        aria-label="Filters the search ran with"
+        className={SEARCHED_WITH_LIST_CLASS}>
+        {search.filters.map((filter, index) => {
+          const { field, says } = describeFilter(filter);
+
+          return (
+            <li key={index}>
+              <span className={SEARCHED_WITH_FIELD_CLASS}>{field}</span>{' '}
+              <span className={SEARCHED_WITH_SAYS_CLASS}>{says}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

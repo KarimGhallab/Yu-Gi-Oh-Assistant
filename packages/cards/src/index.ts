@@ -26,3 +26,7 @@ export type {
 } from './filters/schema.js';
 export { describeFilterFields } from './filters/vocabulary.js';
 export type { FilterFieldVocabulary } from './filters/vocabulary.js';
+export {
+  cardFilterFieldName,
+  cardFilterOperatorName
+} from './filters/words.js';

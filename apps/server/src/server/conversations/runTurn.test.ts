@@ -559,7 +559,8 @@ describe('turn routes', () => {
     const answer = answerText(frames);
 
     expect(client.chatRequests).toHaveLength(1);
-    expect(answer).toContain('could not find a card');
+    expect(answer).toContain('Race');
+    expect(answer).toContain('filters below');
     expect(
       frames.find(frame => frame.event.type === TurnEventName.Cards)?.event
     ).toEqual({ type: TurnEventName.Cards, cards: [] });

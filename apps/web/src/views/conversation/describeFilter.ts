@@ -1,40 +1,12 @@
 import {
   type CardFilter,
-  CardFilterField,
-  FilterOperator
+  type CardFilterField,
+  type FilterOperator,
+  cardFilterFieldName,
+  cardFilterOperatorName
 } from '@ygo-assistant/contracts';
 
 import { fieldVocabulary } from './filterFields.js';
-
-/**
- * What a filter says in words. The field and the operator are the vocabulary's
- * own machine names, so they are read here rather than sent by the server, and
- * both maps are exhaustive: a field or an operator the domain grows is a
- * compile error until it can be said out loud.
- */
-const FIELD_NAMES: Record<CardFilterField, string> = {
-  [CardFilterField.Type]: 'Type',
-  [CardFilterField.Race]: 'Race',
-  [CardFilterField.Attribute]: 'Attribute',
-  [CardFilterField.Level]: 'Level',
-  [CardFilterField.Atk]: 'Atk',
-  [CardFilterField.Def]: 'Def',
-  [CardFilterField.LinkVal]: 'Link value',
-  [CardFilterField.LinkMarkers]: 'Link markers',
-  [CardFilterField.Archetype]: 'Archetype'
-};
-
-const OPERATOR_NAMES: Record<FilterOperator, string> = {
-  [FilterOperator.Eq]: 'is',
-  [FilterOperator.Ne]: 'is not',
-  [FilterOperator.Gt]: 'above',
-  [FilterOperator.Gte]: 'at least',
-  [FilterOperator.Lt]: 'below',
-  [FilterOperator.Lte]: 'at most',
-  [FilterOperator.Contains]: 'contains',
-  [FilterOperator.StartsWith]: 'starts with',
-  [FilterOperator.EndsWith]: 'ends with'
-};
 
 /**
  * One filter in words: the field it constrains, and what it asks of that field.
@@ -46,11 +18,12 @@ export interface FilterInWords {
   says: string;
 }
 
+/** What a field is called, in the domain's own words. */
 export const filterFieldName = (field: CardFilterField): string =>
-  FIELD_NAMES[field];
+  cardFilterFieldName(field);
 
 export const describeOperator = (operator: FilterOperator): string =>
-  OPERATOR_NAMES[operator];
+  cardFilterOperatorName(operator);
 
 /**
  * What a filter's value is called. A value the domain enumerates is one of its

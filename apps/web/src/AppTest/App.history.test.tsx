@@ -3,6 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CardFilterField,
+  CardRace,
+  FilterOperator
+} from '@ygo-assistant/contracts';
+
+import {
   BLUE_EYES,
   DARK_MAGICIAN,
   GRAVEYARD,
@@ -56,6 +62,48 @@ describe('reading a conversation', () => {
     expect(
       screen.queryByRole('button', { name: 'Searched as' })
     ).not.toBeInTheDocument();
+  });
+
+  it('shows the filters a no-result answer was searched with', async () => {
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(
+              withMessages(GRAVEYARD, [
+                playerMessage(11, 'A dragon'),
+                said(12, 'assistant', 'No card matched every filter: Race.', {
+                  search: {
+                    filters: [
+                      {
+                        field: CardFilterField.Race,
+                        operator: FilterOperator.Eq,
+                        value: CardRace.Dragon
+                      }
+                    ]
+                  },
+                  cards: []
+                })
+              ])
+            )
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const history = await screen.findByRole('region', { name: 'Messages' });
+
+    // The empty result keeps the search it ran with, in the readout's own
+    // words, so it reads as a search that came back empty rather than a dead
+    // end.
+    expect(
+      within(history).getByRole('list', {
+        name: 'Filters the search ran with'
+      })
+    ).toBeInTheDocument();
+    expect(within(history).getByText('Race')).toBeInTheDocument();
+    expect(within(history).getByText('is dragon')).toBeInTheDocument();
   });
 
   it('renders an answer as the Markdown the model writes', async () => {

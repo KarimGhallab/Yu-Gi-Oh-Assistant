@@ -116,6 +116,9 @@ components:
   message-unanswered-action:
     textColor: '{colors.ink}'
     typography: '{typography.body}'
+  message-searched-with:
+    textColor: '{colors.ink-faint}'
+    typography: '{typography.mono}'
   composer-field:
     backgroundColor: '{colors.surface-panel}'
     textColor: '{colors.ink}'
@@ -491,6 +494,12 @@ level deep.
 - **Raw HTML and images:** dropped, never rendered. Nothing an answer carries may
   be a picture this app did not choose, and the only images it loads are the
   cards' printed faces under the answer.
+- **An empty search:** an answer that found no cards shows the filters the
+  search ran with under the prose, in the readout's own vocabulary and at mono
+  scale: the field in Dust Grey and what it asked of it in Ash Grey. It is a
+  record rather than a control, set apart by space, because the controls that
+  remove a filter are the readout's, below. An answer with cards shows no such
+  line: the cards are the result.
 - **While it arrives:** the prose is Markdown from the first token, and the
   announcement is drawn apart from it. A visually hidden live region carries one
   node per piece, so a screen reader hears the answer arriving rather than the
