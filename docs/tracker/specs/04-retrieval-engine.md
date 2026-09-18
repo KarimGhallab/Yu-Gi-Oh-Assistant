@@ -51,7 +51,7 @@ is testable against a small seeded index.
 - The query is always scoped to the active language partition.
 - Parameters with defaults: candidate count into the next stage (25), shown
   count (8), and a similarity floor. They come from configuration
-  (`RETRIEVAL_TOP_K`, `RETRIEVAL_SHOWN`, `RETRIEVAL_MIN_SCORE`).
+  (`RETRIEVAL_TOP_K`, `RETRIEVAL_MAX_SHOWN`, `RETRIEVAL_MIN_SCORE`).
 - Results are card records plus a score, deduplicated by card identity and
   ordered by score.
 - No reranker or cross-encoder in v1. The filter schema lives in

@@ -38,7 +38,7 @@ describe('loadConfig', () => {
       OLLAMA_EMBEDDING_MODEL: 'bge-m3',
       OLLAMA_EMBEDDING_DIMENSIONS: '1024',
       RETRIEVAL_TOP_K: '40',
-      RETRIEVAL_SHOWN: '12',
+      RETRIEVAL_MAX_SHOWN: '12',
       RETRIEVAL_MIN_SCORE: '0.4'
     });
 

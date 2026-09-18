@@ -2,7 +2,7 @@ import { readCardIndexMetadata } from '@ygo-assistant/db';
 
 import type { AppConfig } from '../config/index.js';
 
-const REPOPULATE_COMMAND = 'pnpm -F @ygo-assistant/server db:populate';
+const REPOPULATE_COMMAND = 'pnpm db:populate';
 
 /**
  * Raised when the local card index is missing, or was built with a different

@@ -66,7 +66,7 @@ else is built and tested on.
   `DATA_DIR`, `OLLAMA_BASE_URL`, `OLLAMA_EMBEDDING_BASE_URL` (optional),
   `OLLAMA_CHAT_MODEL` (default `qwen3:4b`), `OLLAMA_EMBEDDING_MODEL` (default
   `qwen3-embedding:0.6b`), `OLLAMA_EMBEDDING_DIMENSIONS` (default 1024),
-  `RETRIEVAL_TOP_K`, `RETRIEVAL_SHOWN`, `RETRIEVAL_MIN_SCORE`, `LOG_LEVEL`,
+  `RETRIEVAL_TOP_K`, `RETRIEVAL_MAX_SHOWN`, `RETRIEVAL_MIN_SCORE`, `LOG_LEVEL`,
   `NODE_ENV`.
 - The server is built by a factory that returns the Hono app with its
   dependencies injected: an Ollama client interface, a data directory path, and

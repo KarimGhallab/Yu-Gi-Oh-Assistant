@@ -8,6 +8,7 @@
     "dev": "pnpm --parallel --filter @ygo-assistant/server --filter @ygo-assistant/web run dev",
     "build": "pnpm -r run build",
     "start": "pnpm --filter @ygo-assistant/server run start",
+    "db:populate": "pnpm --filter @ygo-assistant/server run db:populate",
     "watch": "tsc -b --watch --preserveWatchOutput",
     "typecheck": "tsc -b",
     "test": "pnpm test:unit && pnpm test:e2e",

@@ -273,7 +273,7 @@ describe('turn routes', () => {
         OLLAMA_EMBEDDING_MODEL: EMBEDDING_MODEL,
         OLLAMA_EMBEDDING_DIMENSIONS: String(DIMENSIONS),
         RETRIEVAL_TOP_K: '10',
-        RETRIEVAL_SHOWN: '1'
+        RETRIEVAL_MAX_SHOWN: '1'
       }),
       logger,
       ollama: client,
