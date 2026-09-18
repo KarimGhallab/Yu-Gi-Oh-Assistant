@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { apiErrorSchema } from '@ygo-assistant/contracts';
 import { DomainError, HttpStatus } from '@ygo-assistant/utils';
 
+import { createArchetypeRoutes } from './archetypes/archetypeRoutes.js';
 import { createConversationRoutes } from './conversations/conversationRoutes.js';
 import { createModelRoutes } from './models/modelRoutes.js';
 import { requestLogger } from './requestLogger.js';
@@ -25,6 +26,8 @@ export function createServer(dependencies: ServerDependencies): Hono {
   }
 
   app.get('/health', c => c.json({ status: 'ok' }));
+
+  app.route('/api/archetypes', createArchetypeRoutes(dependencies));
 
   app.route('/api/conversations', createConversationRoutes(dependencies));
 

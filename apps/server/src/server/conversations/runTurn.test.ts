@@ -9,6 +9,7 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,
@@ -760,7 +761,7 @@ describe('turn routes', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'Toon'
+            value: CardRace.DivineBeast
           }
         ]
       })
@@ -784,7 +785,7 @@ describe('turn routes', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'Toon'
+            value: CardRace.DivineBeast
           }
         ]
       })

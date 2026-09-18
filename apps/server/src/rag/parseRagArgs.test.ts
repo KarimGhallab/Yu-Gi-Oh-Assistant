@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CardFilterField,
+  CardRace,
   FilterOperator,
   Language
 } from '@ygo-assistant/cards';
@@ -71,14 +72,16 @@ describe('parseRagArgs', () => {
     const args = parseRagArgs([
       'dragons',
       '--filters',
-      JSON.stringify([{ field: 'race', operator: 'eq', value: 'Dragon' }])
+      JSON.stringify([
+        { field: 'race', operator: 'eq', value: CardRace.Dragon }
+      ])
     ]);
 
     expect(args.filters).toEqual([
       {
         field: CardFilterField.Race,
         operator: FilterOperator.Eq,
-        value: 'Dragon'
+        value: CardRace.Dragon
       }
     ]);
   });

@@ -1,7 +1,17 @@
 import { z } from 'zod';
 
 import type { Card } from '../card/schema.js';
-import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
+import { CardAttribute, CardRace, CardType, LinkMarker } from '../enums.js';
+
+/**
+ * The bounds a numeric card field can be searched within, which are properties of
+ * the game rather than of any one card: a level runs from 1 to 12, and attack and
+ * defense points from 0 to 9000. They live in the schema so that the parse
+ * prompt, the parser, the search, and the client's controls all refuse the same
+ * values, instead of each holding its own idea of what a card can be.
+ */
+const LEVEL_BOUNDS = { minimum: 1, maximum: 12 } as const;
+const STAT_BOUNDS = { minimum: 0, maximum: 9000 } as const;
 
 /**
  * Card fields a structured filter can constrain. The set is the vocabulary
@@ -10,7 +20,6 @@ import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
  */
 export enum CardFilterField {
   Type = 'type',
-  FrameType = 'frameType',
   Race = 'race',
   Attribute = 'attribute',
   Level = 'level',
@@ -72,17 +81,17 @@ export const cardFilterSchema = z.discriminatedUnion('field', [
   z.object({
     field: z.literal(CardFilterField.Level),
     operator: comparisonOperatorSchema,
-    value: z.number().int()
+    value: z.number().int().min(LEVEL_BOUNDS.minimum).max(LEVEL_BOUNDS.maximum)
   }),
   z.object({
     field: z.literal(CardFilterField.Atk),
     operator: comparisonOperatorSchema,
-    value: z.number().int()
+    value: z.number().int().min(STAT_BOUNDS.minimum).max(STAT_BOUNDS.maximum)
   }),
   z.object({
     field: z.literal(CardFilterField.Def),
     operator: comparisonOperatorSchema,
-    value: z.number().int()
+    value: z.number().int().min(STAT_BOUNDS.minimum).max(STAT_BOUNDS.maximum)
   }),
   z.object({
     field: z.literal(CardFilterField.LinkVal),
@@ -91,8 +100,8 @@ export const cardFilterSchema = z.discriminatedUnion('field', [
   }),
   z.object({
     field: z.literal(CardFilterField.Race),
-    operator: textOperatorSchema,
-    value: z.string().min(1)
+    operator: equalityOperatorSchema,
+    value: z.enum(CardRace)
   }),
   z.object({
     field: z.literal(CardFilterField.Archetype),
@@ -103,11 +112,6 @@ export const cardFilterSchema = z.discriminatedUnion('field', [
     field: z.literal(CardFilterField.Type),
     operator: equalityOperatorSchema,
     value: z.enum(CardType)
-  }),
-  z.object({
-    field: z.literal(CardFilterField.FrameType),
-    operator: equalityOperatorSchema,
-    value: z.enum(FrameType)
   }),
   z.object({
     field: z.literal(CardFilterField.Attribute),
@@ -179,12 +183,10 @@ function matchesFilter(card: Card, filter: CardFilter): boolean {
   switch (filter.field) {
     case CardFilterField.Type:
       return compareEquality(card.type, filter.operator, filter.value);
-    case CardFilterField.FrameType:
-      return compareEquality(card.frameType, filter.operator, filter.value);
     case CardFilterField.Attribute:
       return compareEquality(card.attribute, filter.operator, filter.value);
     case CardFilterField.Race:
-      return compareText(card.race, filter.operator, filter.value);
+      return compareEquality(card.race, filter.operator, filter.value);
     case CardFilterField.Archetype:
       return compareText(card.archetype, filter.operator, filter.value);
     case CardFilterField.LinkMarkers:

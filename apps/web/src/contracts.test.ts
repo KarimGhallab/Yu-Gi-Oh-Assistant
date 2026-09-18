@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   CardAttribute,
   CardFilterField,
+  CardRace,
   CardType,
   FilterOperator,
-  FrameType,
   Language,
   LinkMarker,
   TurnEventName,
@@ -100,7 +100,7 @@ describe('the filter vocabulary the controls speak', () => {
       describeFilterFields().find(entry => entry.field === field)?.values ?? [];
     const enumerated: Partial<Record<CardFilterField, readonly string[]>> = {
       [CardFilterField.Type]: Object.values(CardType),
-      [CardFilterField.FrameType]: Object.values(FrameType),
+      [CardFilterField.Race]: Object.values(CardRace),
       [CardFilterField.Attribute]: Object.values(CardAttribute),
       [CardFilterField.LinkMarkers]: Object.values(LinkMarker)
     };
@@ -113,15 +113,15 @@ describe('the filter vocabulary the controls speak', () => {
   });
 
   it('reads a filter built from the vocabulary the controls are offered', () => {
-    const [frameType] = describeFilterFields().filter(
-      entry => entry.field === CardFilterField.FrameType
+    const [race] = describeFilterFields().filter(
+      entry => entry.field === CardFilterField.Race
     );
-    const [operator] = frameType?.operators ?? [];
-    const [value] = frameType?.values ?? [];
+    const [operator] = race?.operators ?? [];
+    const [value] = race?.values ?? [];
 
     expect(
       cardFiltersSchema.safeParse([
-        { field: CardFilterField.FrameType, operator, value }
+        { field: CardFilterField.Race, operator, value }
       ]).success
     ).toBe(true);
   });

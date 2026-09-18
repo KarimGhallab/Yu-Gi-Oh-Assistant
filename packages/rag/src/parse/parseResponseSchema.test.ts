@@ -45,7 +45,9 @@ describe('parseResponseSchema', () => {
   });
 
   it('rejects a number where the field takes text', () => {
-    const response = { filters: [{ field: 'race', operator: 'eq', value: 7 }] };
+    const response = {
+      filters: [{ field: 'archetype', operator: 'eq', value: 7 }]
+    };
 
     expect(parseResponseSchema.safeParse(response).success).toBe(false);
   });

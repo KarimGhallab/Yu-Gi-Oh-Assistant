@@ -20,7 +20,6 @@ const LANGUAGE_PREDICATES: Record<Language, string> = {
  */
 const COLUMNS: Record<CardFilterField, string> = {
   [CardFilterField.Type]: 'type',
-  [CardFilterField.FrameType]: 'frameType',
   [CardFilterField.Race]: 'race',
   [CardFilterField.Attribute]: 'attribute',
   [CardFilterField.Level]: 'level',
@@ -60,9 +59,10 @@ const TEXT_PREDICATES: Record<TextOperator, TextPredicate> = {
 
 /**
  * Builds the predicate a LanceDB query filters on: the active language, then
- * every filter AND-combined. It stands in for `cardMatchesFilters`, so text
+ * every filter AND-combined. It stands in for `cardMatchesFilters`, so free text
  * compares case-insensitively and a field the card does not carry is excluded by
- * the null semantics of the comparison, negations included.
+ * the null semantics of the comparison, negations included. An enumerated field
+ * compares exactly, because its values are the catalog's own spelling.
  */
 export function buildWhereClause(
   language: Language,
@@ -81,15 +81,12 @@ function filterPredicate(filter: CardFilter): string {
   if (filter.field === CardFilterField.LinkMarkers) {
     return `array_contains(${column}, ${stringLiteral(filter.value)})`;
   }
-  if (
-    filter.field === CardFilterField.Race ||
-    filter.field === CardFilterField.Archetype
-  ) {
+  if (filter.field === CardFilterField.Archetype) {
     return textPredicate(column, filter.operator, filter.value);
   }
   if (
     filter.field === CardFilterField.Type ||
-    filter.field === CardFilterField.FrameType ||
+    filter.field === CardFilterField.Race ||
     filter.field === CardFilterField.Attribute
   ) {
     return `${column} ${EQUALITY_COMPARATORS[filter.operator]} ${stringLiteral(filter.value)}`;

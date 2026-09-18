@@ -133,6 +133,29 @@ export async function searchCardIndex(
 }
 
 /**
+ * Reads the archetypes the index carries, sorted, so a client can offer the ones
+ * that are really there rather than a list kept by hand that drifts from the
+ * data. A card with no archetype contributes nothing, and a rebuild is what the
+ * list follows, since it is read from the index every time.
+ */
+export async function listCardArchetypes(dataDir: string): Promise<string[]> {
+  const directory = indexDirectory(dataDir);
+  const db = await connect(directory);
+  const table = await db.openTable(CARDS_TABLE);
+  const rows = await table.query().select(['archetype']).toArray();
+
+  const archetypes = new Set<string>();
+  for (const row of rows) {
+    const archetype = row.archetype;
+    if (typeof archetype === 'string' && archetype.length > 0) {
+      archetypes.add(archetype);
+    }
+  }
+
+  return [...archetypes].sort();
+}
+
+/**
  * Reads the cards of one language partition that match the structured filters,
  * with no vector involved. The rows come back in a stable identity order so a
  * filter-only request is reproducible.

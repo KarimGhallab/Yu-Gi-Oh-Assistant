@@ -4,6 +4,7 @@
  */
 export { apiErrorSchema } from './apiError.js';
 export type { ApiError } from './apiError.js';
+export { archetypeListSchema } from './archetype.js';
 export { idSchema } from './id.js';
 export {
   conversationListSchema,
@@ -43,6 +44,7 @@ export type { TurnEvent, TurnRequest } from './turn.js';
 export {
   CardAttribute,
   CardFilterField,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,

@@ -41,6 +41,7 @@ interface ComposerProps {
   language: Language;
   model: string;
   models?: Model[];
+  archetypes?: string[];
   settingsError?: string;
   onLanguage(language: Language): void;
   onModel(model: string): void;
@@ -68,6 +69,7 @@ export default function Composer({
   language,
   model,
   models,
+  archetypes,
   settingsError,
   onLanguage,
   onModel
@@ -105,7 +107,11 @@ export default function Composer({
       head={
         <>
           {readout === undefined ? null : (
-            <SearchReadout interpretation={readout} onCorrect={onCorrect} />
+            <SearchReadout
+              interpretation={readout}
+              archetypes={archetypes}
+              onCorrect={onCorrect}
+            />
           )}
 
           {failure === undefined ? null : (

@@ -15,6 +15,7 @@ import type {
   UpdateConversationRequest
 } from '@ygo-assistant/contracts';
 
+import { listArchetypes } from './api/archetype.js';
 import {
   createConversation,
   deleteConversation,
@@ -74,6 +75,16 @@ const MODELS_KEY = ['models'] as const;
 
 export function useModels(): UseQueryResult<Model[], Error> {
   return useQuery({ queryKey: MODELS_KEY, queryFn: listModels });
+}
+
+/**
+ * The key the catalog's archetypes are read under. Nothing writes to it: they
+ * belong to the index the server holds, so the list is read and never patched.
+ */
+const ARCHETYPES_KEY = ['archetypes'] as const;
+
+export function useArchetypes(): UseQueryResult<string[], Error> {
+  return useQuery({ queryKey: ARCHETYPES_KEY, queryFn: listArchetypes });
 }
 
 export function useConversation(

@@ -115,6 +115,9 @@ components:
   search-readout-ask:
     textColor: '{colors.ink-muted}'
     typography: '{typography.mono}'
+  search-readout-offer:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
   search-readout-note:
     textColor: '{colors.ink-muted}'
     typography: '{typography.mono}'
@@ -351,6 +354,10 @@ level deep.
   decoration.
 - **Shape:** a 24-unit drawing box, 1.5px stroke, round caps and joins, rendered
   at 16px, and sitting before the word it belongs to with a 6px gap.
+- **Alignment:** a mark beside a word sits on the word's optical centre rather
+  than on the box the row centres, so it is raised a pixel at 12px and two at
+  14px. A line box is mostly the font's descent, which a word of caps and no
+  descenders never fills, so centring the box leaves the mark looking low.
 - **Color:** `currentColor`, so an icon is the color of the control it sits in
   and can never introduce one of its own. It is never amber: amber marks the
   action, the selection, and the focus, and a mark inside a control is none of
@@ -564,11 +571,21 @@ level deep.
 - **Readout:** what the last search was understood as, on its own line above the
   field, in 12px mono. One fact per filter: the field it constrains in Dust Grey
   and what it asks of that field in Ash Grey, set apart by space and nothing
-  else, so a filter never becomes a pill or a box. Each fact is also the control
+  else, so a filter never becomes a pill or a box. A fact is written as a
+  sentence: the field starts it, so the field carries the capital, and the value
+  after the operator stays lowercase, which is how `Attribute is dark`, `Type is
+normal monster` and `Race is beast-warrior` are read. The catalog's own value
+  words are the ones lowered, because the line is machine facts and a shouted
+  `DARK` in it reads as a second kind of thing; a value the player typed, such as
+  an archetype, is left exactly as they wrote it. Each fact is also the control
   that corrects it, lifting to Bone White on hover and taking the focus ring,
   because the player is the one who knows what they asked for, and the readout
   offers beside them the filter the request never named, because a request the
-  model read wrongly is not the only search a player wants to run. Either way the
+  model read wrongly is not the only search a player wants to run. The offer
+  carries the set's plus, since it is one more of something, and wears the line's
+  own 12px mono in Ash Grey, because it is an action read on a line of machine
+  facts rather than a thing apart from them. The facts beside it carry nothing: a
+  mark on a fact would say it was a control before it was a fact. Either way the
   set they have said is what the next turn is searched with instead of the
   request being read again. A search that carried no filters says only that, and
   a turn that reported it could not understand the request says so and repeats
@@ -587,14 +604,22 @@ level deep.
   has nothing to show: the readout already says it was searched as written.
 - **A filter being corrected or added:** the readout becomes the controls that
   say it: the field it constrains, then the operator and the value, gathered the
-  way that field takes them, a fixed set where the domain has one and a number
-  where the field is a stat. Correcting fixes the field, because the field is the
+  way that field takes them: a fixed set where the domain has one, the catalog's
+  own list for an archetype, whose hundreds of values only the index knows, and a
+  number inside the bounds the field runs between where the field is a stat, so a
+  level cannot be asked for above 12 nor a stat above 9000. A value the catalog no
+  longer lists is still offered, so a stored filter can be read back and kept
+  rather than quietly lost. Correcting fixes the field, because the field is the
   part the readout is sure of, and adding offers the fields the search supports,
   gathering the next operator and value the way the field that was chosen takes
   them. They wear the recorded field treatment at 14px, because a control is read
   by a person rather than by the parser, and they are one group with Save or Add,
-  Remove when there is one to remove, and Cancel in plain text beside them.
-  Escape calls the whole thing off. The keyboard comes back to the fact the
+  Remove when there is one to remove, and Cancel beside them, each carrying the
+  set's mark before its word: the tick on the one that keeps the filter, the bar
+  on the one that takes it away, and the cross on the one that makes nothing.
+  A mark sits beside its word rather than instead of it, so the word is what the
+  group says and the mark is only what it looks like. Escape calls the whole
+  thing off. The keyboard comes back to the fact the
   controls were about, which is the last one when it was just added, or to the
   request field when the last filter was the one taken away.
 - **Failure:** the alert line above the field, because the composer is the control

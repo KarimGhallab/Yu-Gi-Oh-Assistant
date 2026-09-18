@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Card } from '../card/schema.js';
 import {
   CardAttribute,
+  CardRace,
   CardType,
   FrameType,
   Language,
@@ -270,10 +271,9 @@ const OPERATORS_BY_FIELD: Record<CardFilterField, FilterOperator[]> = {
   [CardFilterField.Atk]: NUMERIC_OPERATORS,
   [CardFilterField.Def]: NUMERIC_OPERATORS,
   [CardFilterField.LinkVal]: NUMERIC_OPERATORS,
-  [CardFilterField.Race]: STRING_OPERATORS,
+  [CardFilterField.Race]: EQUALITY_OPERATORS,
   [CardFilterField.Archetype]: STRING_OPERATORS,
   [CardFilterField.Type]: EQUALITY_OPERATORS,
-  [CardFilterField.FrameType]: EQUALITY_OPERATORS,
   [CardFilterField.Attribute]: EQUALITY_OPERATORS,
   [CardFilterField.LinkMarkers]: [FilterOperator.Contains]
 };
@@ -283,10 +283,9 @@ const SAMPLE_VALUE: Record<CardFilterField, string | number> = {
   [CardFilterField.Atk]: 2500,
   [CardFilterField.Def]: 2100,
   [CardFilterField.LinkVal]: 3,
-  [CardFilterField.Race]: 'Spellcaster',
+  [CardFilterField.Race]: CardRace.Spellcaster,
   [CardFilterField.Archetype]: 'Dark Magician',
   [CardFilterField.Type]: CardType.NormalMonster,
-  [CardFilterField.FrameType]: FrameType.Normal,
   [CardFilterField.Attribute]: CardAttribute.Dark,
   [CardFilterField.LinkMarkers]: LinkMarker.Top
 };
@@ -306,6 +305,84 @@ describe('cardFilterSchema operator vocabulary', () => {
     );
 
     expect(accepted.sort()).toEqual(expected.sort());
+  });
+});
+
+describe('cardFilterSchema value bounds', () => {
+  it('accepts a numeric value inside the bounds the game has', () => {
+    expect(
+      accept({
+        field: CardFilterField.Level,
+        operator: FilterOperator.Eq,
+        value: 1
+      }).success
+    ).toBe(true);
+    expect(
+      accept({
+        field: CardFilterField.Level,
+        operator: FilterOperator.Lte,
+        value: 12
+      }).success
+    ).toBe(true);
+    expect(
+      accept({
+        field: CardFilterField.Atk,
+        operator: FilterOperator.Eq,
+        value: 0
+      }).success
+    ).toBe(true);
+    expect(
+      accept({
+        field: CardFilterField.Atk,
+        operator: FilterOperator.Gte,
+        value: 9000
+      }).success
+    ).toBe(true);
+    expect(
+      accept({
+        field: CardFilterField.Def,
+        operator: FilterOperator.Lte,
+        value: 9000
+      }).success
+    ).toBe(true);
+  });
+
+  it('refuses a numeric value outside them', () => {
+    expect(
+      accept({
+        field: CardFilterField.Level,
+        operator: FilterOperator.Eq,
+        value: 13
+      }).success
+    ).toBe(false);
+    expect(
+      accept({
+        field: CardFilterField.Level,
+        operator: FilterOperator.Eq,
+        value: 0
+      }).success
+    ).toBe(false);
+    expect(
+      accept({
+        field: CardFilterField.Atk,
+        operator: FilterOperator.Gte,
+        value: 9001
+      }).success
+    ).toBe(false);
+    expect(
+      accept({
+        field: CardFilterField.Atk,
+        operator: FilterOperator.Eq,
+        value: -1
+      }).success
+    ).toBe(false);
+    expect(
+      accept({
+        field: CardFilterField.Def,
+        operator: FilterOperator.Eq,
+        value: 9001
+      }).success
+    ).toBe(false);
   });
 });
 
@@ -405,18 +482,18 @@ describe('cardMatchesFilters', () => {
     expect(
       cardMatchesFilters(magician, [
         {
-          field: CardFilterField.Race,
+          field: CardFilterField.Archetype,
           operator: FilterOperator.StartsWith,
-          value: 'spellcaster'
+          value: 'dark'
         }
       ])
     ).toBe(true);
     expect(
       cardMatchesFilters(magician, [
         {
-          field: CardFilterField.Race,
+          field: CardFilterField.Archetype,
           operator: FilterOperator.EndsWith,
-          value: 'CASTER'
+          value: 'MAGICIAN'
         }
       ])
     ).toBe(true);
@@ -541,7 +618,7 @@ describe('cardMatchesFilters', () => {
         {
           field: CardFilterField.Race,
           operator: FilterOperator.Eq,
-          value: 'Spellcaster'
+          value: CardRace.Spellcaster
         },
         { field: CardFilterField.Level, operator: FilterOperator.Lte, value: 7 }
       ])
@@ -551,7 +628,7 @@ describe('cardMatchesFilters', () => {
         {
           field: CardFilterField.Race,
           operator: FilterOperator.Eq,
-          value: 'Spellcaster'
+          value: CardRace.Spellcaster
         },
         { field: CardFilterField.Level, operator: FilterOperator.Lte, value: 4 }
       ])

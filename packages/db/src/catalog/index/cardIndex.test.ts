@@ -9,6 +9,7 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,
@@ -25,6 +26,7 @@ import {
 import { composeCardDocument } from '../../ygoprodeck/compose/composeCardDocument.js';
 import {
   buildCardIndex,
+  listCardArchetypes,
   readCardIndex,
   readCardsByIds,
   scanCardIndex,
@@ -117,6 +119,55 @@ describe('card index', () => {
     dataDir = await mkdtemp(join(tmpdir(), 'ygo-card-index-'));
     return dataDir;
   };
+
+  it('lists the archetypes the index carries, once each and sorted', async () => {
+    const directory = await createDataDir();
+    const cards = [
+      createDarkMagician(),
+      createDarkMagician({
+        id: 2,
+        name: 'Dark Magician Girl',
+        archetype: 'Dark Magician'
+      }),
+      createDarkMagician({
+        id: 3,
+        name: 'Blue-Eyes White Dragon',
+        archetype: 'Blue-Eyes'
+      }),
+      createDarkMagician({ id: 4, name: 'Kuriboh', archetype: undefined })
+    ];
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards,
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15'
+    });
+
+    expect(await listCardArchetypes(directory)).toEqual([
+      'Blue-Eyes',
+      'Dark Magician'
+    ]);
+  });
+
+  it('lists no archetype at all when the index carries none', async () => {
+    const directory = await createDataDir();
+
+    await buildCardIndex({
+      dataDir: directory,
+      cards: [
+        createDarkMagician({ id: 4, name: 'Kuriboh', archetype: undefined })
+      ],
+      embedder: createEmbedder([]),
+      embeddingModel: EMBEDDING_MODEL,
+      dimensions: DIMENSIONS,
+      datasetVersion: 'ygoprodeck-2026-09-15'
+    });
+
+    expect(await listCardArchetypes(directory)).toEqual([]);
+  });
 
   it('builds one row per card and reads the rows, count, and metadata back', async () => {
     const directory = await createDataDir();
@@ -709,20 +760,6 @@ describe('card index', () => {
         ],
         [
           {
-            field: CardFilterField.FrameType,
-            operator: FilterOperator.Eq,
-            value: FrameType.Spell
-          }
-        ],
-        [
-          {
-            field: CardFilterField.FrameType,
-            operator: FilterOperator.Ne,
-            value: FrameType.Spell
-          }
-        ],
-        [
-          {
             field: CardFilterField.Archetype,
             operator: FilterOperator.Ne,
             value: 'Greed'
@@ -732,7 +769,7 @@ describe('card index', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'spellcaster'
+            value: CardRace.Spellcaster
           }
         ],
         [
@@ -774,7 +811,7 @@ describe('card index', () => {
           {
             field: CardFilterField.Race,
             operator: FilterOperator.Eq,
-            value: 'Dragon'
+            value: CardRace.Dragon
           },
           {
             field: CardFilterField.Level,

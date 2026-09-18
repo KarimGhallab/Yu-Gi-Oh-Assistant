@@ -1,6 +1,7 @@
 export { computeDatasetVersion } from './catalog/datasetVersion.js';
 export {
   buildCardIndex,
+  listCardArchetypes,
   readCardIndex,
   readCardIndexMetadata,
   readCardsByIds,

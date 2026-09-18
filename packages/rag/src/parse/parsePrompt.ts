@@ -58,12 +58,35 @@ function describeField(entry: FilterFieldVocabulary): string {
   const operators = entry.operators.join(', ');
   const value =
     entry.values === undefined
-      ? describeValueType(entry.valueType)
+      ? describeValueType(entry)
       : `one of ${entry.values.join(', ')}`;
 
   return `- ${entry.field}: operators ${operators}; value is ${value}`;
 }
 
-function describeValueType(valueType: string): string {
-  return valueType === 'integer' ? 'a whole number' : 'free text';
+/**
+ * What a field takes when it carries no list of values. A number is described
+ * with the bounds the game gives it, because a model that is not told them will
+ * offer a level of 15 and have its whole answer refused for it.
+ */
+function describeValueType(entry: FilterFieldVocabulary): string {
+  if (entry.valueType !== 'integer') {
+    return 'free text';
+  }
+
+  const bounds = describeBounds(entry);
+  return bounds === undefined ? 'a whole number' : `a whole number ${bounds}`;
+}
+
+function describeBounds(entry: FilterFieldVocabulary): string | undefined {
+  if (entry.minimum !== undefined && entry.maximum !== undefined) {
+    return `from ${entry.minimum} to ${entry.maximum}`;
+  }
+  if (entry.minimum !== undefined) {
+    return `of at least ${entry.minimum}`;
+  }
+  if (entry.maximum !== undefined) {
+    return `of at most ${entry.maximum}`;
+  }
+  return undefined;
 }

@@ -235,6 +235,9 @@ importers:
       '@ygo-assistant/utils':
         specifier: workspace:*
         version: link:../utils
+      ollama:
+        specifier: ^0.6.3
+        version: 0.6.3
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -4144,6 +4147,12 @@ packages:
       }
     engines: { node: '>=12.20.0' }
 
+  ollama@0.6.3:
+    resolution:
+      {
+        integrity: sha512-KEWEhIqE5wtfzEIZbDCLH51VFZ6Z3ZSa6sIOg/E/tBV8S51flyqBOXi+bRxlOYKDf8i327zG9eSTb8IJxvm3Zg==
+      }
+
   on-exit-leak-free@2.1.2:
     resolution:
       {
@@ -5292,6 +5301,12 @@ packages:
         integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==
       }
     engines: { node: '>=20' }
+
+  whatwg-fetch@3.6.20:
+    resolution:
+      {
+        integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==
+      }
 
   whatwg-mimetype@5.0.0:
     resolution:
@@ -7486,6 +7501,10 @@ snapshots:
 
   obug@2.2.1: {}
 
+  ollama@0.6.3:
+    dependencies:
+      whatwg-fetch: 3.6.20
+
   on-exit-leak-free@2.1.2: {}
 
   once@1.4.0:
@@ -8197,6 +8216,8 @@ snapshots:
     optional: true
 
   webidl-conversions@8.0.1: {}
+
+  whatwg-fetch@3.6.20: {}
 
   whatwg-mimetype@5.0.0: {}
 

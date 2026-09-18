@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CardAttribute, CardType, FrameType, LinkMarker } from '../enums.js';
+import { CardAttribute, CardRace, CardType, LinkMarker } from '../enums.js';
 import { CardFilterField, FilterOperator, cardFilterSchema } from './schema.js';
 import {
   type FilterFieldVocabulary,
@@ -18,8 +18,7 @@ const byField = (): Map<string, FilterFieldVocabulary> =>
  */
 const SAMPLE_VALUES: Record<CardFilterField, unknown> = {
   [CardFilterField.Type]: CardType.NormalMonster,
-  [CardFilterField.FrameType]: FrameType.Normal,
-  [CardFilterField.Race]: 'Warrior',
+  [CardFilterField.Race]: CardRace.Warrior,
   [CardFilterField.Attribute]: CardAttribute.Dark,
   [CardFilterField.Level]: 4,
   [CardFilterField.Atk]: 1000,
@@ -95,8 +94,8 @@ describe('describeFilterFields', () => {
     expect(values(CardFilterField.Type)).toEqual(
       sorted(Object.values(CardType))
     );
-    expect(values(CardFilterField.FrameType)).toEqual(
-      sorted(Object.values(FrameType))
+    expect(values(CardFilterField.Race)).toEqual(
+      sorted(Object.values(CardRace))
     );
     expect(values(CardFilterField.LinkMarkers)).toEqual(
       sorted(Object.values(LinkMarker))
@@ -112,11 +111,27 @@ describe('describeFilterFields', () => {
 
   it('leaves the free-text and numeric fields without enumerated values', () => {
     expect(byField().get(CardFilterField.Level)?.values).toBeUndefined();
-    expect(byField().get(CardFilterField.Race)?.values).toBeUndefined();
+    expect(byField().get(CardFilterField.Archetype)?.values).toBeUndefined();
+  });
+
+  it('carries the bounds a numeric field runs between', () => {
+    expect(byField().get(CardFilterField.Level)).toMatchObject({
+      minimum: 1,
+      maximum: 12
+    });
+    expect(byField().get(CardFilterField.Atk)).toMatchObject({
+      minimum: 0,
+      maximum: 9000
+    });
+    expect(byField().get(CardFilterField.Def)).toMatchObject({
+      minimum: 0,
+      maximum: 9000
+    });
   });
 
   it('gives the enumerated fields the values they accept rather than free text', () => {
     expect(byField().get(CardFilterField.Attribute)?.values).toBeDefined();
+    expect(byField().get(CardFilterField.Race)?.values).toBeDefined();
     expect(byField().get(CardFilterField.LinkMarkers)?.values).toBeDefined();
   });
 });

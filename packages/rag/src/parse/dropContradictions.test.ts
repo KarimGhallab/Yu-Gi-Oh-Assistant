@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CardAttribute,
   CardFilterField,
+  CardRace,
   CardType,
   FilterOperator
 } from '@ygo-assistant/cards';
@@ -66,12 +67,12 @@ describe('dropContradictions', () => {
       {
         field: CardFilterField.Race,
         operator: FilterOperator.Eq,
-        value: 'Dragon'
+        value: CardRace.Dragon
       },
       {
         field: CardFilterField.Race,
         operator: FilterOperator.Eq,
-        value: 'Dragon'
+        value: CardRace.Dragon
       }
     ]);
 

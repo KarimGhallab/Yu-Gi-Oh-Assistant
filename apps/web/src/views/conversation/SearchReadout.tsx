@@ -2,17 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   type CardFilter,
-  type CardFilterField,
+  CardFilterField,
   type CardFilters,
   type FilterOperator,
   TurnStatus,
   cardFilterSchema
 } from '@ygo-assistant/contracts';
 
+import CheckIcon from '../../shared/components/icons/CheckIcon.js';
+import CloseIcon from '../../shared/components/icons/CloseIcon.js';
+import MinusIcon from '../../shared/components/icons/MinusIcon.js';
+import PlusIcon from '../../shared/components/icons/PlusIcon.js';
+
 import {
   describeFilter,
   describeOperator,
-  filterFieldName
+  filterFieldName,
+  filterValueName
 } from './describeFilter.js';
 import {
   defaultOperator,
@@ -30,17 +36,19 @@ const CHIP_CLASS =
   'group rounded text-left text-neutral-500 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 const ASK_CLASS = 'text-neutral-400 group-hover:text-neutral-100';
 const ADD_CLASS =
-  'rounded text-left text-neutral-500 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
+  'inline-flex items-center gap-1.5 rounded text-left font-mono text-xs text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 const NOTE_CLASS = 'font-mono text-xs text-neutral-400';
 
 const EDITOR_CLASS = 'flex flex-wrap items-center gap-2 font-mono text-xs';
 const CONTROL_CLASS =
   'rounded border border-amber-500/25 bg-neutral-900 px-1.5 py-1 text-sm text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300';
 const BUTTON_CLASS =
-  'rounded px-1 text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
+  'inline-flex items-center gap-1.5 rounded px-1 text-sm text-neutral-400 hover:text-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:opacity-60';
 
 interface SearchReadoutProps {
   interpretation: SearchInterpretation;
+  /** The archetypes the catalog carries, when the listing has arrived. */
+  archetypes?: string[];
   onCorrect(filters: CardFilters): void;
 }
 
@@ -64,6 +72,7 @@ interface SearchReadoutProps {
  */
 export default function SearchReadout({
   interpretation,
+  archetypes,
   onCorrect
 }: SearchReadoutProps) {
   const filters = interpretation.filters;
@@ -125,6 +134,7 @@ export default function SearchReadout({
                 {index === editing ? (
                   <ChipEditor
                     correcting={filter}
+                    archetypes={archetypes}
                     onSave={corrected => save(index, corrected)}
                     onRemove={() => remove(index)}
                     onCancel={() => {
@@ -151,6 +161,7 @@ export default function SearchReadout({
 
       {adding ? (
         <ChipEditor
+          archetypes={archetypes}
           onSave={corrected => save(undefined, corrected)}
           onCancel={cancelAdding}
         />
@@ -160,6 +171,7 @@ export default function SearchReadout({
           type="button"
           onClick={() => setAdding(true)}
           className={ADD_CLASS}>
+          <PlusIcon className="shrink-0 -translate-y-px" />
           Add a filter
         </button>
       )}
@@ -173,8 +185,35 @@ const chipId = (index: number): string => `filter-chip-${index}`;
 /** The control that offers the filter the request never named. */
 const ADD_ID = 'filter-add';
 
+/**
+ * The values a field's control offers: the ones the domain enumerates, and the
+ * ones the catalog carries for an archetype, which is a value set no schema can
+ * hold because only the index knows which ones exist. What the filter already
+ * holds is offered too, even when the list has moved on from it, so a stored
+ * filter can be read back and kept rather than quietly lost.
+ */
+function offeredValues(
+  field: CardFilterField,
+  enumerated: string[] | undefined,
+  archetypes: string[] | undefined,
+  held: string
+): string[] | undefined {
+  const values =
+    enumerated ??
+    (field === CardFilterField.Archetype ? archetypes : undefined);
+
+  if (values === undefined) {
+    return undefined;
+  }
+
+  return held.length === 0 || values.includes(held)
+    ? values
+    : [held, ...values];
+}
+
 interface ChipEditorProps {
   correcting?: CardFilter;
+  archetypes?: string[];
   onSave(filter: CardFilter): void;
   onRemove?(): void;
   onCancel(): void;
@@ -183,8 +222,9 @@ interface ChipEditorProps {
 /**
  * One filter being said: the field it constrains, then the operator and the
  * value it takes, gathered the way that field takes them, a fixed set where the
- * domain has one and a number where the field is a stat, so nothing can be built
- * here that the search would refuse.
+ * domain has one, the catalog's own list where the data carries one, and a
+ * number where the field is a stat, so nothing can be built here that the search
+ * would refuse.
  *
  * Correcting a fact fixes its field, because the field is the part the readout
  * is sure of; adding one offers the fields the search supports instead, and
@@ -195,6 +235,7 @@ interface ChipEditorProps {
  */
 function ChipEditor({
   correcting,
+  archetypes,
   onSave,
   onRemove,
   onCancel
@@ -211,10 +252,21 @@ function ChipEditor({
     correcting === undefined ? defaultValue(field) : String(correcting.value)
   );
   const firstControl = useRef<HTMLSelectElement>(null);
+  const values = offeredValues(field, vocabulary.values, archetypes, value);
+  const firstOffered = values?.at(0);
 
   useEffect(() => {
     firstControl.current?.focus();
   }, []);
+
+  // The catalog's archetypes arrive after an editor can already be open, so a
+  // value still unset takes the first one the list offers when it lands, the way
+  // a fixed set starts on one of its own.
+  useEffect(() => {
+    if (adding && value.length === 0 && firstOffered !== undefined) {
+      setValue(firstOffered);
+    }
+  }, [adding, firstOffered, value]);
 
   /**
    * The filter these controls now say, or nothing when they do not say one the
@@ -310,11 +362,13 @@ function ChipEditor({
         ))}
       </select>
 
-      {vocabulary.values === undefined ? (
+      {values === undefined ? (
         <input
           type={takesNumber(field) ? 'number' : 'text'}
           inputMode={takesNumber(field) ? 'numeric' : undefined}
           step={takesNumber(field) ? 1 : undefined}
+          min={vocabulary.minimum}
+          max={vocabulary.maximum}
           value={value}
           aria-label="Value"
           onChange={event => setValue(event.target.value)}
@@ -326,9 +380,9 @@ function ChipEditor({
           aria-label="Value"
           onChange={event => setValue(event.target.value)}
           className={CONTROL_CLASS}>
-          {vocabulary.values.map(candidate => (
+          {values.map(candidate => (
             <option key={candidate} value={candidate}>
-              {candidate}
+              {filterValueName(field, candidate)}
             </option>
           ))}
         </select>
@@ -339,14 +393,17 @@ function ChipEditor({
         onClick={save}
         disabled={said() === undefined}
         className={BUTTON_CLASS}>
+        <CheckIcon className="shrink-0 -translate-y-0.5" />
         {adding ? 'Add' : 'Save'}
       </button>
       {onRemove === undefined ? null : (
         <button type="button" onClick={onRemove} className={BUTTON_CLASS}>
+          <MinusIcon className="shrink-0 -translate-y-0.5" />
           Remove
         </button>
       )}
       <button type="button" onClick={onCancel} className={BUTTON_CLASS}>
+        <CloseIcon className="shrink-0 -translate-y-0.5" />
         Cancel
       </button>
     </div>

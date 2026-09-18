@@ -5,6 +5,7 @@ import {
   CardAttribute,
   CardFilterField,
   type CardFilters,
+  CardRace,
   CardType,
   FilterOperator,
   FrameType,
@@ -38,7 +39,7 @@ const DRAGON_FILTER: CardFilters = [
   {
     field: CardFilterField.Race,
     operator: FilterOperator.Eq,
-    value: 'Dragon'
+    value: CardRace.Dragon
   }
 ];
 

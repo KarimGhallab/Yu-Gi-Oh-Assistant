@@ -18,6 +18,9 @@ export interface FilterFieldVocabulary {
   operators: FilterOperator[];
   valueType: string;
   values?: string[];
+  /** The lowest and highest a numeric field may be searched at. */
+  minimum?: number;
+  maximum?: number;
 }
 
 /**
@@ -46,7 +49,9 @@ const fieldVariantSchema = z.object({
     operator: allowedValuesSchema,
     value: z.object({
       type: z.string(),
-      enum: z.array(z.string()).optional()
+      enum: z.array(z.string()).optional(),
+      minimum: z.number().optional(),
+      maximum: z.number().optional()
     })
   })
 });
@@ -105,7 +110,9 @@ export function describeFilterFields(): FilterFieldVocabulary[] {
       field: field.const,
       operators: asOperators(asList(operator)),
       valueType: value.type,
-      values: value.enum
+      values: value.enum,
+      minimum: value.minimum,
+      maximum: value.maximum
     };
   });
 }

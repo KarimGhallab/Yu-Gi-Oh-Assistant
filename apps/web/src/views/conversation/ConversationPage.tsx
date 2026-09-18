@@ -10,6 +10,7 @@ import {
 import { ApiError, ApiFailureKind } from '../../shared/api/apiClient.js';
 import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
 import {
+  useArchetypes,
   useConversation,
   useModels,
   useUpdateConversation
@@ -50,6 +51,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
   const conversation = useConversation(conversationId);
   const update = useUpdateConversation();
   const models = useModels();
+  const archetypes = useArchetypes();
   const { send, turn, isRunning, interpretation, correction, correct } =
     useTurn(conversationId);
   const location = useLocation();
@@ -205,6 +207,7 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
         language={language}
         model={model}
         models={models.data}
+        archetypes={archetypes.data}
         settingsError={update.error?.message}
         onLanguage={changeLanguage}
         onModel={changeModel}

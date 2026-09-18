@@ -44,6 +44,16 @@ describe('buildParsePrompt', () => {
     }
   });
 
+  it('names the bounds a numeric field accepts', () => {
+    const lines = fieldLines(
+      buildParsePrompt(describeFilterFields(), Language.English)
+    );
+
+    expect(lines.get('level')).toContain('from 1 to 12');
+    expect(lines.get('atk')).toContain('from 0 to 9000');
+    expect(lines.get('def')).toContain('from 0 to 9000');
+  });
+
   it('asks for the filters and the query the response schema defines', () => {
     const prompt = buildParsePrompt(describeFilterFields(), Language.English);
 

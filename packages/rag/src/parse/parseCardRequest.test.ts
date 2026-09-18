@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CardFilterField,
+  CardRace,
   CardType,
-  FrameType,
   Language
 } from '@ygo-assistant/cards';
 import {
@@ -253,9 +253,7 @@ describe('parseCardRequest', () => {
 
   it('degrades when the model names a value the card domain does not allow', async () => {
     const { result } = await parse(
-      json({
-        filters: [{ field: 'frameType', operator: 'eq', value: 'quick-play' }]
-      })
+      json({ filters: [{ field: 'race', operator: 'eq', value: 'Toon' }] })
     );
 
     expect(result).toEqual({ outcome: ParseOutcome.Degraded, query: REQUEST });
@@ -285,14 +283,14 @@ describe('parseCardRequest', () => {
     const { result } = await parse(
       json({
         filters: [
-          { field: 'frameType', operator: 'eq', value: FrameType.Spell }
+          { field: 'race', operator: 'eq', value: CardRace.Spellcaster }
         ]
       })
     );
 
     expect(result).toEqual({
       outcome: ParseOutcome.Parsed,
-      filters: [{ field: 'frameType', operator: 'eq', value: FrameType.Spell }],
+      filters: [{ field: 'race', operator: 'eq', value: CardRace.Spellcaster }],
       query: undefined
     });
   });

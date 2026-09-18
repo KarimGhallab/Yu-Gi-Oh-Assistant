@@ -2,6 +2,7 @@ export { cardSchema } from './card/schema.js';
 export type { Card } from './card/schema.js';
 export {
   CardAttribute,
+  CardRace,
   CardType,
   FrameType,
   Language,

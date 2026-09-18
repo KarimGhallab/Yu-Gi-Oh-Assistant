@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CardFilterField,
+  CardRace,
   CardType,
   FilterOperator,
   TurnEventName
@@ -63,11 +65,63 @@ describe('the search readout', () => {
       within(readout)
         .getAllByRole('listitem')
         .map(fact => fact.textContent)
-    ).toEqual(['attribute is LIGHT', 'level at least 7']);
+    ).toEqual(['Attribute is light', 'Level at least 7']);
 
     await act(async () => {
       turn.close();
     });
+  });
+
+  it('reads the catalog its own words and leaves a typed value as it is', async () => {
+    const stored = [
+      playerMessage(10, 'a blue-eyes warrior'),
+      said(11, 'assistant', 'Fits.', {
+        filters: [
+          {
+            field: CardFilterField.Race,
+            operator: FilterOperator.Eq,
+            value: CardRace.BeastWarrior
+          },
+          {
+            field: CardFilterField.Archetype,
+            operator: FilterOperator.Contains,
+            value: 'Blue-Eyes'
+          }
+        ]
+      })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const readout = await screen.findByRole('list', {
+      name: 'What the search was understood as'
+    });
+
+    expect(
+      within(readout)
+        .getAllByRole('listitem')
+        .map(fact => fact.textContent)
+    ).toEqual(['Race is beast-warrior', 'Archetype contains Blue-Eyes']);
+
+    // The control reads the same words while what it sends stays the catalog's.
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Change Race is beast-warrior' })
+    );
+
+    expect(
+      within(screen.getByLabelText('Value')).getByRole('option', {
+        name: 'beast-warrior'
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Value')).toHaveValue(CardRace.BeastWarrior);
   });
 
   it('opens a conversation on the filters it was last searched with', async () => {
@@ -97,7 +151,7 @@ describe('the search readout', () => {
       within(readout)
         .getAllByRole('listitem')
         .map(fact => fact.textContent)
-    ).toEqual(['attribute is DARK']);
+    ).toEqual(['Attribute is dark']);
   });
 
   it('says the last search of a conversation carried no filters', async () => {
@@ -141,13 +195,13 @@ describe('the search readout', () => {
     renderApp(`/c/${uuid(2)}`);
 
     await userEvent.click(
-      await screen.findByRole('button', { name: 'Change attribute is DARK' })
+      await screen.findByRole('button', { name: 'Change Attribute is dark' })
     );
     await userEvent.selectOptions(screen.getByLabelText('Value'), 'LIGHT');
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(
-      screen.getByRole('button', { name: 'Change attribute is LIGHT' })
+      screen.getByRole('button', { name: 'Change Attribute is light' })
     ).toBeInTheDocument();
 
     await send('a dark monster');
@@ -177,7 +231,7 @@ describe('the search readout', () => {
     });
 
     expect(
-      screen.getByRole('button', { name: 'Change attribute is LIGHT' })
+      screen.getByRole('button', { name: 'Change Attribute is light' })
     ).toBeInTheDocument();
 
     // The correction has been used, so the next request goes back to being read
@@ -203,6 +257,39 @@ describe('the search readout', () => {
     });
   });
 
+  it('marks the filter actions beside their words rather than instead of them', async () => {
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Dark Magician fits.', {
+        filters: [DARK_ATTRIBUTE]
+      })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    const offer = await screen.findByRole('button', { name: 'Add a filter' });
+    expect(offer.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Change Attribute is dark' })
+    );
+
+    // The word is what a screen reader hears; the mark before it is silent.
+    for (const name of ['Save', 'Remove', 'Cancel']) {
+      expect(
+        screen.getByRole('button', { name }).querySelector('svg')
+      ).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
   it('runs a search with no constraints when every chip is taken away', async () => {
     const turn = turnStream();
     const stored = [
@@ -221,7 +308,7 @@ describe('the search readout', () => {
     renderApp(`/c/${uuid(2)}`);
 
     await userEvent.click(
-      await screen.findByRole('button', { name: 'Change attribute is DARK' })
+      await screen.findByRole('button', { name: 'Change Attribute is dark' })
     );
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
@@ -263,7 +350,7 @@ describe('the search readout', () => {
 
     renderApp(`/c/${uuid(2)}`);
 
-    await screen.findByRole('button', { name: 'Change attribute is DARK' });
+    await screen.findByRole('button', { name: 'Change Attribute is dark' });
     await send('a light monster');
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -319,7 +406,7 @@ describe('the search readout', () => {
       within(readout)
         .getAllByRole('listitem')
         .map(fact => fact.textContent)
-    ).toEqual(['attribute is DARK', 'type is Normal Monster']);
+    ).toEqual(['Attribute is dark', 'Type is normal monster']);
 
     await send('a dark monster');
 
@@ -386,9 +473,46 @@ describe('the search readout', () => {
 
     // A frame type is one of a fixed set, so the value is offered rather than
     // spelled, and it arrives with one of them.
-    await userEvent.selectOptions(screen.getByLabelText('Field'), 'frameType');
+    await userEvent.selectOptions(screen.getByLabelText('Field'), 'race');
 
     expect(screen.getByLabelText('Value').tagName).toBe('SELECT');
     expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
+  });
+
+  it('refuses a numeric value outside the bounds the game has', async () => {
+    const stored = [
+      playerMessage(10, 'a dark monster'),
+      said(11, 'assistant', 'Fits.', { filters: [] })
+    ];
+    vi.stubGlobal(
+      'fetch',
+      stubFetch(url =>
+        url === '/api/conversations'
+          ? json([GRAVEYARD])
+          : json(withMessages(GRAVEYARD, stored))
+      )
+    );
+
+    renderApp(`/c/${uuid(2)}`);
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Add a filter' })
+    );
+
+    // A new filter starts on a level, which runs from 1 to 12.
+    expect(screen.getByLabelText('Value')).toHaveAttribute('min', '1');
+    expect(screen.getByLabelText('Value')).toHaveAttribute('max', '12');
+
+    await userEvent.type(screen.getByLabelText('Value'), '13');
+    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+
+    await userEvent.clear(screen.getByLabelText('Value'));
+    await userEvent.type(screen.getByLabelText('Value'), '12');
+    expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled();
+
+    // Attack points run from 0 to 9000.
+    await userEvent.selectOptions(screen.getByLabelText('Field'), 'atk');
+    expect(screen.getByLabelText('Value')).toHaveAttribute('min', '0');
+    expect(screen.getByLabelText('Value')).toHaveAttribute('max', '9000');
   });
 });
