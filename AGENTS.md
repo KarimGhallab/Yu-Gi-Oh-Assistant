@@ -33,7 +33,7 @@ client provides the chat experience.
 
 - Git is out of bounds. The maintainer handles all staging and committing. This
   overrides any skill that tells an agent to commit its work.
-- ESM everywhere. Node and pnpm versions are pinned with volta; do not drift.
+- ESM everywhere. Node and pnpm versions are pinned with mise; do not drift.
 - The server binds to loopback by default. Never expose conversation history
   without an explicit decision.
 - Never use em dashes in generated text.

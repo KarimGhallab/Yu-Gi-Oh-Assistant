@@ -27,7 +27,7 @@ existing ADR.
 descriptive title, the decision in prose with its consequences, and a
 `## Considered options` section. `docs/adr/0002-monorepo-stack.md` records the
 workspace as one pnpm monorepo of two apps and eight packages, built with
-TypeScript project references and shipped as ESM on a Volta-pinned toolchain, and
+TypeScript project references and shipped as ESM on a mise-pinned toolchain, and
 names the consequence that a workspace package resolves to its built output, so a
 fresh checkout must build before the package-importing suites run.
 `docs/adr/0003-two-store-split.md` records the LanceDB catalog and the SQLite

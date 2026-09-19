@@ -10,26 +10,29 @@ in order; the `Blocked by` column is the dependency edge.
 
 ## Index
 
-| #   | Spec                                                                         | Status                | Blocked by |
-| --- | ---------------------------------------------------------------------------- | --------------------- | ---------- |
-| 01  | [Workspace foundation](./01-workspace-foundation.md)                         | Resolved (2026-09-15) | -          |
-| 02  | [Ollama integration](./02-ollama-integration.md)                             | Resolved (2026-09-15) | 01         |
-| 03  | [Card catalog ingestion and index](./03-card-catalog-ingestion.md)           | Resolved (2026-09-15) | 01, 02     |
-| 04  | [Retrieval engine](./04-retrieval-engine.md)                                 | Resolved (2026-09-16) | 03         |
-| 05  | [Conversation store and CRUD](./05-conversation-store-and-crud.md)           | Resolved (2026-09-16) | 01         |
-| 06  | [Prompt-to-filter parsing](./06-prompt-to-filter-parsing.md)                 | Resolved (2026-09-16) | 01, 02     |
-| 07  | [Grounded answer and streamed turn](./07-grounded-answer-streamed-turn.md)   | Resolved (2026-09-16) | 04, 05, 06 |
-| 08  | [Chat client](./08-chat-client.md)                                           | Resolved (2026-09-16) | 07         |
-| 09  | [Transparent controls](./09-transparent-controls.md)                         | Resolved (2026-09-18) | 08         |
-| 10  | [Local run, CI, and documentation](./10-local-run-ci-and-docs.md)            | Resolved (2026-09-18) | 01, 07     |
-| 11  | [End-to-end tests](./11-end-to-end-tests.md)                                 | Resolved (2026-09-18) | 09         |
-| 12  | [Card catalog port](./12-card-catalog-port.md)                               | Resolved (2026-09-18) | 03, 04     |
-| 13  | [Turn pipeline](./13-turn-pipeline.md)                                       | Resolved (2026-09-18) | 12         |
-| 14  | [Filter predicate](./14-filter-predicate.md)                                 | Resolved (2026-09-18) | 12         |
-| 15  | [Search interpretation](./15-search-interpretation.md)                       | Resolved (2026-09-18) | 05, 07, 13 |
-| 16  | [Model listing and policy](./16-model-listing-and-policy.md)                 | Resolved (2026-09-18) | 02, 09     |
-| 17  | [One reader for a stored value](./17-stored-value-reader.md)                 | Resolved (2026-09-18) | 05, 12     |
-| 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md) | Resolved (2026-09-18) | -          |
+| #   | Spec                                                                           | Status                | Blocked by |
+| --- | ------------------------------------------------------------------------------ | --------------------- | ---------- |
+| 01  | [Workspace foundation](./01-workspace-foundation.md)                           | Resolved (2026-09-15) | -          |
+| 02  | [Ollama integration](./02-ollama-integration.md)                               | Resolved (2026-09-15) | 01         |
+| 03  | [Card catalog ingestion and index](./03-card-catalog-ingestion.md)             | Resolved (2026-09-15) | 01, 02     |
+| 04  | [Retrieval engine](./04-retrieval-engine.md)                                   | Resolved (2026-09-16) | 03         |
+| 05  | [Conversation store and CRUD](./05-conversation-store-and-crud.md)             | Resolved (2026-09-16) | 01         |
+| 06  | [Prompt-to-filter parsing](./06-prompt-to-filter-parsing.md)                   | Resolved (2026-09-16) | 01, 02     |
+| 07  | [Grounded answer and streamed turn](./07-grounded-answer-streamed-turn.md)     | Resolved (2026-09-16) | 04, 05, 06 |
+| 08  | [Chat client](./08-chat-client.md)                                             | Resolved (2026-09-16) | 07         |
+| 09  | [Transparent controls](./09-transparent-controls.md)                           | Resolved (2026-09-18) | 08         |
+| 10  | [Local run, CI, and documentation](./10-local-run-ci-and-docs.md)              | Resolved (2026-09-18) | 01, 07     |
+| 11  | [End-to-end tests](./11-end-to-end-tests.md)                                   | Resolved (2026-09-18) | 09         |
+| 12  | [Card catalog port](./12-card-catalog-port.md)                                 | Resolved (2026-09-18) | 03, 04     |
+| 13  | [Turn pipeline](./13-turn-pipeline.md)                                         | Resolved (2026-09-18) | 12         |
+| 14  | [Filter predicate](./14-filter-predicate.md)                                   | Resolved (2026-09-18) | 12         |
+| 15  | [Search interpretation](./15-search-interpretation.md)                         | Resolved (2026-09-18) | 05, 07, 13 |
+| 16  | [Model listing and policy](./16-model-listing-and-policy.md)                   | Resolved (2026-09-18) | 02, 09     |
+| 17  | [One reader for a stored value](./17-stored-value-reader.md)                   | Resolved (2026-09-18) | 05, 12     |
+| 18  | [Security hardening of the untrusted boundaries](./18-security-hardening.md)   | Resolved (2026-09-18) | -          |
+| 19  | [Turn recovery and the empty bench](./19-turn-recovery-and-the-empty-bench.md) | Resolved (2026-09-18) | -          |
+| 20  | [Readable and reachable controls](./20-readable-and-reachable-controls.md)     | Resolved (2026-09-18) | -          |
+| 21  | [One lamp and honest chrome](./21-one-lamp-and-honest-chrome.md)               | Resolved (2026-09-18) | -          |
 
 ## Critical path
 
@@ -50,4 +53,10 @@ on the critical path. It is resolved. Feature 17 depends on 05 and 12 and gives
 the loose read of a stored value one module behind the store and the catalog
 adapters; it is not on the critical path. It is resolved. Feature 18 has no spec
 dependency and hardens the three untrusted boundaries the 2026-09-18 security
-review ranked first; it is not on the critical path. It is resolved.
+review ranked first; it is not on the critical path. It is resolved. Features 19,
+20, and 21 come from the 2026-09-18 design critique of the web client and have no
+spec dependency. 19 is resolved: it carried the turn recovery, the empty-answer
+copy, and the empty bench. 20 is resolved: it carried the contrast, focus, and
+reachability fixes, ticketed as 79 through 82, all landed. 21 resolves the One
+Lamp Rule and the chrome around an empty conversation, which now starts with the
+bench 19 landed; it is ticketed as 83 and resolved. The design track is complete.

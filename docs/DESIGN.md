@@ -7,7 +7,7 @@ colors:
   rail: 'oklch(26.9% 0 none)'
   ink: 'oklch(97% 0 none)'
   ink-muted: 'oklch(70.8% 0 none)'
-  ink-faint: 'oklch(55.6% 0 none)'
+  ink-faint: 'oklch(65% 0 none)'
   accent: 'oklch(76.9% 0.188 70.08)'
   accent-hover: 'oklch(82.8% 0.189 84.429)'
   accent-ring: 'oklch(87.9% 0.169 91.605)'
@@ -74,6 +74,12 @@ components:
   pane-setting-control:
     textColor: '{colors.ink-muted}'
     typography: '{typography.body}'
+  bench-heading:
+    textColor: '{colors.ink}'
+    typography: '{typography.title}'
+  bench-words:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
   notice-panel:
     backgroundColor: '{colors.surface}'
     textColor: '{colors.ink}'
@@ -109,6 +115,15 @@ components:
     typography: '{typography.mono}'
   message-searched-as:
     textColor: '{colors.ink-muted}'
+    typography: '{typography.mono}'
+  message-unanswered:
+    textColor: '{colors.ink-muted}'
+    typography: '{typography.body}'
+  message-unanswered-action:
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+  message-searched-with:
+    textColor: '{colors.ink-faint}'
     typography: '{typography.mono}'
   composer-field:
     backgroundColor: '{colors.surface-panel}'
@@ -211,7 +226,7 @@ the accent and failure.
   fill of the row that is open.
 - **Bone White** (`oklch(97% 0 none)`): primary text.
 - **Ash Grey** (`oklch(70.8% 0 none)`): secondary text, inactive navigation.
-- **Dust Grey** (`oklch(55.6% 0 none)`): tertiary text and placeholders.
+- **Dust Grey** (`oklch(65% 0 none)`): tertiary text and placeholders.
 - **Signal Red** (`oklch(70.4% 0.191 22.216)`): failure text. The one color that
   is not the lamp, and it is only ever a sentence about something going wrong.
 
@@ -219,13 +234,13 @@ the accent and failure.
 
 **The One Lamp Rule.** Amber marks what is actionable, chosen, or focused, and
 nothing else. No amber headings, no amber decoration, no amber dividers. Its
-rarity is what makes it read as light. The conversation screen is where the rule
-is under the most pressure, because it shows the sidebar's New fill and the
-composer's Send fill at once: the primary action of two different regions, and
-whether one screen should carry two filled controls at all is undecided. Until it
-is, two fills in two regions is the limit. A dialog that has taken the room is a
+rarity is what makes it read as light. A screen carries one filled control, and
+it is the action the screen is for: the composer's Send is the lamp of the asking
+surface, on the home surface and in a conversation alike, and the sidebar's New
+is a quiet action beside it, because starting a conversation is not the act a
+screen built around a prompt is asking for. A dialog that has taken the room is a
 region of its own and the only one being read while it is open, so the lamp it
-carries is not a third lamp on the screen: the fills behind it are not being
+carries is not a second lamp on the screen: the fills behind it are not being
 looked at. The prompt's field carries no amber and no border of its own, because
 it is a surface rather than an outlined bench, and the focus ring is the only line
 ever drawn around it.
@@ -271,12 +286,19 @@ to start a conversation, and pressing its mark brings the whole sidebar across
 with the chat dimmed behind it, because on a narrow window the two cannot want the
 width at the same time. The frame is one screen tall at every size and its regions
 scroll inside it, so the bar stays where it is when the prompt takes the keyboard.
-The main region is the only thing that scrolls vertically, and a
+Every region that scrolls carries the system's own rail rather than the browser's
+default, so the scrollbar is part of the workbench and not a strip of chrome
+against the window's edge. The main region is the only thing that scrolls
+vertically, and a
 conversation surface holds one header, one content area, and one prompt docked at
-its bottom edge. The home surface holds the same prompt, standing nearer the
-middle of an otherwise empty screen, because typing a request is how a
-conversation begins: sending it starts the conversation and asks the request in
-it, and the prompt moves down to the foot of it as it opens. The header carries
+its bottom edge. Until it has anything to say, that prompt stands in the middle
+of the region with the requests that can be asked above it, because a
+conversation that was started but not spoken in is still the start it was, and it
+carries no name of its own yet: the header arrives with the first message, and
+until then the sidebar is what identifies the conversation. The prompt moves down
+to the foot as the first request is asked. The home surface draws the same bench
+under its own title, because typing a request is how a conversation begins:
+sending it starts the conversation and asks the request in it. The header carries
 the conversation's name and nothing else, because the language its cards are read
 in and the model that answers belong to the act of asking: they live on the
 prompt's own surface, beside the field they are sent with. That surface is the
@@ -321,6 +343,13 @@ change itself rather than an effect laid over it:
   settling faster as it dims, and closing carries the face back down onto the
   tile. The name the two share is on exactly one of them at any moment, the tile
   on the way out and the face on the way in.
+- **The composer, stepping aside for a card.** A card's face takes the room, so
+  the prompt leaves it: the whole composer, readout and status included, sinks
+  toward the bottom edge and fades, and rises back from that edge when the face is
+  put down. It is the prompt's own movement in the other direction, 420ms on
+  `cubic-bezier(0.16, 1, 0.3, 1)`, carried by the card's transition rather than
+  running beside it, and the composer answers the room it is in rather than being
+  handed a state to move for.
 - **A caret, turning over.** A setting's caret turns while the list it opens is
   open, 150ms, so the control says which of its two states it is in.
 - **The sidebar, folding and arriving.** On a wide window the panel's width is
@@ -340,7 +369,33 @@ change itself rather than an effect laid over it:
 
 A player who has asked for reduced motion gets the state changes without the
 movement: the prompt where it lands and the cross-fade, the card face where it
-lands, the caret already turned, and the panel already at its width.
+lands, the composer where it lands, the caret already turned, and the panel
+already at its width.
+
+## Browser surfaces
+
+The parts of the screen the system did not draw still carry it. A scrollbar, the
+pointer's caret, and the platform's own menu are all surfaces the browser paints,
+and left alone each arrives in a grey from no palette and a size from no scale.
+They are themed from the palette like anything the app draws itself.
+
+A scrollbar is a rail, and the system has exactly one grey for a rail: its thumb
+is Rail Grey and its track is transparent, so the rail is the only thing on it
+and nothing is drawn beside the one the player is dragging. It is thin, and it is
+thumb-only, with no arrow buttons at its ends. It goes on every region that
+scrolls and nowhere else: the request field, the list a setting opens, the
+conversation and the bench, and the sidebar's own list and its folded rail. The
+standard `scrollbar-width` and `scrollbar-color` properties are what draw it,
+because reaching for the browser's non-standard scrollbar pseudo-elements puts
+the engine back on the path that draws the arrow buttons and fights the thing it
+was meant to remove.
+
+The distinction is not cosmetic. A scrolling region that does not opt in does not
+merely get a plainer bar: on a window whose scrollbars are overlaid, the unthemed
+bar is drawn wider, in a grey the palette does not contain, and against the edge
+of the window rather than the edge of the region, so it reads as chrome that
+belongs to the browser and not to the app. Opting in is what makes a scrollbar
+part of the workbench.
 
 ## Shapes
 
@@ -485,11 +540,34 @@ level deep.
 - **Raw HTML and images:** dropped, never rendered. Nothing an answer carries may
   be a picture this app did not choose, and the only images it loads are the
   cards' printed faces under the answer.
+- **An empty search:** an answer that found no cards shows the filters the
+  search ran with under the prose, in the readout's own vocabulary and at mono
+  scale: the field in Dust Grey and what it asked of it in Ash Grey. It is a
+  record rather than a control, set apart by space, because the controls that
+  remove a filter are the readout's, below. An answer with cards shows no such
+  line: the cards are the result.
 - **While it arrives:** the prose is Markdown from the first token, and the
   announcement is drawn apart from it. A visually hidden live region carries one
   node per piece, so a screen reader hears the answer arriving rather than the
   whole of it again on every piece, which is the same drawing twice that the
   status line makes.
+
+### Unanswered request
+
+- **What it is:** the line a request carries when its turn never produced a
+  reply, saying that it was not answered, and the one action that asks it again.
+  It is a row of the history rather than a notice over the conversation, because
+  the request is what it is about and the request is a row.
+- **Text:** Body in Ash Grey, the same voice as the rest of the conversation.
+- **Action:** the request's retry is a text button at Bone White, underlined in
+  Rail Grey and stepping to Lamp Amber on hover, with the recorded focus ring.
+  It is the treatment the prose's links and the surfaces' quiet actions share,
+  and it is not a fill: the lamp of the screen is still the composer's Send.
+- **Keyboard:** the retry is a button, reached by Tab in the order the turn is
+  read, and it is not a hover.
+- **Searched as:** a request that reported a search before it gave way keeps it,
+  because that search is the request's own; a request with none shows no readout,
+  because the last one belongs to the answer before it.
 
 ### Cards (the grid)
 
@@ -568,7 +646,9 @@ level deep.
   is Ash Grey, stepping to Bone White over a Rail Grey surface when it is pointed
   at, and it takes the same 2px Halo Amber outline as every other control. Its
   name is the setting and the value it holds, read as one, so what it is set to
-  is never a control that only says what it is for.
+  is never a control that only says what it is for. The whole value is offered
+  where it stands, because the control truncates in the layout and who is
+  answering should not be behind opening the list.
 - **The list a setting opens:** drawn rather than borrowed from the platform, so
   a choice can carry what it is beside its name. It opens above the control, one
   surface step up over the card and carrying no shadow, because this system has
@@ -576,8 +656,11 @@ level deep.
   choice, the row in force filled a step further and in Bone White, the rest in
   Ash Grey, and a model's note in 12px mono after its name, because what a model
   can and cannot do is a machine fact rather than prose. A row that says a model
-  cannot answer is a row that cannot be taken: it is readable, and not selectable,
-  because offering a choice that cannot work is offering a mistake. The keyboard
+  cannot answer is a row that cannot be taken: it is muted and carries no
+  highlight, so it reads as unavailable while its note stays readable, rather
+  than being dimmed under an opacity that would make the reason the hardest thing
+  in it to read. It is not selectable, because offering a choice that cannot work
+  is offering a mistake. The keyboard
   walks the list with the arrows, Escape calls it off and comes back to the control,
   picking closes it and comes back too, and moving the keyboard out of it closes
   it without taking the focus anywhere.
@@ -609,7 +692,10 @@ level deep.
   the field keeps its words, so a start that failed leaves the request where it
   was typed. Sending is also when the prompt is seen moving: the card is named in
   the view transition that carries it from the middle of the home surface to the
-  foot of the conversation that request just started.
+  foot of the conversation that request just started. A card's face takes the room
+  in the same surface, and the composer steps out of it: the whole surface, readout
+  and status included, sinks toward the bottom edge and fades, and rises back when
+  the face is put down.
 - **Surface:** the field and the actions the request is run with share one
   surface, because they are one act rather than a field with a row of controls
   under it. It is the field's own Bench Slate surface grown to hold them: 4px
@@ -618,7 +704,8 @@ level deep.
   The keyboard lights the whole of it rather than a box inside it.
 - **Field:** a textarea on that surface, Body text in Bone White, Dust Grey
   placeholder, five lines tall before it scrolls so a request of a few lines can
-  be read back at once. Its scrollbar is thin, without a track, and thumb only.
+  be read back at once. Its scrollbar is the system's own rail, thin, without a
+  track, thumb only, and in Rail Grey, like every other scrollbar in the app.
   Opening the app, as much as opening a conversation, puts the keyboard in this
   field, because arriving is how a player comes to ask, so no address needs a
   further stop to start typing. Enter sends and Shift+Enter is a line, because a
@@ -670,13 +757,10 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   is over.
 - **Searched as:** the words a request was searched with, when the parse rewrote
   it into card wording rather than searching the player's own. It sits under the
-  request it answered, in the readout's 12px mono, and pointing at the turn, the
-  name and the request together, is the only thing that shows it: there is no
-  control to press, and nothing keeps it once the pointer leaves. It is kept out
-  of the layout while it is hidden,
-  which is what its arrival costs, and it stays in the page whether or not it is
-  in front of you, so a reader that cannot point at it is told it with the
-  request rather than never. A request whose search ran on the player's own words
+  request it answered, in the readout's 12px mono, for everyone: the words a
+  search ran on are the request's own claim, so they do not wait for a pointer,
+  and a player reading by keyboard or on a touch screen reads them the same as
+  one pointing at the turn. A request whose search ran on the player's own words
   has nothing to show: the readout already says it was searched as written.
 - **A filter being corrected or added:** the readout becomes the controls that
   say it: the field it constrains, then the operator and the value, gathered the
@@ -718,12 +802,15 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
   changes nothing as a plain text button in Bone White, and the answer that acts
   as the lamp. It is the only region being read while it is open, which is what
   lets it carry a fill of its own.
-- **Keyboard:** the keyboard is put on the first thing the dialog offers, which is
-  the field of a question about a name and the answer that changes nothing of a
-  question about a deletion, and it stays among what the dialog offers rather than
-  walking off into a list that is not being read. Escape, and a press anywhere in
-  the room outside, call the whole thing off. Focus goes back to the row that
-  asked, which the list owns.
+- **Keyboard:** the keyboard is put on the dialog itself, and the surface draws
+  the focus ring, so the region that just took the room is shown to be the one
+  holding the keyboard whether the dialog was opened by pointer or by key. The
+  first thing it offers, the field of a question about a name or the answer that
+  changes nothing of a question about a deletion, is one Tab away, and the
+  keyboard stays among what the dialog offers rather than walking off into a list
+  that is not being read. Escape, and a press anywhere in the room outside, call
+  the whole thing off. Focus goes back to the row that asked, which the list
+  owns.
 - **Use it for:** the two things a row's own controls ask that need the room: a
   deletion, and a name. Anything that can be answered without it is answered in
   the row it is about.
@@ -732,26 +819,43 @@ normal monster` and `Race is beast-warrior` are read. The catalog's own value
 
 - **Shape:** a centred column, nothing enclosed, maximum 28rem of body text.
 - **Heading:** Title, Bone White, when the notice is the whole page. A notice
-  standing in for content inside a page, such as an empty conversation, is below
-  that page's own heading, so it takes a `h2` at the Label scale instead and the
-  page keeps a single title.
+  standing in for content inside a page is below that page's own heading, so it
+  takes a `h2` at the Label scale instead and the page keeps a single title.
 - **Body:** Body, Ash Grey.
 - **Action:** one primary button or link, or none.
-- **Use it for:** everything that stands in for content that is not there, so the
-  empty state, a conversation that does not exist, and a request that failed all
-  speak in the same voice.
-- **What can be asked:** a conversation with nothing in it offers the requests
-  themselves as things to press, in the player's own words, because a request that
-  is written out is a request that can be sent without typing one. They are plain
-  text in Ash Grey, stepping to Bone White when pointed at, since four requests
-  beside each other as fills would be four lamps. The home surface shows the same
-  list directly under its own words rather than inside a notice, because there it
-  is the content rather than something standing in for content. Fifty requests are
-  kept and four are drawn from them, without repeating, once per surface: a player
-  who comes back meets a different handful, and the list stays short enough to
-  read. They are drawn rather than listed because a player who has read all fifty
-  would stop seeing them, and because a request the assistant already knows the
-  name of is not the request this app is for.
+- **Use it for:** everything that stands in for content that is not there, so a
+  conversation that is opening, one that does not exist, and one that could not be
+  opened all speak in the same voice. The empty surface is not one of these: it is
+  the bench, which is content rather than something standing in for it.
+
+### Bench (the home surface and an empty conversation)
+
+- **What it is:** the workbench before there is anything on it: the request to be
+  typed as the object, and the requests that can be asked as its tools. The home
+  surface and a conversation with nothing in it draw the same one, because a
+  conversation that was started but not spoken in is still the start it was.
+- **Composition:** a centred column. The title and its words, then the requests,
+  then the prompt. The prompt keeps the width it has at the foot of a
+  conversation, because the two are one card and the move between them is what
+  says so; only the words and the tools are held to a 28rem measure and centred.
+- **Title:** Title scale in Bone White. The home surface carries it, and so does a
+  conversation with nothing in it: a conversation has no name until it has
+  something to name, so its header holds off and the bench keeps its own title
+  instead. The sidebar still names the conversation while it is empty.
+- **Words:** Body in Ash Grey, one line: they say what to do, not what the tool
+  is.
+- **Tools:** the requests themselves, as plain text in Ash Grey, stepping to Bone
+  White when pointed at, because a request is something to say and four of them as
+  fills would be four lamps. They sit above the prompt, so what can be asked is
+  read before the field it is typed in. Fifty are kept and four are drawn
+  from them, without repeating, once per surface, so a player who comes back meets
+  a different handful, and none of them is a card they had to know the name of
+  first.
+- **Leaving:** asking a request fills the bench, so the prompt is carried down to
+  the foot of the conversation it just filled, in the movement the home surface
+  already makes. The bench is drawn only when the conversation is at rest: a
+  request handed over from the home surface is already on its way and its prompt
+  lands at the foot rather than passing through the middle.
 
 ### Alert line
 

@@ -10,12 +10,25 @@ import {
   createConversation,
   json,
   notFound,
+  playerMessage,
   renderApp,
   requestedUrls,
+  said,
   stubFetch,
   uuid,
   withMessages
 } from './appTestHarness.js';
+
+/**
+ * One stored turn, so the conversation has the header its name lives in. A
+ * conversation with nothing in it draws the bench instead and carries no title,
+ * which is the truth these rail tests are not about.
+ */
+const spoken = (): ReturnType<typeof withMessages> =>
+  withMessages(GRAVEYARD, [
+    playerMessage(11, 'I want a dragon'),
+    said(12, 'assistant', 'Blue-Eyes is the biggest body.')
+  ]);
 
 describe('the conversation list', () => {
   afterEach(() => {
@@ -142,8 +155,10 @@ describe('the conversation list', () => {
       await screen.findByRole('button', { name: 'New conversation' })
     );
 
+    // The new conversation holds nothing, so it opens on the bench rather than a
+    // title it has not earned; the sidebar is what names it.
     expect(
-      await screen.findByRole('heading', { name: 'New conversation' })
+      await screen.findByRole('heading', { name: 'Start a conversation' })
     ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/conversations',
@@ -227,9 +242,7 @@ describe('the conversation list', () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
-        url === '/api/conversations'
-          ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+        url === '/api/conversations' ? json([GRAVEYARD]) : json(spoken())
       )
     );
 
@@ -261,9 +274,7 @@ describe('the conversation list', () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
-        url === '/api/conversations'
-          ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+        url === '/api/conversations' ? json([GRAVEYARD]) : json(spoken())
       )
     );
 
@@ -277,8 +288,8 @@ describe('the conversation list', () => {
     const mark = screen.getByRole('link', { name: 'Graveyard toolbox' });
     await userEvent.hover(mark);
 
-    // The page's own heading carries the same words, so the sidebar is where the
-    // name is looked for.
+    // The mark shows one letter; pointing at it shows the whole name, and the
+    // sidebar is where the name is looked for.
     const sidebar = within(screen.getByRole('complementary'));
     expect(sidebar.getByText('Graveyard toolbox')).toBeInTheDocument();
 
@@ -291,9 +302,7 @@ describe('the conversation list', () => {
     vi.stubGlobal(
       'fetch',
       stubFetch(url =>
-        url === '/api/conversations'
-          ? json([GRAVEYARD])
-          : json(withMessages(GRAVEYARD))
+        url === '/api/conversations' ? json([GRAVEYARD]) : json(spoken())
       )
     );
 
@@ -351,8 +360,12 @@ describe('the conversation list', () => {
       screen.getByRole('alertdialog', { name: 'Delete this conversation?' })
     ).toBeInTheDocument();
 
-    // The question takes the keyboard with it, onto the answer that changes
-    // nothing.
+    // The question takes the keyboard with it, onto its own surface; the answer
+    // that changes nothing is one Tab away.
+    expect(screen.getByRole('alertdialog')).toHaveFocus();
+
+    await userEvent.tab();
+
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
   });
 

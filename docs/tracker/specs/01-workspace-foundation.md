@@ -50,8 +50,8 @@ else is built and tested on.
 
 ## Implementation Decisions
 
-- pnpm workspaces monorepo, ESM everywhere. Node 26.5.0 and pnpm 11.20.0 pinned
-  with volta, repo-wide. One root TypeScript version; drift checked by syncpack.
+- pnpm workspaces monorepo, ESM everywhere. Node 26.5.0 and pnpm 12.4.2 pinned
+  with mise, repo-wide. One root TypeScript version; drift checked by syncpack.
 - Package scope is `@ygo-assistant/*`. Remove `apps/console` and
   `packages/color`; retain `packages/utils`.
 - Package skeletons created here: `apps/server`, `apps/web`, `packages/cards`,

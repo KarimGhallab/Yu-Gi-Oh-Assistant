@@ -29,11 +29,16 @@ describe('the home surface', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    // A reload is this: a fresh mount at the address the player is on.
+    // A reload is this: a fresh mount at the address the player is on. The
+    // conversation holds nothing, so it opens on the bench; the sidebar is what
+    // names it.
     renderApp(`/c/${uuid(2)}`);
 
     expect(
-      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
+      await screen.findByRole('heading', { name: 'Start a conversation' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
     ).toBeInTheDocument();
     expect(requestedUrls(fetchMock)).toContain(`/api/conversations/${uuid(2)}`);
   });
@@ -46,6 +51,9 @@ describe('the home surface', () => {
 
     expect(
       await screen.findByRole('heading', { name: 'Start a conversation' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Describe the cards you are looking for.')
     ).toBeInTheDocument();
 
     // The request can be typed here, so the keyboard is already in it, and the
@@ -265,8 +273,13 @@ describe('the home surface', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
+    // The conversation it could not open is the one that holds nothing, so it
+    // lands on the bench with the sidebar naming it.
     expect(
-      await screen.findByRole('heading', { name: 'Graveyard toolbox' })
+      await screen.findByRole('heading', { name: 'Start a conversation' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Graveyard toolbox' })
     ).toBeInTheDocument();
   });
 

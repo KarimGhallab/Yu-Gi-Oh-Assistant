@@ -10,6 +10,7 @@ import {
 } from '@ygo-assistant/contracts';
 
 import { ApiError, ApiFailureKind } from '../../shared/api/apiClient.js';
+import Bench from '../../shared/components/Bench.js';
 import Notice, { ACTION_CLASS } from '../../shared/components/Notice.js';
 import {
   useArchetypes,
@@ -19,9 +20,9 @@ import {
 } from '../../shared/conversationQueries.js';
 import { conversationTitle } from '../../shared/conversationTitle.js';
 import { pendingRequest } from '../../shared/pendingRequest.js';
+import { runViewTransition } from '../../shared/runViewTransition.js';
 
 import Composer from './Composer.js';
-import ExamplePrompts from './ExamplePrompts.js';
 import MessageHistory, { type ChatTurn } from './MessageHistory.js';
 import {
   failureAnnouncement,
@@ -123,13 +124,40 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
     turn.userMessageId !== undefined &&
     held.has(turn.userMessageId);
 
+  // A request is unanswered when the server stored it and its turn never
+  // produced a reply, and while a question the server never confirmed is still
+  // only on this screen. A turn that is running is neither: its answer is on
+  // its way. The search the turn reported, when it reported one, is what asking
+  // again runs.
+  const lastStored = stored.at(-1);
+  const waitingForReply =
+    !isRunning &&
+    lastStored !== undefined &&
+    lastStored.role === MessageRole.User;
+  const refusedQuestion =
+    !isRunning &&
+    turn !== undefined &&
+    turn.question.length > 0 &&
+    !askingTwice;
+  const unanswered = waitingForReply || refusedQuestion;
+  // The search a stored request ran with is the turn's own only when the turn
+  // is not a newer question still held on this screen; a question that is held
+  // belongs to itself, and the stored request before it can only be read again.
+  const storedSearch =
+    turn !== undefined && turn.question.length === 0 ? turn.search : undefined;
+
   const turns: ChatTurn[] = [
     ...stored.map((message, index) => ({
       key: message.id,
       role: message.role,
       content: message.content,
       cards: message.cards,
-      query: rewrittenQuery(stored, index)
+      query: rewrittenQuery(stored, index),
+      search: message.search,
+      retry:
+        waitingForReply && index === stored.length - 1
+          ? { filters: storedSearch }
+          : undefined
     })),
     ...(turn === undefined || turn.question.length === 0 || askingTwice
       ? []
@@ -138,7 +166,8 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
             key: ASKING,
             role: MessageRole.User,
             content: turn.question,
-            query: turn.query === turn.question ? undefined : turn.query
+            query: turn.query === turn.question ? undefined : turn.query,
+            retry: refusedQuestion ? { filters: turn.search } : undefined
           }
         ]),
     // The answer's turn stands from the moment the turn runs, before it has said
@@ -152,7 +181,11 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
             role: MessageRole.Assistant,
             content: turn.pieces.join(''),
             cards: turn.cards,
-            pieces: turn.pieces
+            pieces: turn.pieces,
+            search:
+              turn.search === undefined
+                ? undefined
+                : { filters: turn.search, query: turn.query }
           }
         ])
   ];
@@ -176,44 +209,98 @@ function ConversationSurface({ conversationId }: ConversationSurfaceProps) {
     : undefined;
   const failure =
     turn?.failure === undefined ? undefined : failureAnnouncement(turn.failure);
+  // The readout belongs to the answer a search produced, so an unanswered
+  // request does not show the previous turn's search as if it were its own. A
+  // request whose own turn did report a search is not that case: the readout is
+  // its own, and asking again runs it. The player's own correction still shows,
+  // because it is what the next turn will run.
   const readout =
-    correction === undefined
-      ? (interpretation ?? lastSearch(conversation.data.messages))
-      : { filters: correction };
+    correction !== undefined
+      ? { filters: correction }
+      : unanswered && turn?.search === undefined
+        ? undefined
+        : (interpretation ?? lastSearch(conversation.data.messages));
+
+  // The bench is drawn only when the conversation is at rest with nothing in
+  // it. A request handed over from the home surface has a turn on its way and
+  // belongs at the foot already, which is what keeps the prompt docking rather
+  // than jumping back to the middle for the frame before it is asked.
+  const restful = turns.length === 0 && !isRunning && request === undefined;
+
+  const ask = (text: string): void => {
+    if (restful) {
+      // Asking from the bench fills the conversation, so the prompt is carried
+      // down to the foot of it in the movement the home surface already makes,
+      // with no navigation to hang it on.
+      runViewTransition(() => {
+        void send(text, { language, model });
+      });
+      return;
+    }
+
+    void send(text, { language, model });
+  };
+
+  const composer = (
+    <Composer
+      onSend={ask}
+      running={isRunning}
+      announcement={announcement}
+      readout={readout}
+      onCorrect={correct}
+      failure={failure}
+      language={language}
+      model={model}
+      models={models.data?.models}
+      archetypes={archetypes.data}
+      settingsError={update.error?.message}
+      onLanguage={changeLanguage}
+      onModel={changeModel}
+    />
+  );
+
+  const header = (
+    <header className="border-b border-neutral-800 px-6 py-4">
+      <h1 className="truncate text-lg font-semibold text-neutral-100">
+        {conversationTitle(conversation.data)}
+      </h1>
+    </header>
+  );
+
+  // A conversation with nothing in it is the start it was, so it draws the bench
+  // the home surface draws rather than carrying a title it has not earned: the
+  // name is in the sidebar, and it reaches the header when the conversation has
+  // something to name. The bench holds the prompt, so the foot has none while it
+  // is up.
+  if (restful) {
+    return (
+      <div className="quiet-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <Bench
+          heading="Start a conversation"
+          onChoose={ask}
+          prompt={composer}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="border-b border-neutral-800 px-6 py-4">
-        <h1 className="truncate text-lg font-semibold text-neutral-100">
-          {conversationTitle(conversation.data)}
-        </h1>
-      </header>
+    <div className="conversation-surface flex min-h-0 flex-1 flex-col">
+      {header}
       <section
         aria-label="Messages"
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
-        {turns.length === 0 ? (
-          <ExamplePrompts
-            onChoose={text => void send(text, { language, model })}
+        className="quiet-scroll flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
+        {turns.length === 0 ? null : (
+          <MessageHistory
+            messages={turns}
+            language={language}
+            onRetry={(text, filters) =>
+              void send(text, { language, model, filters: filters ?? null })
+            }
           />
-        ) : (
-          <MessageHistory messages={turns} language={language} />
         )}
       </section>
-      <Composer
-        onSend={text => void send(text, { language, model })}
-        running={isRunning}
-        announcement={announcement}
-        readout={readout}
-        onCorrect={correct}
-        failure={failure}
-        language={language}
-        model={model}
-        models={models.data?.models}
-        archetypes={archetypes.data}
-        settingsError={update.error?.message}
-        onLanguage={changeLanguage}
-        onModel={changeModel}
-      />
+      {composer}
     </div>
   );
 }

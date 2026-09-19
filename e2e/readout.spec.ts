@@ -29,7 +29,8 @@ test('corrects a fact and searches the next turn with it', async ({ page }) => {
   await ask(page);
 
   await page.getByRole('button', { name: PARSED }).click();
-  await page.getByLabel('Value').selectOption('Spell Card');
+  await page.getByRole('button', { name: 'Value normal monster' }).click();
+  await page.getByRole('option', { name: 'spell card' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(
     page.getByRole('button', { name: 'Change Type is spell card' })
@@ -59,8 +60,10 @@ test('adds a filter the request never named', async ({ page }) => {
   await expect(page.getByLabel('Value')).toHaveAttribute('min', '1');
   await expect(page.getByLabel('Value')).toHaveAttribute('max', '12');
 
-  await page.getByLabel('Field').selectOption('race');
-  await page.getByLabel('Value').selectOption('Dragon');
+  await page.getByRole('button', { name: 'Field Level' }).click();
+  await page.getByRole('option', { name: 'Race' }).click();
+  await page.getByRole('button', { name: /^Value / }).click();
+  await page.getByRole('option', { name: 'Dragon' }).click();
   await page.getByRole('button', { name: 'Add' }).click();
 
   await expect(page.getByRole('button', { name: PARSED })).toBeVisible();

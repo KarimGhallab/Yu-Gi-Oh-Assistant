@@ -10,6 +10,7 @@ import {
   cardFilterSchema
 } from '@ygo-assistant/contracts';
 
+import Picker from '../../shared/components/Picker.js';
 import CheckIcon from '../../shared/components/icons/CheckIcon.js';
 import CloseIcon from '../../shared/components/icons/CloseIcon.js';
 import MinusIcon from '../../shared/components/icons/MinusIcon.js';
@@ -251,12 +252,16 @@ function ChipEditor({
   const [value, setValue] = useState(
     correcting === undefined ? defaultValue(field) : String(correcting.value)
   );
-  const firstControl = useRef<HTMLSelectElement>(null);
+  const editor = useRef<HTMLDivElement>(null);
   const values = offeredValues(field, vocabulary.values, archetypes, value);
   const firstOffered = values?.at(0);
 
+  // The keyboard arrives on the first thing the filter offers, which is the
+  // field when it is being added and the operator when it is being corrected.
   useEffect(() => {
-    firstControl.current?.focus();
+    editor.current
+      ?.querySelector<HTMLElement>('[aria-haspopup="listbox"], input')
+      ?.focus();
   }, []);
 
   // The catalog's archetypes arrive after an editor can already be open, so a
@@ -300,6 +305,7 @@ function ChipEditor({
 
   return (
     <div
+      ref={editor}
       role="group"
       aria-label={
         correcting === undefined
@@ -313,14 +319,15 @@ function ChipEditor({
         }
       }}>
       {adding ? (
-        <select
-          ref={firstControl}
+        <Picker
+          label="Field"
           value={field}
-          aria-label="Field"
-          onChange={event => {
-            const chosen = filterFields().find(
-              entry => entry.field === event.target.value
-            );
+          choices={filterFields().map(entry => ({
+            value: entry.field,
+            name: filterFieldName(entry.field)
+          }))}
+          onPick={next => {
+            const chosen = filterFields().find(entry => entry.field === next);
 
             if (chosen === undefined) {
               return;
@@ -330,37 +337,29 @@ function ChipEditor({
             setOperator(defaultOperator(chosen.field));
             setValue(defaultValue(chosen.field));
           }}
-          className={CONTROL_CLASS}>
-          {filterFields().map(entry => (
-            <option key={entry.field} value={entry.field}>
-              {filterFieldName(entry.field)}
-            </option>
-          ))}
-        </select>
+          align="start"
+        />
       ) : (
         <span>{filterFieldName(field)}</span>
       )}
 
-      <select
-        ref={adding ? undefined : firstControl}
+      <Picker
+        label="Operator"
         value={operator}
-        aria-label="Operator"
-        onChange={event => {
+        choices={vocabulary.operators.map(candidate => ({
+          value: candidate,
+          name: describeOperator(candidate)
+        }))}
+        onPick={next => {
           const chosen = vocabulary.operators.find(
-            candidate => candidate === event.target.value
+            candidate => candidate === next
           );
 
           if (chosen !== undefined) {
             setOperator(chosen);
           }
         }}
-        className={CONTROL_CLASS}>
-        {vocabulary.operators.map(candidate => (
-          <option key={candidate} value={candidate}>
-            {describeOperator(candidate)}
-          </option>
-        ))}
-      </select>
+      />
 
       {values === undefined ? (
         <input
@@ -375,17 +374,15 @@ function ChipEditor({
           className={`${CONTROL_CLASS} w-24`}
         />
       ) : (
-        <select
+        <Picker
+          label="Value"
           value={value}
-          aria-label="Value"
-          onChange={event => setValue(event.target.value)}
-          className={CONTROL_CLASS}>
-          {values.map(candidate => (
-            <option key={candidate} value={candidate}>
-              {filterValueName(field, candidate)}
-            </option>
-          ))}
-        </select>
+          choices={values.map(candidate => ({
+            value: candidate,
+            name: filterValueName(field, candidate)
+          }))}
+          onPick={setValue}
+        />
       )}
 
       <button

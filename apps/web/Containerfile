@@ -3,7 +3,7 @@
 # Compile the client with the pinned Node and pnpm.
 FROM docker.io/library/node:26.5.0-alpine AS build
 
-RUN npm install --global pnpm@11.20.0
+RUN npm install --global pnpm@12.4.2
 WORKDIR /app
 
 COPY . .

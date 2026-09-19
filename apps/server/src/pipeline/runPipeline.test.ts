@@ -453,8 +453,50 @@ describe('runPipeline', () => {
 
     expect(rankedEventOf(events).ranked).toEqual([]);
     expect(answerTextOf(events)).toBe(
-      'I could not find a card that matches that request. Try broadening it.'
+      'No card matched. The search ran on your own words, so try different words.'
     );
+    expect(ollama.chatRequests).toHaveLength(1);
+  });
+
+  it('names the fields every filter searched on when nothing matched', async () => {
+    const ollama = new FakeOllamaClient({
+      models: [CHAT_MODEL],
+      embeddings: [[0, 0, 1]],
+      chatResponses: [
+        [
+          {
+            content: JSON.stringify({
+              filters: [
+                {
+                  field: CardFilterField.Race,
+                  operator: FilterOperator.Eq,
+                  value: CardRace.DivineBeast
+                },
+                {
+                  field: CardFilterField.Attribute,
+                  operator: FilterOperator.Eq,
+                  value: CardAttribute.Dark
+                }
+              ]
+            }),
+            done: true
+          }
+        ]
+      ]
+    });
+
+    const events = await collect(
+      runPipeline(dependencies(ollama), {
+        ...defaultInput,
+        ranking: { topK: 25, minScore: 0.5 }
+      })
+    );
+
+    const answer = answerTextOf(events);
+
+    expect(answer).toContain('Race');
+    expect(answer).toContain('Attribute');
+    expect(answer).toContain('filters below');
     expect(ollama.chatRequests).toHaveLength(1);
   });
 
@@ -462,7 +504,22 @@ describe('runPipeline', () => {
     const ollama = new FakeOllamaClient({
       models: [CHAT_MODEL],
       embeddings: [[0, 0, 1]],
-      chatResponses: [[{ content: PARSE_QUERY_ONLY, done: true }]]
+      chatResponses: [
+        [
+          {
+            content: JSON.stringify({
+              filters: [
+                {
+                  field: CardFilterField.Attribute,
+                  operator: FilterOperator.Eq,
+                  value: CardAttribute.Dark
+                }
+              ]
+            }),
+            done: true
+          }
+        ]
+      ]
     });
 
     const events = await collect(
@@ -473,7 +530,11 @@ describe('runPipeline', () => {
       })
     );
 
-    expect(answerTextOf(events)).toContain('aucune carte');
+    const answer = answerTextOf(events);
+
+    expect(answer).toContain('Aucune carte');
+    expect(answer).toContain('Attribut');
+    expect(answer).toContain('Retirez-en un');
   });
 
   describe('failures', () => {

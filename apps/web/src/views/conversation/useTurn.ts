@@ -57,6 +57,13 @@ interface TurnInFlight {
    * question being asked never shows what the one before it was searched as.
    */
   query?: string;
+  /*
+   * The filters the turn reported it would search with, kept so a request that
+   * was never answered can be asked again on the same search. A turn that gave
+   * way before it reported a search has none, and its retry reads the request
+   * again.
+   */
+  search?: CardFilters;
   failure?: TurnFailure;
   running: boolean;
 }
@@ -78,6 +85,12 @@ export interface UseTurnResult {
 interface TurnSettings {
   language?: Language;
   model?: string;
+  /*
+   * The filters to search with, overriding the player's corrected set. Left
+   * out, the corrected set is used; null asks for the request to be read again,
+   * which is what a retry with no search to reuse needs.
+   */
+  filters?: CardFilters | null;
 }
 
 /**
@@ -195,8 +208,17 @@ export function useTurn(conversationId: string): UseTurnResult {
       // request again, and sending the conversation's settings is what keeps a
       // turn started straight after a change off the settings it had before. A
       // player who left the readout alone sends no filters at all, which is what
-      // asks for the request to be parsed as usual.
-      const request: TurnRequest = { text, ...settings, filters: correction };
+      // asks for the request to be parsed as usual. A retry carries the search
+      // its request ran with, or null to read the request again.
+      const { language, model, filters } = settings ?? {};
+      const corrected =
+        filters === undefined ? correction : (filters ?? undefined);
+      const request: TurnRequest = {
+        text,
+        language,
+        model,
+        filters: corrected
+      };
 
       try {
         for await (const event of streamTurn(
@@ -252,7 +274,11 @@ export function useTurn(conversationId: string): UseTurnResult {
               // rather than read back from the stored turn, so what the readout
               // shows is right while the turn is still running. A status this
               // turn reported arrived just before it and is carried along.
-              change(current => ({ ...current, query: event.query }));
+              change(current => ({
+                ...current,
+                query: event.query,
+                search: event.filters
+              }));
               setInterpretation(current => ({
                 filters: event.filters,
                 query: event.query,

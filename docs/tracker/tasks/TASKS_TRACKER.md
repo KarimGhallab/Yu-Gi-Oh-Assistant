@@ -83,6 +83,14 @@ numbering across specs, so blocking edges stay legible across features.
 | 73  | [The API refuses requests from another origin](./73-the-api-refuses-another-origin.md)                                                      | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 74  | [Card text is data, not instructions, in the model prompts](./74-card-text-is-data-in-the-prompts.md)                                       | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
 | 75  | [The catalog is built from a verified dump, and its URLs are safe to render](./75-the-catalog-is-built-from-a-verified-dump.md)             | Resolved (2026-09-18) | None       | [18](../specs/18-security-hardening.md)                                               |
+| 76  | [An unanswered request says so and can be asked again](./76-an-unanswered-request-says-so.md)                                               | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 77  | [A search that found nothing names what to relax](./77-a-no-result-search-names-what-to-relax.md)                                           | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 78  | [The home and an empty conversation keep the bench](./78-the-home-and-an-empty-conversation-keep-the-bench.md)                              | Resolved (2026-09-18) | None       | [19](../specs/19-turn-recovery-and-the-empty-bench.md)                                |
+| 79  | [The machine facts clear the contrast minimum](./79-the-machine-facts-clear-the-contrast-minimum.md)                                        | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 80  | [Searched as is readable without a pointer](./80-searched-as-is-readable-without-a-pointer.md)                                              | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 81  | [The dialog shows the region that took the room](./81-the-dialog-shows-the-region-that-took-the-room.md)                                    | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 82  | [The model control is readable and its rows explain themselves](./82-the-model-control-is-readable-and-explains-itself.md)                  | Resolved (2026-09-18) | None       | [20](../specs/20-readable-and-reachable-controls.md)                                  |
+| 83  | [Send is the lamp and an empty conversation carries no title](./83-send-is-the-lamp.md)                                                     | Resolved (2026-09-18) | None       | [21](../specs/21-one-lamp-and-honest-chrome.md)                                       |
 
 ## Frontier
 
@@ -136,3 +144,35 @@ are ticketed as 73 through 75 under spec 18 (Security hardening of the untrusted
 boundaries): 73 puts a host and origin checkpoint in front of the API, 74 carries
 card text as delimited data in the prompts, and 75 verifies the dump and
 constrains its URLs. 73 through 75 are all resolved.
+
+A design track opens with spec 19 (Turn recovery and the empty bench), ticketed
+as 76 through 78, and all three are resolved. 76 makes an unanswered request say
+so and be asked again on the search it ran with, and stops it wearing the
+previous search as its readout. 77 makes a search that found nothing name the
+fields it ran with, show them beside its answer, and say when it ran on the
+player's own words. 78 draws the workbench on the home and empty-conversation
+surfaces, so a conversation that was started but not spoken in is the start it
+was. Spec 19 is complete, and the design track has no ticket left.
+
+The design track continues with spec 20 (Readable and reachable controls),
+ticketed as 79 through 82, and all four are resolved. 79 raises the token the
+small machine facts are set in to `oklch(65% 0 none)`, measured clear on Room
+Black, Bench Slate, and Rail Grey. 80 makes `Searched as` readable without a
+pointer, 81 makes a dialog show the region that took the room, and 82 makes the
+model control's rows and its chosen name readable. Spec 20 is complete.
+
+Spec 21 (One lamp and honest chrome) is ticketed as 83 and resolved: Send is the
+one filled control of the asking surface, the sidebar's New is a quiet action,
+and a conversation with nothing in it draws the bench rather than a header title
+it has not earned. The design track has no ticket left.
+
+A follow-on change to the filter readout, asked for while 80 through 82 landed:
+the chip editor's field, operator, and value controls are now the same picker the
+composer settings use, opening above the control, instead of native selects. It
+is recorded here rather than in a ticket because it extends spec 09's controls
+rather than closing a review finding.
+
+A small refactor pruned directly: the words a filter's field and operator are
+read as now have one source in the card domain and are carried through contracts,
+so the client's readout and the server's empty answer cannot drift. No ticket
+needed it; the maps were duplicated by 77.

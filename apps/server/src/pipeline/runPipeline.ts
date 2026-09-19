@@ -156,7 +156,8 @@ export async function* runPipeline(
       input.model,
       input.request,
       input.language,
-      selection.cards
+      selection.cards,
+      search.filters
     );
     for await (const delta of deltas) {
       yield { type: 'answer', text: delta };

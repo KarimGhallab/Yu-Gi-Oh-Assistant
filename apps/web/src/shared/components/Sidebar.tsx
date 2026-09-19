@@ -47,7 +47,7 @@ const FOLD_CLASS =
  * row that scrolls sideways on a narrow one.
  */
 const RAIL_CLASS =
-  'flex min-h-0 gap-1 overflow-x-auto px-2 pt-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pt-2 md:pb-0';
+  'quiet-scroll flex min-h-0 gap-2 overflow-x-auto px-2 pt-2 pb-3 md:flex-1 md:flex-col md:overflow-x-visible md:overflow-y-auto md:px-0 md:pt-2 md:pb-0';
 
 /**
  * One conversation, folded: the first letter of its name, and its whole name for
@@ -285,7 +285,7 @@ export default function Sidebar({ withHeader = true }: SidebarProps) {
     <nav
       id="conversations"
       aria-label="Conversations"
-      className="min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-3">
+      className="quiet-scroll min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-3">
       {conversations.isPending ? (
         <p role="status" className="px-2 py-1 text-sm text-neutral-500">
           Loading conversations…
@@ -354,7 +354,7 @@ export default function Sidebar({ withHeader = true }: SidebarProps) {
       ) : null}
       {withHeader ? (
         <div
-          className={`flex items-center gap-1 p-4 ${
+          className={`flex items-center gap-2 p-4 ${
             folded ? 'md:flex-col md:items-start' : ''
           }`}>
           <button

@@ -22,14 +22,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@12.4.2",
   "dependencies": {},
   "devDependencies": {
     "@types/node": "26.6.1",
     "typescript": "^6.0.3"
-  },
-  "volta": {
-    "node": "26.5.0",
-    "pnpm": "11.20.0"
   }
 }
