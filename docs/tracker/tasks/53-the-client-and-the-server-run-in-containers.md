@@ -30,7 +30,7 @@ end-to-end harness works around. Ollama does not join the compose network; it is
 reached on the host.
 
 **Outcome:** `apps/server/Containerfile` builds the workspace on
-`docker.io/library/node:26.5.0-alpine` with pnpm 11.20.0, compiles the server
+`docker.io/library/node:26.5.0-alpine` with pnpm 12.4.2, compiles the server
 with its packages, and copies them plus a production-only `node_modules` into a
 runtime stage that runs as the `node` user on port 3000 with a healthcheck.
 `apps/web/Containerfile` builds the client the same way and serves it from

@@ -3,7 +3,7 @@
 # The pinned Node and pnpm the repository runs on.
 FROM docker.io/library/node:26.5.0-alpine AS base
 
-RUN npm install --global pnpm@11.20.0
+RUN npm install --global pnpm@12.4.2
 WORKDIR /app
 
 # Compile the server and every workspace package it depends on.

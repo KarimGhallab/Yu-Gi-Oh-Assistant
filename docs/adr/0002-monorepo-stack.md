@@ -2,7 +2,7 @@
 
 The repository is one pnpm workspace holding two applications and eight
 packages, built with TypeScript project references and shipped as ESM, on a
-toolchain pinned with Volta to Node 26.5.0 and pnpm 11.20.0. The client and the
+toolchain pinned with mise to Node 26.5.0 and pnpm 12.4.2. The client and the
 server share the card domain and the wire contracts, and the pipeline shares the
 same domain with the stores; a single repository is what lets those shared things
 have one definition and one version rather than one per deployable. The
@@ -23,7 +23,7 @@ system across the workspace. The cost is that a relative import carries the `.js
 extension of the compiled file, which is small in exchange for not mixing module
 systems.
 
-Volta pins the exact Node and pnpm so a machine, a hook, and CI run the same
+mise pins the exact Node and pnpm so a machine, a hook, and CI run the same
 toolchain, and the lockfile is committed with frozen installs. Drift becomes a
 maintenance event with a diff rather than something a developer discovers at
 runtime.

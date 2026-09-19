@@ -5,10 +5,12 @@ shortlist of Yu-Gi-Oh cards. It answers only from a card catalog indexed on your
 machine and only with your local models: nothing leaves the machine, and there
 is no account.
 
+![The assistant answering a request with a shortlist of cards](.github/assets/conversation.png)
+
 ## What you need
 
-- **Node.js 26.5.0** and **pnpm 11.20.0**. Both are pinned with Volta, so with
-  Volta installed the right versions are fetched as you enter the repository.
+- **Node.js 26.5.0** and **pnpm 12.4.2**. Both are pinned with mise, so with
+  mise installed the right versions are fetched as you enter the repository.
   Otherwise install those exact versions yourself.
 - **Ollama**, running and reachable, with an embedding model and at least one
   chat model pulled into it.
@@ -104,6 +106,41 @@ Override them from a root `.env`, which compose reads, for example:
 ```sh
 OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
 OLLAMA_EMBEDDING_DIMENSIONS=768
+```
+
+## How it works
+
+A request runs through four stages. The first two turn the words into a search
+and the search into a ranked shortlist; the last two pick the cards worth
+showing and write the answer from them alone.
+
+```mermaid
+flowchart TD
+    A([Player request]) --> B{"Parse: filters edited?"}
+
+    B -->|yes| B1["Use them as they stand<br/>the request is the free text"]
+    B -->|no| B2["Chat model reads the request<br/>into filters + an optional rewrite, temp 0"]
+    B2 --> B3{"Valid?"}
+    B3 -->|no| B4["One repair, then degrade<br/>to the request text"]
+    B3 -->|yes| C
+    B1 --> C
+    B4 --> C
+
+    C{"Search: free text?"}
+    C -->|yes| C1["Embed the query<br/>vector search, closest first"]
+    C -->|no| C2["Scan by filters<br/>stable identity order"]
+    C1 --> C3["Dedupe by card id, drop<br/>below minScore, keep topK"]
+    C2 --> C3
+
+    C3 --> D{"Choose: judgement enabled?"}
+    D -->|yes| D1["Chat model keeps ids<br/>in ranking order, trim to shown"]
+    D -->|no or failed| D2["Fall back to the ranking's top shown"]
+    D1 --> E
+    D2 --> E
+
+    E{"Answer: any cards?"}
+    E -->|no| E1["Canned no-match copy<br/>one sentence per language"]
+    E -->|yes| E2["Chat model streams prose<br/>from those cards only, temp 0"]
 ```
 
 ## Configuration

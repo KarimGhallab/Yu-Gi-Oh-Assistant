@@ -35,7 +35,7 @@ at once.
 ## Operating Context
 
 - Runs locally through pnpm scripts (dev, build, start), with Node 26.5.0 and
-  pnpm 11.20.0 pinned by volta.
+  pnpm 12.4.2 pinned by mise.
 - Needs an Ollama instance, local or on the network, with a chat model and an
   embedding model pulled into it.
 - Needs a populated local index, built once from the YGOPRODeck dump by a
