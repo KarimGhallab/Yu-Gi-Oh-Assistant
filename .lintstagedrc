@@ -1,6 +1,7 @@
 {
-  "*.ts": [
+  "*.{ts,tsx,js,jsx,cjs,mjs}": [
     "npx eslint --cache --fix --quiet",
     "npx prettier --list-different --write"
-  ]
+  ],
+  "!(*.{ts,tsx,js,jsx,cjs,mjs})": ["npx prettier --list-different --write"]
 }
