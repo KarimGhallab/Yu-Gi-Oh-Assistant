@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # The pinned Node and pnpm the repository runs on.
-FROM docker.io/library/node:26.5.0-alpine AS base
+FROM docker.io/library/node:26.12.1-alpine AS base
 
-RUN npm install --global pnpm@12.4.2
+RUN npm install --global pnpm@12.15.0
 WORKDIR /app
 
 # Compile the server and every workspace package it depends on.
@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # The runtime: production dependencies, the built packages, and the server,
 # running as the unprivileged node user.
-FROM docker.io/library/node:26.5.0-alpine AS runtime
+FROM docker.io/library/node:26.12.1-alpine AS runtime
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \

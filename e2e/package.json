@@ -13,16 +13,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.15.0",
   "dependencies": {
     "@ygo-assistant/cards": "workspace:*",
     "@ygo-assistant/db": "workspace:*",
     "@ygo-assistant/ollama": "workspace:*"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
-    "@types/node": "26.6.1",
-    "tsx": "^4.23.13",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "26.6.5",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3"
   }
 }

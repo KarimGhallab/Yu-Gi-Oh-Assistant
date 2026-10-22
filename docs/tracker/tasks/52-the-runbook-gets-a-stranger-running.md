@@ -9,7 +9,7 @@ committed environment template names every setting the server reads.
 
 **Status:** Resolved (2026-09-18)
 
-- [x] The README states the prerequisites (Node 26.5.0, pnpm 12.4.2, Ollama)
+- [x] The README states the prerequisites (Node 26.12.1, pnpm 12.15.0, Ollama)
       and how to get them.
 - [x] The `ollama pull` commands name the embedding model and at least one chat
       model, and say the chat model is the player's choice from what is
