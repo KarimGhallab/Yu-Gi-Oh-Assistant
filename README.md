@@ -9,7 +9,7 @@ is no account.
 
 ## What you need
 
-- **Node.js 26.5.0** and **pnpm 12.4.2**. Both are pinned with mise, so with
+- **Node.js 26.12.1** and **pnpm 12.15.0**. Both are pinned with mise, so with
   mise installed the right versions are fetched as you enter the repository.
   Otherwise install those exact versions yourself.
 - **Ollama**, running and reachable, with an embedding model and at least one

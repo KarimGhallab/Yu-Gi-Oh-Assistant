@@ -1,0 +1,11 @@
+# ignore files
+.gitignore
+.prettierignore
+
+.husky/
+
+*.conf.template
+*.toml
+
+# Deployment files
+ContainerFile

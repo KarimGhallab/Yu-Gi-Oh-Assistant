@@ -22,10 +22,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.15.0",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "26.6.1",
+    "@types/node": "26.6.5",
     "typescript": "^6.0.3"
   }
 }

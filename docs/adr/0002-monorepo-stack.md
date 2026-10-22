@@ -2,7 +2,7 @@
 
 The repository is one pnpm workspace holding two applications and eight
 packages, built with TypeScript project references and shipped as ESM, on a
-toolchain pinned with mise to Node 26.5.0 and pnpm 12.4.2. The client and the
+toolchain pinned with mise to Node 26.12.1 and pnpm 12.15.0. The client and the
 server share the card domain and the wire contracts, and the pipeline shares the
 same domain with the stores; a single repository is what lets those shared things
 have one definition and one version rather than one per deployable. The

@@ -44,7 +44,7 @@ architecture docs with their ADRs.
 
 ## Implementation Decisions
 
-- README runbook covers: prerequisites (Node 26.5.0, pnpm 12.4.2, Ollama), the
+- README runbook covers: prerequisites (Node 26.12.1, pnpm 12.15.0, Ollama), the
   `ollama pull` commands for the configured chat and embedding models, copying
   `.env.example`, running `db:populate`, and `pnpm dev` / `pnpm build` /
   `pnpm start`.
