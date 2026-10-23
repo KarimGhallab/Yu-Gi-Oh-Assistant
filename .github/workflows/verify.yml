@@ -8,30 +8,24 @@ permissions:
 
 jobs:
   verify:
-    name: Verify
-    runs-on: ubuntu-latest
+    name: Verify (lint + check import + pnpm audit)
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: package.json
-          cache: pnpm
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Audit the installed dependencies
-        run: pnpm audit --audit-level=high
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Lint
         run: pnpm lint:check
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Check imports
+        run: pnpm run deps-cruise:check
+
+      - name: Audit the installed dependencies
+        run: pnpm audit --audit-level=high
