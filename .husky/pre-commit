@@ -5,8 +5,8 @@ echo "(1) Running lint-staged..."
 npx lint-staged
 
 # Check if external monorepo dependencies are in sync
-echo "(2) Checking external dependencies sync with syncpack..."
-npx syncpack lint
+echo "(2) Checking consistent external dependencies with syncpack..."
+pnpm run script:check-consistent-dependencies
 
 # Check if dependency-cruiser rules are respected
 echo "(3) Checking dependency-cruiser rules..."
@@ -15,4 +15,4 @@ echo "(3.1) Checking tsconfig.depcruise.json paths..."
 node ./scripts/validate-tsconfig-paths.cjs
 
 echo "(3.2) Running depcruise..."
-npx depcruise .
+pnpm run deps-cruise:check
